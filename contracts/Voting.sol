@@ -1,4 +1,3 @@
-
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
@@ -7,11 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 contract FractalToken is ERC20, ERC20Permit, ERC20Votes {
-    constructor(
-        IERC20 wrappedToken,
-        string memory name,
-        string memory symbol
-    )
+    constructor(string memory name, string memory symbol)
         ERC20(name, symbol)
         ERC20Permit(name)
     {}
