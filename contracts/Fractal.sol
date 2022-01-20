@@ -6,28 +6,45 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/governance/Governor.sol";
 import "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
-contract MyGovernor is Governor, GovernorCompatibilityBravo, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
+contract MyGovernor is Governor, GovernorCompatibilityBravo, GovernorSettings, GovernorVotes, GovernorVotesQuorumFraction, GovernorTimelockControl {
     constructor(string memory _governorName, ERC20Votes _token, TimelockController _timelock)
         Governor(_governorName)
+        GovernorSettings(1 /* 1 block */, 45818 /* 1 week */, 0)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)
     {}
 
-    function votingDelay() public pure override returns (uint256) {
-        return 6575; // 1 day
+    function votingDelay()
+        public
+        view
+        override(IGovernor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingDelay();
     }
 
-    function votingPeriod() public pure override returns (uint256) {
-        return 46027; // 1 week
+    function votingPeriod()
+        public
+        view
+        override(IGovernor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingPeriod();
     }
 
-    function proposalThreshold() public pure override returns (uint256) {
-        return 0;
+    function proposalThreshold()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.proposalThreshold();
     }
 
     // The functions below are overrides required by Solidity.
