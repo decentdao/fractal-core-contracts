@@ -5,9 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Wrapper.sol";
 
-contract FractalToken is ERC20, ERC20Permit, ERC20Votes, ERC20Wrapper {
+contract FractalToken is ERC20, ERC20Permit, ERC20Votes {
     constructor(
         IERC20 wrappedToken,
         string memory name,
@@ -15,7 +14,6 @@ contract FractalToken is ERC20, ERC20Permit, ERC20Votes, ERC20Wrapper {
     )
         ERC20(name, symbol)
         ERC20Permit(name)
-        ERC20Wrapper(wrappedToken)
     {}
 
     // The functions below are overrides required by Solidity.
