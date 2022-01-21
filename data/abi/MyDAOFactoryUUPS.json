@@ -1,0 +1,7 @@
+[
+  "constructor()",
+  "event DaoDeployed(address,address,address)",
+  "function Daos(uint256) view returns (address, address, address)",
+  "function createDAO(string,string,string,uint256,address[],address[]) returns (address, address, address)",
+  "function governanceImplementation() view returns (address)"
+]

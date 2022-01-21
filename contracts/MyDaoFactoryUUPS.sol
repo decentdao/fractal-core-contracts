@@ -4,13 +4,20 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "./MyGovernor.sol";
-import "./Voting.sol";
+import "./FractalToken.sol";
 import "./TimelockController.sol";
 
 contract MyDAOFactoryUUPS {
+    struct DaoInfo {
+        address votingToken;
+        address timelockController;
+        address daoProxy;
+    }
+    DaoInfo[] public Daos;
+
     address public immutable governanceImplementation;
 
-    event DaoDeployed(address daoAddress);
+    event DaoDeployed(address votingToken, address timelockController, address daoProxy);
 
     constructor() {
         governanceImplementation = address(new MyGovernor());
@@ -23,9 +30,9 @@ contract MyDAOFactoryUUPS {
         uint256 minDelay,
         address[] memory proposers,
         address[] memory executors
-    ) external returns (address) {
-        address votingToken = address(new FractalToken(tokenName, symbol));
-        address timelockController = address(
+    ) external returns (address votingToken, address timelockController, address daoProxy) {
+        votingToken = address(new FractalToken(tokenName, symbol));
+        timelockController = address(
             new TimelockController(minDelay, proposers, executors)
         );
 
@@ -38,7 +45,8 @@ contract MyDAOFactoryUUPS {
                 timelockController
             )
         );
-        emit DaoDeployed(address(proxy));
-        return address(proxy);
+        Daos.push(DaoInfo(votingToken, timelockController, address(proxy)));
+        emit DaoDeployed(votingToken, timelockController, address(proxy));
+        return (votingToken, timelockController, address(proxy));
     }
 }
