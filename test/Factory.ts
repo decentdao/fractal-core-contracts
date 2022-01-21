@@ -13,7 +13,7 @@ describe("Fractal DAO", function () {
   // let baseURI = 'https://gateway.pinata.cloud/ipfs/QmVZHhYvpa1py2C3ZifDpduQYiq1c7s8deCJweMroTiGr9/';
   // let predictedAddress;
   let deployer;
-  let wallet;
+  let wallet: any;
 
 
   beforeEach(async function () {
@@ -27,6 +27,19 @@ describe("Fractal DAO", function () {
     it("Should Set MyGovernor Implementation", async () => {
       return expect(await factory.governanceImplementation()).to.be
         .properAddress;
+    });
+
+    it("Should create MyGovernor DAO", async () => {
+      await expect(
+        factory.createDAO(
+          "testDAO",
+          "testToken",
+          "TTT",
+          0,
+          [wallet.address],
+          [wallet.address]
+        )
+      ).to.emit(factory, "DaoDeployed");
     });
   });
 });
