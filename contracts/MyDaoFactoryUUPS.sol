@@ -3,12 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import "./GovernanceUUPS.sol";
+import "./MyGovernor.sol";
 import "./Voting.sol";
 import "./TimelockController.sol";
 
-contract MyTokenFactoryUUPS {
-    address immutable governanceImplementation;
+contract MyDAOFactoryUUPS {
+    address public immutable governanceImplementation;
 
     event DaoDeployed(address daoAddress);
 
