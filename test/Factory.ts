@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { network } = require("hardhat");
 
 const daoABI = require("../data/abi/MyGovernor.json");
 
@@ -28,6 +29,11 @@ describe("Fractal DAO", function () {
     await fractaltoken.connect(voterA).mint(voterA.address, votes);
     await fractaltoken.connect(voterB).mint(voterB.address, votes);
     await fractaltoken.connect(voterC).mint(voterC.address, votes);
+
+    // delegate votes
+    await fractaltoken.connect(voterA).delegate(voterA.address);
+    await fractaltoken.connect(voterB).delegate(voterB.address);
+    await fractaltoken.connect(voterC).delegate(voterC.address);
   }
 
   async function createDAO() {
@@ -48,7 +54,6 @@ describe("Fractal DAO", function () {
   async function propose(governanceToken: any, daoAddress: any) {
     fractaltoken = await FractalToken.attach(governanceToken);
     dao = await new ethers.Contract(daoAddress, daoABI, wallet);
-    // dao = await DAO.attach(daoAddress);
     const grant = ethers.utils.parseUnits("500.0", 18);
     const newProposal = {
       grantAmount: grant,
@@ -56,21 +61,73 @@ describe("Fractal DAO", function () {
         wallet.address,
         grant,
       ]),
-      descriptionHash: ethers.utils.id("Proposal #2: Give wallet some tokens"),
+      descriptionHash: "Proposal #2: Give wallet some tokens",
     };
-    await expect(
-      await dao
-        .connect(voterA)
-        ["propose(address[],uint256[],bytes[],string)"](
-          [fractaltoken.address],
-          [0],
-          [newProposal.transferCalldata],
-          newProposal.descriptionHash
-        )
-    ).to.emit(dao, "ProposalCreated");
 
-    // await expect(proposeTx.wait()).to.emit(DAO, "ProposalCreated");
-    // await network.provider.send('evm_mine'); // wait 1 block before opening voting
+    await dao
+      .connect(voterA)
+      ["propose(address[],uint256[],bytes[],string)"](
+        [fractaltoken.address],
+        [0],
+        [newProposal.transferCalldata],
+        newProposal.descriptionHash
+      );
+
+    const proposalId = await dao.hashProposal(
+      [fractaltoken.address],
+      [0],
+      [newProposal.transferCalldata],
+      ethers.utils.id(newProposal.descriptionHash)
+    );
+    return proposalId;
+  }
+
+  async function vote(proposalId: any) {
+    await network.provider.send("evm_mine"); // wait 1 block before opening voting
+    const VoteType = {
+      Against: 0,
+      For: 1,
+      Abstain: 2,
+    };
+
+    await dao.connect(voterA).castVote(proposalId, VoteType.For);
+    await dao.connect(voterB).castVote(proposalId, VoteType.For);
+    await dao.connect(voterC).castVote(proposalId, VoteType.Against);
+    expect(await dao.hasVoted(proposalId, voterA.address)).to.eq(true);
+    expect(await dao.hasVoted(proposalId, voterB.address)).to.eq(true);
+    expect(await dao.hasVoted(proposalId, voterC.address)).to.eq(true);
+  }
+
+  async function execute(proposalId: any) {
+    // Queue Proposal
+    const grant = ethers.utils.parseUnits("500.0", 18);
+    const newProposal = {
+      grantAmount: grant,
+      transferCalldata: fractaltoken.interface.encodeFunctionData("mint", [
+        wallet.address,
+        grant,
+      ]),
+      descriptionHash: "Proposal #2: Give wallet some tokens",
+    };
+
+    await dao
+      .connect(wallet)
+      ["queue(address[],uint256[],bytes[],bytes32)"](
+        [fractaltoken.address],
+        [0],
+        [newProposal.transferCalldata],
+        ethers.utils.id(newProposal.descriptionHash)
+      );
+
+    // Execute Proposal
+    await dao
+      .connect(wallet)
+      ["execute(address[],uint256[],bytes[],bytes32)"](
+        [fractaltoken.address],
+        [0],
+        [newProposal.transferCalldata],
+        ethers.utils.id(newProposal.descriptionHash)
+      );
   }
 
   beforeEach(async function () {
@@ -91,6 +148,23 @@ describe("Fractal DAO", function () {
       const DaoInfo = await createDAO();
       await distributeTokens(DaoInfo.votingToken);
       await propose(DaoInfo.votingToken, DaoInfo.daoProxy);
+    });
+
+    it("Should vote on a dao proposal", async () => {
+      const DaoInfo = await createDAO();
+      await distributeTokens(DaoInfo.votingToken);
+      const proposalId = await propose(DaoInfo.votingToken, DaoInfo.daoProxy);
+      await vote(proposalId);
+    });
+
+    it("Should execute a passing proposal", async () => {
+      const DaoInfo = await createDAO();
+      await distributeTokens(DaoInfo.votingToken);
+      const proposalId = await propose(DaoInfo.votingToken, DaoInfo.daoProxy);
+      await vote(proposalId);
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+      await execute(proposalId);
     });
   });
 });

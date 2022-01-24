@@ -30,7 +30,7 @@ contract MyGovernor is
         __Governor_init(_name);
         __GovernorSettings_init(
             1, /* 1 block */
-            45818, /* 1 week */
+            5, /* 1 week */
             0
         );
         __GovernorCompatibilityBravo_init();

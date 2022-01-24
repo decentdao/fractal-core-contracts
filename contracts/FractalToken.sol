@@ -15,6 +15,10 @@ contract FractalToken is ERC20, ERC20Permit, ERC20Votes {
         _mint(to, amount);
     }
 
+    // function delegate(address delegatee) public {
+
+    // }
+
     // The functions below are overrides required by Solidity.
 
     function _afterTokenTransfer(
