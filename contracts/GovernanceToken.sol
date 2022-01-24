@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
-contract FractalToken is ERC20, ERC20Permit, ERC20Votes {
+contract GovernanceToken is ERC20, ERC20Permit, ERC20Votes {
     constructor(string memory name, string memory symbol)
         ERC20(name, symbol)
         ERC20Permit(name)
