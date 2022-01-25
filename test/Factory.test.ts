@@ -1,24 +1,36 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const { network } = require("hardhat");
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import {
+  DaoFactory,
+  DaoFactory__factory,
+  GovernanceToken,
+  GovernanceToken__factory,
+  MyGovernor,
+  MyGovernor__factory,
+} from "../typechain";
 
-const daoABI = require("../data/abi/MyGovernor.json");
+import chai from "chai";
+import { ethers, network } from "hardhat";
+
+// const daoABI = require("../data/abi/MyGovernor.json");
+
+const expect = chai.expect;
 
 describe("Fractal DAO", function () {
-  let DaoFactory;
-  let daoFactory: any;
-  let governanceToken: any;
-  let GovernanceToken: any;
-  let DAO: any;
-  let dao: any;
-  let deployer;
-  let wallet: any;
-  let voterA: any;
-  let voterB: any;
-  let voterC: any;
+  let daoFactory: DaoFactory;
+  let governanceToken: GovernanceToken;
+  let dao: MyGovernor;
 
-  async function distributeTokens(governanceToken: any) {
-    governanceToken = await GovernanceToken.attach(governanceToken);
+  let deployer: SignerWithAddress;
+  let wallet: SignerWithAddress;
+  let voterA: SignerWithAddress;
+  let voterB: SignerWithAddress;
+  let voterC: SignerWithAddress;
+
+  async function distributeTokens(governanceTokenAddress: string) {
+    governanceToken = GovernanceToken__factory.connect(
+      governanceTokenAddress,
+      deployer
+    );
 
     // Distribute governance tokens
     const votes = ethers.utils.parseUnits("100.0", 18);
@@ -47,7 +59,7 @@ describe("Fractal DAO", function () {
     return daoFactory.daos(0);
   }
 
-  async function propose(_governanceToken: any, daoAddress: any) {
+  async function propose(_governanceToken: GovernanceToken, daoAddress: string) {
     governanceToken = await GovernanceToken.attach(_governanceToken);
     dao = await new ethers.Contract(daoAddress, daoABI, wallet);
     const grant = ethers.utils.parseUnits("500.0", 18);
@@ -62,12 +74,12 @@ describe("Fractal DAO", function () {
 
     await dao
       .connect(voterA)
-    ["propose(address[],uint256[],bytes[],string)"](
-      [governanceToken.address],
-      [0],
-      [newProposal.transferCalldata],
-      newProposal.descriptionHash
-    );
+      ["propose(address[],uint256[],bytes[],string)"](
+        [governanceToken.address],
+        [0],
+        [newProposal.transferCalldata],
+        newProposal.descriptionHash
+      );
 
     const proposalId = await dao.hashProposal(
       [governanceToken.address],
@@ -108,28 +120,27 @@ describe("Fractal DAO", function () {
 
     await dao
       .connect(wallet)
-    ["queue(address[],uint256[],bytes[],bytes32)"](
-      [governanceToken.address],
-      [0],
-      [newProposal.transferCalldata],
-      ethers.utils.id(newProposal.descriptionHash)
-    );
+      ["queue(address[],uint256[],bytes[],bytes32)"](
+        [governanceToken.address],
+        [0],
+        [newProposal.transferCalldata],
+        ethers.utils.id(newProposal.descriptionHash)
+      );
 
     // Execute Proposal
     await dao
       .connect(wallet)
-    ["execute(address[],uint256[],bytes[],bytes32)"](
-      [governanceToken.address],
-      [0],
-      [newProposal.transferCalldata],
-      ethers.utils.id(newProposal.descriptionHash)
-    );
+      ["execute(address[],uint256[],bytes[],bytes32)"](
+        [governanceToken.address],
+        [0],
+        [newProposal.transferCalldata],
+        ethers.utils.id(newProposal.descriptionHash)
+      );
   }
 
   beforeEach(async function () {
     [deployer, wallet, voterA, voterB, voterC] = await ethers.getSigners();
-    DaoFactory = await ethers.getContractFactory("DaoFactory");
-    daoFactory = await DaoFactory.deploy();
+    daoFactory = await new DaoFactory__factory(deployer).deploy();
     DAO = await ethers.getContractFactory("MyGovernor");
     GovernanceToken = await ethers.getContractFactory("GovernanceToken");
   });

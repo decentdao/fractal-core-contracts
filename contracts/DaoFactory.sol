@@ -46,10 +46,16 @@ contract DaoFactory {
             )
         );
 
-        TimelockController(payable(timelockController)).grantRole(0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1, address(proxy));
-        TimelockController(payable(timelockController)).grantRole(0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63, address(proxy));
+        // what are these
+        bytes32 something1 = 0xb09aa5aeb3702cfd50b6b62bc4532604938f21248a27a1d5ca736082b6819cc1;
+        bytes32 something2 = 0xd8aa0f3194971a2a116679f7c2090f6939c8d4e01a2a8d7e41d55e5351469e63;
+
+        TimelockController(payable(timelockController)).grantRole(something1, address(proxy));
+        TimelockController(payable(timelockController)).grantRole(something2, address(proxy));
+
         daos.push(DaoInfo(votingToken, timelockController, address(proxy)));
         emit DaoDeployed(votingToken, timelockController, address(proxy));
+
         return (votingToken, timelockController, address(proxy));
     }
 }
