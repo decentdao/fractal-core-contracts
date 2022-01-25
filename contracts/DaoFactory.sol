@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MyGovernor.sol";
 import "./GovernanceToken.sol";
 import "./TimelockController.sol";
+import "./WrappedToken.sol";
 
 contract DaoFactory is Ownable {
     struct DaoInfo {
@@ -37,7 +38,7 @@ contract DaoFactory is Ownable {
         governanceImplementation = address(new MyGovernor());
     }
 
-    function createDAO(
+    function createDaoAndToken(
         string memory tokenName,
         string memory symbol,
         address[] memory hodlers,
@@ -62,6 +63,39 @@ contract DaoFactory is Ownable {
             hodlers,
             allocations
         );
+        
+        (address timelockController, address proxyAddress) = _createDao(minDelay, votingToken, daoName, proposers, executors);
+
+        return (votingToken, timelockController, proxyAddress);
+    }
+
+    function createDaoWrapToken(
+        address votingTokenAddress,
+        string memory votingTokenName,
+        string memory votingTokenSymbol,
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors,
+        string memory daoName
+    ) external returns (
+      address,
+      address,
+      address
+    ) {
+        new WrappedToken(IERC20(votingTokenAddress), votingTokenName, votingTokenSymbol);
+
+       (address timelockController, address proxyAddress) = _createDao(minDelay, votingTokenAddress, daoName, proposers, executors);
+
+        return (votingTokenAddress, timelockController, proxyAddress);
+    }
+
+    function _createDao(
+      uint256 minDelay,
+      address votingToken,
+      string memory daoName,
+      address[] memory proposers,
+      address[] memory executors
+    ) private returns(address, address) {
         address timelockController = address(
             new TimelockController(minDelay, proposers, executors)
         );
@@ -79,7 +113,8 @@ contract DaoFactory is Ownable {
         address proxyAddress = address(proxy);
         _configTimelock(timelockController, proxyAddress);
 
-        daos.push(DaoInfo(votingToken, timelockController, proxyAddress));
+         daos.push(DaoInfo(votingToken, timelockController, proxyAddress));
+
         emit DaoDeployed(
             msg.sender,
             votingToken,
@@ -87,7 +122,7 @@ contract DaoFactory is Ownable {
             proxyAddress
         );
 
-        return (votingToken, timelockController, proxyAddress);
+        return (timelockController, proxyAddress);
     }
 
     function _createToken(

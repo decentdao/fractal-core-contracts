@@ -50,7 +50,7 @@ describe("Fractal DAO", function () {
     }
   }
 
-  async function createDAO(
+  async function createDaoAndToken(
     _tokenName: string,
     _tokenSymbol: string,
     _hodlers: string[],
@@ -61,7 +61,7 @@ describe("Fractal DAO", function () {
     _daoName: string
   ) {
     // create DAO via factory
-    await daoFactory.createDAO(
+    await daoFactory.createDaoAndToken(
       _tokenName,
       _tokenSymbol,
       _hodlers,
@@ -134,7 +134,7 @@ describe("Fractal DAO", function () {
     daoFactory = await new DaoFactory__factory(deployer).deploy();
 
     // Create a new DAO using the DAO Factory
-    const daoInfo = await createDAO(
+    const daoInfo = await createDaoAndToken(
       "Test Token",
       "TTT",
       [voterA.address, voterB.address, voterC.address],
