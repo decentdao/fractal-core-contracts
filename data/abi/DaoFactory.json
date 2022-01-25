@@ -1,0 +1,15 @@
+[
+  "constructor()",
+  "error ArraysNotEqual()",
+  "error UpdateAddress()",
+  "event DaoDeployed(address,address,address,address)",
+  "event GovernanceImplementationUpdated(address,address)",
+  "event OwnershipTransferred(address indexed,address indexed)",
+  "function createDAO(string,string,address[],uint256[],uint256,address[],address[],string) returns (address, address, address)",
+  "function daos(uint256) view returns (address, address, address)",
+  "function governanceImplementation() view returns (address)",
+  "function owner() view returns (address)",
+  "function renounceOwnership()",
+  "function transferOwnership(address)",
+  "function updateGovernanceImplementation(address)"
+]

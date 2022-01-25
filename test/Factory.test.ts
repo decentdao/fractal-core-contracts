@@ -51,20 +51,25 @@ describe("Fractal DAO", function () {
   }
 
   async function createDAO(
-    _daoName: string,
     _tokenName: string,
     _tokenSymbol: string,
+    _hodlers: string[],
+    _allocations: BigNumber[],
+    _minDelay: BigNumber,
     _proposers: string[],
-    _executors: string[]
+    _executors: string[],
+    _daoName: string
   ) {
     // create DAO via factory
     await daoFactory.createDAO(
-      _daoName,
       _tokenName,
       _tokenSymbol,
-      0,
+      _hodlers,
+      _allocations,
+      _minDelay,
       _proposers,
-      _executors
+      _executors,
+      _daoName
     );
 
     return daoFactory.daos(0);
@@ -130,11 +135,18 @@ describe("Fractal DAO", function () {
 
     // Create a new DAO using the DAO Factory
     const daoInfo = await createDAO(
-      "Test DAO",
       "Test Token",
       "TTT",
+      [voterA.address, voterB.address, voterC.address],
+      [
+        ethers.utils.parseUnits("100.0", 18),
+        ethers.utils.parseUnits("100.0", 18),
+        ethers.utils.parseUnits("100.0", 18),
+      ],
+      ethers.utils.parseUnits("0", 18),
       [wallet.address],
-      [wallet.address]
+      [wallet.address],
+      "Test DAO"
     );
 
     // eslint-disable-next-line camelcase
@@ -144,12 +156,6 @@ describe("Fractal DAO", function () {
     governanceToken = GovernanceToken__factory.connect(
       daoInfo.votingToken,
       deployer
-    );
-
-    await distributeTokens(
-      governanceToken,
-      [voterA, voterB, voterC],
-      ethers.utils.parseUnits("100.0", 18)
     );
 
     await delegateTokens(governanceToken, [voterA, voterB, voterC]);
