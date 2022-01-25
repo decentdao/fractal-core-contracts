@@ -58,10 +58,10 @@ contract DaoFactory is Ownable {
         if (hodlers.length != allocations.length) revert ArraysNotEqual();
 
         address votingToken = _createToken(
-        tokenName,
-        symbol,
-        hodlers,
-        allocations
+            tokenName,
+            symbol,
+            hodlers,
+            allocations
         );
         address timelockController = address(
             new TimelockController(minDelay, proposers, executors)
@@ -96,7 +96,7 @@ contract DaoFactory is Ownable {
         string memory _symbol,
         address[] memory _hodlers,
         uint256[] memory _allocations
-    ) private returns(address){
+    ) private returns (address) {
         address votingToken = address(new GovernanceToken(_tokenName, _symbol));
 
         uint256 tokenSupply;
@@ -104,7 +104,7 @@ contract DaoFactory is Ownable {
             GovernanceToken(votingToken).mint(_hodlers[i], _allocations[i]);
             tokenSupply += _allocations[i];
         }
-        return(votingToken);
+        return (votingToken);
     }
 
     function _configTimelock(address _timelock, address _proxyAddress) private {
