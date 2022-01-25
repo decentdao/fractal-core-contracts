@@ -20,7 +20,6 @@ contract DaoFactory is Ownable {
     address public governanceImplementation;
 
     error ArraysNotEqual();
-    error AllocationsTotalSupplyNotEqual();
     error UpdateAddress();
 
     event DaoDeployed(
@@ -99,12 +98,10 @@ contract DaoFactory is Ownable {
     ) private returns (address) {
         address votingToken = address(new GovernanceToken(_tokenName, _symbol));
 
-        uint256 tokenSupply;
         for (uint256 i = 0; i < _hodlers.length; i++) {
             GovernanceToken(votingToken).mint(_hodlers[i], _allocations[i]);
-            tokenSupply += _allocations[i];
         }
-        return (votingToken);
+        return votingToken;
     }
 
     function _configTimelock(address _timelock, address _proxyAddress) private {
@@ -123,7 +120,7 @@ contract DaoFactory is Ownable {
 
     function updateGovernanceImplementation(address newImplementation)
         public
-        onlyOwner
+        onlyOwner()
     {
         address oldImpl = governanceImplementation;
         if (oldImpl == newImplementation) revert UpdateAddress();
