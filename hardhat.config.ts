@@ -34,14 +34,6 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  abiExporter: {
-    path: "./data/abi",
-    runOnCompile: true,
-    clear: true,
-    flat: true,
-    spacing: 2,
-    pretty: true,
-  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
