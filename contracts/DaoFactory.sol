@@ -5,9 +5,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MyGovernor.sol";
-import "./GovernanceToken.sol";
+import "./TokenFactory.sol";
 import "./TimelockController.sol";
-import "./WrappedToken.sol";
 
 contract DaoFactory is Ownable {
     struct DaoInfo {
@@ -19,6 +18,7 @@ contract DaoFactory is Ownable {
     DaoInfo[] public daos;
 
     address public governanceImplementation;
+    TokenFactory public tokenFactory;
 
     error ArraysNotEqual();
     error UpdateAddress();
@@ -34,8 +34,9 @@ contract DaoFactory is Ownable {
         address newImplementation
     );
 
-    constructor() {
+    constructor(address tokenFactoryAddress) {
         governanceImplementation = address(new MyGovernor());
+        tokenFactory = TokenFactory(tokenFactoryAddress);
     }
 
     function createDaoAndToken(
@@ -55,9 +56,7 @@ contract DaoFactory is Ownable {
             address
         )
     {
-        if (hodlers.length != allocations.length) revert ArraysNotEqual();
-
-        address votingToken = _createToken(
+        address votingToken = tokenFactory.createToken(
             tokenName,
             symbol,
             hodlers,
@@ -82,11 +81,11 @@ contract DaoFactory is Ownable {
       address,
       address
     ) {
-        new WrappedToken(IERC20(votingTokenAddress), votingTokenName, votingTokenSymbol);
+        address wrappedAddress = tokenFactory.WrapToken(votingTokenAddress, votingTokenName, votingTokenSymbol);
 
-       (address timelockController, address proxyAddress) = _createDao(minDelay, votingTokenAddress, daoName, proposers, executors);
+       (address timelockController, address proxyAddress) = _createDao(minDelay, wrappedAddress, daoName, proposers, executors);
 
-        return (votingTokenAddress, timelockController, proxyAddress);
+        return (wrappedAddress, timelockController, proxyAddress);
     }
 
     function _createDao(
@@ -123,20 +122,6 @@ contract DaoFactory is Ownable {
         );
 
         return (timelockController, proxyAddress);
-    }
-
-    function _createToken(
-        string memory _tokenName,
-        string memory _symbol,
-        address[] memory _hodlers,
-        uint256[] memory _allocations
-    ) private returns (address) {
-        address votingToken = address(new GovernanceToken(_tokenName, _symbol));
-
-        for (uint256 i = 0; i < _hodlers.length; i++) {
-            GovernanceToken(votingToken).mint(_hodlers[i], _allocations[i]);
-        }
-        return votingToken;
     }
 
     function _configTimelock(address _timelock, address _proxyAddress) private {

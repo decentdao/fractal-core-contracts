@@ -6,6 +6,8 @@ import {
   GovernanceToken__factory,
   MyGovernor,
   MyGovernor__factory,
+  TokenFactory,
+  TokenFactory__factory,
 } from "../typechain";
 
 import chai from "chai";
@@ -18,6 +20,7 @@ describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
   let governanceToken: GovernanceToken;
   let dao: MyGovernor;
+  let tokenFactory: TokenFactory;
 
   let deployer: SignerWithAddress;
   let wallet: SignerWithAddress;
@@ -30,16 +33,6 @@ describe("Fractal DAO", function () {
     For: 1,
     Abstain: 2,
   };
-
-  async function distributeTokens(
-    governanceToken: GovernanceToken,
-    voters: SignerWithAddress[],
-    amounts: BigNumber
-  ) {
-    for (let i = 0; i < voters.length; i++) {
-      await governanceToken.connect(voters[i]).mint(voters[i].address, amounts);
-    }
-  }
 
   async function delegateTokens(
     governanceToken: GovernanceToken,
@@ -129,9 +122,12 @@ describe("Fractal DAO", function () {
 
   beforeEach(async function () {
     [deployer, wallet, voterA, voterB, voterC] = await ethers.getSigners();
+    tokenFactory = await new TokenFactory__factory(deployer).deploy();
 
     // Deploy an instance of the DAO Factory
-    daoFactory = await new DaoFactory__factory(deployer).deploy();
+    daoFactory = await new DaoFactory__factory(deployer).deploy(
+      tokenFactory.address
+    );
 
     // Create a new DAO using the DAO Factory
     const daoInfo = await createDaoAndToken(
