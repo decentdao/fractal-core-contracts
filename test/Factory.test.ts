@@ -17,7 +17,8 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber } from "ethers";
+import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { Result } from "@ethersproject/abi";
 
 const expect = chai.expect;
 
@@ -34,6 +35,11 @@ describe("Fractal DAO", function () {
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
   let voterC: SignerWithAddress;
+  let daoInfo: {
+    votingToken: string;
+    timelockController: string;
+    daoProxy: string;
+  };
 
   const VoteType = {
     Against: 0,
@@ -77,7 +83,7 @@ describe("Fractal DAO", function () {
     _daoName: string
   ) {
     // create DAO via factory
-    await _daoFactory.createDaoAndToken(
+    const tx: ContractTransaction = await _daoFactory.createDaoAndToken(
       _tokenName,
       _tokenSymbol,
       _hodlers,
@@ -88,7 +94,25 @@ describe("Fractal DAO", function () {
       _daoName
     );
 
-    return daoFactory.daos(0);
+    const receipt: ContractReceipt = await tx.wait();
+
+    // eslint-disable-next-line prettier/prettier
+    const daoEvent = receipt.events?.filter((x) => { return x.event === "DaoDeployed" });
+
+    if (daoEvent === undefined || daoEvent[0].args === undefined) {
+      return {
+        votingToken: 0,
+        timelockController: 0,
+        daoProxy: 0,
+      };
+    }
+    const daoBuild = {
+      votingToken: daoEvent[0].args[1],
+      timelockController: daoEvent[0].args[2],
+      daoProxy: daoEvent[0].args[3],
+    };
+
+    return daoBuild;
   }
 
   async function createDaoWrapToken(
@@ -101,7 +125,7 @@ describe("Fractal DAO", function () {
     _executors: string[],
     _daoName: string
   ) {
-    await _daoFactory.createDaoWrapToken(
+    const tx: ContractTransaction = await _daoFactory.createDaoWrapToken(
       _tokenAddress,
       _tokenName,
       _tokenSymbol,
@@ -110,6 +134,26 @@ describe("Fractal DAO", function () {
       _executors,
       _daoName
     );
+
+    const receipt: ContractReceipt = await tx.wait();
+
+    // eslint-disable-next-line prettier/prettier
+    const daoEvent = receipt.events?.filter((x) => { return x.event === "DaoDeployed" });
+
+    if (daoEvent === undefined || daoEvent[0].args === undefined) {
+      return {
+        votingToken: 0,
+        timelockController: 0,
+        daoProxy: 0,
+      };
+    }
+    const daoBuild = {
+      votingToken: daoEvent[0].args[1],
+      timelockController: daoEvent[0].args[2],
+      daoProxy: daoEvent[0].args[3],
+    };
+
+    return daoBuild;
   }
 
   async function propose(
@@ -122,12 +166,12 @@ describe("Fractal DAO", function () {
   ) {
     await _dao
       .connect(_proposer)
-      ["propose(address[],uint256[],bytes[],string)"](
-        _targets,
-        _values,
-        [_transferCallData],
-        _description
-      );
+    ["propose(address[],uint256[],bytes[],string)"](
+      _targets,
+      _values,
+      [_transferCallData],
+      _description
+    );
 
     const proposalId = await _dao.hashProposal(
       _targets,
@@ -174,7 +218,7 @@ describe("Fractal DAO", function () {
       );
 
       // Create a new DAO using the DAO Factory
-      await createDaoAndToken(
+      daoInfo = await createDaoAndToken(
         daoFactory,
         "Test Token",
         "TTT",
@@ -189,8 +233,6 @@ describe("Fractal DAO", function () {
         [wallet.address],
         "Test DAO"
       );
-
-      const daoInfo = await daoFactory.daos(0);
 
       // eslint-disable-next-line camelcase
       dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
@@ -210,8 +252,6 @@ describe("Fractal DAO", function () {
     });
 
     it("Created a DAO", async () => {
-      const daoInfo = await daoFactory.daos(0);
-
       await expect(daoInfo.votingToken).to.be.properAddress;
       await expect(daoInfo.timelockController).to.be.properAddress;
       await expect(daoInfo.daoProxy).to.be.properAddress;
@@ -353,7 +393,7 @@ describe("Fractal DAO", function () {
       );
 
       // Create a new DAO using the DAO Factory and the existing test token
-      await createDaoWrapToken(
+      daoInfo = await createDaoWrapToken(
         daoFactory,
         testToken.address,
         "Test Token",
@@ -363,8 +403,6 @@ describe("Fractal DAO", function () {
         [wallet.address],
         "Test DAO"
       );
-
-      const daoInfo = await daoFactory.daos(0);
 
       // eslint-disable-next-line camelcase
       dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
@@ -408,8 +446,6 @@ describe("Fractal DAO", function () {
     });
 
     it("Created a DAO", async () => {
-      const daoInfo = await daoFactory.daos(0);
-
       await expect(daoInfo.votingToken).to.be.properAddress;
       await expect(daoInfo.timelockController).to.be.properAddress;
       await expect(daoInfo.daoProxy).to.be.properAddress;
