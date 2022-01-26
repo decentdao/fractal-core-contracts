@@ -3,20 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MyGovernor.sol";
 import "./TokenFactory.sol";
-import "./TimelockController.sol";
 
 contract DaoFactory is Ownable {
-    struct DaoInfo {
-        address votingToken;
-        address timelockController;
-        address daoProxy;
-    }
-
-    DaoInfo[] public daos;
-
     address public governanceImplementation;
     TokenFactory public tokenFactory;
 
@@ -62,8 +54,14 @@ contract DaoFactory is Ownable {
             hodlers,
             allocations
         );
-        
-        (address timelockController, address proxyAddress) = _createDao(minDelay, votingToken, daoName, proposers, executors);
+
+        (address timelockController, address proxyAddress) = _createDao(
+            minDelay,
+            votingToken,
+            daoName,
+            proposers,
+            executors
+        );
 
         return (votingToken, timelockController, proxyAddress);
     }
@@ -76,43 +74,55 @@ contract DaoFactory is Ownable {
         address[] memory proposers,
         address[] memory executors,
         string memory daoName
-    ) external returns (
-      address,
-      address,
-      address
-    ) {
-        address wrappedAddress = tokenFactory.WrapToken(votingTokenAddress, votingTokenName, votingTokenSymbol);
+    )
+        external
+        returns (
+            address,
+            address,
+            address
+        )
+    {
+        address wrappedAddress = tokenFactory.WrapToken(
+            votingTokenAddress,
+            votingTokenName,
+            votingTokenSymbol
+        );
 
-       (address timelockController, address proxyAddress) = _createDao(minDelay, wrappedAddress, daoName, proposers, executors);
+        (address timelockController, address proxyAddress) = _createDao(
+            minDelay,
+            wrappedAddress,
+            daoName,
+            proposers,
+            executors
+        );
 
         return (wrappedAddress, timelockController, proxyAddress);
     }
 
     function _createDao(
-      uint256 minDelay,
-      address votingToken,
-      string memory daoName,
-      address[] memory proposers,
-      address[] memory executors
-    ) private returns(address, address) {
+        uint256 minDelay,
+        address votingToken,
+        string memory daoName,
+        address[] memory proposers,
+        address[] memory executors
+    ) private returns (address, address) {
         address timelockController = address(
             new TimelockController(minDelay, proposers, executors)
         );
 
-        ERC1967Proxy proxy = new ERC1967Proxy(
-            governanceImplementation,
-            abi.encodeWithSelector(
-                MyGovernor(payable(address(0))).initialize.selector,
-                daoName,
-                votingToken,
-                timelockController
+        address proxyAddress = address(
+            new ERC1967Proxy(
+                governanceImplementation,
+                abi.encodeWithSelector(
+                    MyGovernor(payable(address(0))).initialize.selector,
+                    daoName,
+                    votingToken,
+                    timelockController
+                )
             )
         );
 
-        address proxyAddress = address(proxy);
         _configTimelock(timelockController, proxyAddress);
-
-         daos.push(DaoInfo(votingToken, timelockController, proxyAddress));
 
         emit DaoDeployed(
             msg.sender,
@@ -140,7 +150,7 @@ contract DaoFactory is Ownable {
 
     function updateGovernanceImplementation(address newImplementation)
         public
-        onlyOwner()
+        onlyOwner
     {
         address oldImpl = governanceImplementation;
         if (oldImpl == newImplementation) revert UpdateAddress();
