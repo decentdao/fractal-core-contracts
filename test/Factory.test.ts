@@ -78,6 +78,7 @@ describe("Fractal DAO", function () {
     _hodlers: string[],
     _allocations: BigNumber[],
     _minDelay: BigNumber,
+    _totalSupply: BigNumber,
     _proposers: string[],
     _executors: string[],
     _daoName: string
@@ -89,6 +90,7 @@ describe("Fractal DAO", function () {
       _hodlers,
       _allocations,
       _minDelay,
+      _totalSupply,
       _proposers,
       _executors,
       _daoName
@@ -229,6 +231,7 @@ describe("Fractal DAO", function () {
           ethers.utils.parseUnits("100.0", 18),
         ],
         ethers.utils.parseUnits("0", 18),
+        ethers.utils.parseUnits("500.0", 18),
         [wallet.address],
         [wallet.address],
         "Test DAO"
@@ -269,12 +272,16 @@ describe("Fractal DAO", function () {
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
       );
+
+      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+        ethers.utils.parseUnits("200.0", 18)
+      );
     });
 
     it("Creates a DAO proposal", async () => {
       const transferCallData = governanceToken.interface.encodeFunctionData(
-        "mint",
-        [voterB.address, ethers.utils.parseUnits("500", 18)]
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
       const proposalId = await propose(
@@ -283,7 +290,7 @@ describe("Fractal DAO", function () {
         dao,
         voterA,
         transferCallData,
-        "Proposal #1: Mint 500 tokens to Voter B"
+        "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       expect(proposalId).to.be.gt(0);
@@ -291,8 +298,8 @@ describe("Fractal DAO", function () {
 
     it("Allows voting on a DAO proposal", async () => {
       const transferCallData = governanceToken.interface.encodeFunctionData(
-        "mint",
-        [voterB.address, ethers.utils.parseUnits("500", 18)]
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
       const proposalId = await propose(
@@ -301,7 +308,7 @@ describe("Fractal DAO", function () {
         dao,
         voterA,
         transferCallData,
-        "Proposal #1: Mint 500 tokens to Voter B"
+        "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
@@ -318,8 +325,8 @@ describe("Fractal DAO", function () {
 
     it("Should execute a passing proposal", async () => {
       const transferCallData = governanceToken.interface.encodeFunctionData(
-        "mint",
-        [voterB.address, ethers.utils.parseUnits("500", 18)]
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
       const proposalId = await propose(
@@ -328,7 +335,7 @@ describe("Fractal DAO", function () {
         dao,
         voterA,
         transferCallData,
-        "Proposal #1: Mint 500 tokens to Voter B"
+        "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
@@ -355,6 +362,10 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
+      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+        ethers.utils.parseUnits("200.0", 18)
+      );
+
       await executeProposal(dao, voterA, proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
@@ -362,10 +373,14 @@ describe("Fractal DAO", function () {
       );
 
       expect(await governanceToken.balanceOf(voterB.address)).to.eq(
-        ethers.utils.parseUnits("600.0", 18)
+        ethers.utils.parseUnits("200.0", 18)
       );
 
       expect(await governanceToken.balanceOf(voterC.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
+
+      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
       );
     });

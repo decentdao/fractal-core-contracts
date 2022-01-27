@@ -6,18 +6,26 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 contract GovernanceToken is ERC20, ERC20Permit, ERC20Votes {
-    constructor(string memory name, string memory symbol)
+    constructor(
+        string memory name, 
+        string memory symbol,
+        address[] memory hodlers,
+        uint256[] memory allocations,
+        uint256 totalSupply,
+        address treasury
+    )
         ERC20(name, symbol)
         ERC20Permit(name)
-    {}
-
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
+    {
+        uint256 tokenSum;
+        for (uint256 i = 0; i < hodlers.length; i++) {
+            _mint(hodlers[i], allocations[i]);
+            tokenSum += allocations[i];
+        }
+        uint256 treasuryAllocation;
+        totalSupply > tokenSum ? treasuryAllocation = totalSupply - tokenSum : treasuryAllocation = 0;
+        _mint(treasury,  treasuryAllocation);
     }
-
-    // function delegate(address delegatee) public {
-
-    // }
 
     // The functions below are overrides required by Solidity.
 

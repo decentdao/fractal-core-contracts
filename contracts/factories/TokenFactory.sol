@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import "./GovernanceToken.sol";
-import "./WrappedToken.sol";
+import "../GovernanceToken.sol";
+import "../WrappedToken.sol";
 
 contract TokenFactory {
     error ArraysNotEqual();
@@ -23,7 +23,9 @@ contract TokenFactory {
         string memory tokenName,
         string memory symbol,
         address[] memory hodlers,
-        uint256[] memory allocations
+        uint256[] memory allocations,
+        uint256 totalSupply,
+        address treasury
     )
         external
         returns (
@@ -31,15 +33,19 @@ contract TokenFactory {
         )
     {
         if (hodlers.length != allocations.length) revert ArraysNotEqual();
-        address votingToken = address(new GovernanceToken(tokenName, symbol));
-        for (uint256 i = 0; i < hodlers.length; i++) {
-            GovernanceToken(votingToken).mint(hodlers[i], allocations[i]);
-        }
+        address votingToken = address(new GovernanceToken(
+            tokenName,
+            symbol,
+            hodlers,
+            allocations,
+            totalSupply,
+            treasury 
+            ));
         emit TokenDeployed(votingToken, tokenName, symbol);
         return votingToken;
     }
 
-    function WrapToken(
+    function wrapToken(
         address votingTokenAddress,
         string memory votingTokenName,
         string memory votingTokenSymbol
