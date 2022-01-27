@@ -22,9 +22,10 @@ contract GovernanceToken is ERC20, ERC20Permit, ERC20Votes {
             _mint(hodlers[i], allocations[i]);
             tokenSum += allocations[i];
         }
-        uint256 treasuryAllocation;
-        totalSupply > tokenSum ? treasuryAllocation = totalSupply - tokenSum : treasuryAllocation = 0;
-        _mint(treasury,  treasuryAllocation);
+
+        if (totalSupply > tokenSum) {
+          _mint(treasury,  totalSupply - tokenSum);
+        }
     }
 
     // The functions below are overrides required by Solidity.
