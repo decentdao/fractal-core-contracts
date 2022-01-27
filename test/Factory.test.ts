@@ -18,7 +18,6 @@ import {
 import chai from "chai";
 import { ethers, network } from "hardhat";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
-import { Result } from "@ethersproject/abi";
 
 const expect = chai.expect;
 
@@ -99,7 +98,9 @@ describe("Fractal DAO", function () {
     const receipt: ContractReceipt = await tx.wait();
 
     // eslint-disable-next-line prettier/prettier
-    const daoEvent = receipt.events?.filter((x) => { return x.event === "DaoDeployed" });
+    const daoEvent = receipt.events?.filter((x) => {
+      return x.event === "DaoDeployed";
+    });
 
     if (daoEvent === undefined || daoEvent[0].args === undefined) {
       return {
@@ -140,7 +141,9 @@ describe("Fractal DAO", function () {
     const receipt: ContractReceipt = await tx.wait();
 
     // eslint-disable-next-line prettier/prettier
-    const daoEvent = receipt.events?.filter((x) => { return x.event === "DaoDeployed" });
+    const daoEvent = receipt.events?.filter((x) => {
+      return x.event === "DaoDeployed";
+    });
 
     if (daoEvent === undefined || daoEvent[0].args === undefined) {
       return {
@@ -168,12 +171,12 @@ describe("Fractal DAO", function () {
   ) {
     await _dao
       .connect(_proposer)
-    ["propose(address[],uint256[],bytes[],string)"](
-      _targets,
-      _values,
-      [_transferCallData],
-      _description
-    );
+      ["propose(address[],uint256[],bytes[],string)"](
+        _targets,
+        _values,
+        [_transferCallData],
+        _description
+      );
 
     const proposalId = await _dao.hashProposal(
       _targets,
@@ -382,6 +385,59 @@ describe("Fractal DAO", function () {
 
       expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
+      );
+    });
+
+    it("Does not allow a proposal with no votes to get queued", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalId = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallData,
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(queueProposal(dao, voterA, proposalId)).to.be.revertedWith(
+        "Governor: proposal not successful"
+      );
+    });
+
+    it("Does not allow a proposal to be executed before it is queued", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalId = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallData,
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await vote(dao, proposalId, VoteType.For, voterA);
+      await vote(dao, proposalId, VoteType.For, voterB);
+      await vote(dao, proposalId, VoteType.For, voterC);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(executeProposal(dao, voterA, proposalId)).to.be.revertedWith(
+        "TimelockController: operation is not ready"
       );
     });
   });
