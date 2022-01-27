@@ -635,5 +635,60 @@ describe("Fractal DAO", function () {
         await wrappedGovernanceToken.balanceOf(timelockController.address)
       ).to.eq(ethers.utils.parseUnits("0", 18));
     });
+
+    it("Does not allow a proposal with no votes to get queued", async () => {
+      const transferCallData =
+        wrappedGovernanceToken.interface.encodeFunctionData("transfer", [
+          voterB.address,
+          ethers.utils.parseUnits("500", 18),
+        ]);
+
+      const proposalId = await propose(
+        [wrappedGovernanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallData,
+        "Proposal #1: Transfer 500 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(queueProposal(dao, voterA, proposalId)).to.be.revertedWith(
+        "Governor: proposal not successful"
+      );
+    });
+
+    it("Does not allow a proposal to be executed before it is queued", async () => {
+      const transferCallData =
+        wrappedGovernanceToken.interface.encodeFunctionData("transfer", [
+          voterB.address,
+          ethers.utils.parseUnits("500", 18),
+        ]);
+
+      const proposalId = await propose(
+        [wrappedGovernanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallData,
+        "Proposal #1: Transfer 500 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await vote(dao, proposalId, VoteType.For, voterA);
+      await vote(dao, proposalId, VoteType.For, voterB);
+      await vote(dao, proposalId, VoteType.For, voterC);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(executeProposal(dao, voterA, proposalId)).to.be.revertedWith(
+        "TimelockController: operation is not ready"
+      );
+    });
   });
 });
