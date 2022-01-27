@@ -5,15 +5,18 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "../MyGovernor.sol";
 import "./TokenFactory.sol";
 
 contract DaoFactory is Ownable {
+    using Address for address;
     address public governanceImplementation;
     TokenFactory public tokenFactory;
 
     error ArraysNotEqual();
     error UpdateAddress();
+    error AddressNotContract();
 
     event DaoDeployed(
         address deployer,
@@ -108,6 +111,37 @@ contract DaoFactory is Ownable {
         );
 
         return (wrappedAddress, timelockController, proxyAddress);
+    }
+
+        function createDaoBringToken(
+        address votingToken,
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors,
+        string memory daoName
+    )
+        external
+        returns (
+            address,
+            address,
+            address
+        )
+    {
+        if(votingToken.isContract() == false) revert AddressNotContract();
+        
+        address timelockController = _createTimelock(
+            minDelay,
+            proposers,
+            executors
+        );
+
+        address proxyAddress = _createDao(
+            votingToken,
+            timelockController,
+            daoName
+        );
+
+        return (votingToken, timelockController, proxyAddress);
     }
 
     function _createDao(
