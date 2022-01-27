@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./MyGovernor.sol";
+import "../MyGovernor.sol";
 import "./TokenFactory.sol";
 
 contract DaoFactory is Ownable {
@@ -37,6 +37,7 @@ contract DaoFactory is Ownable {
         address[] memory hodlers,
         uint256[] memory allocations,
         uint256 minDelay,
+        uint256 totalSupply,
         address[] memory proposers,
         address[] memory executors,
         string memory daoName
@@ -48,19 +49,25 @@ contract DaoFactory is Ownable {
             address
         )
     {
+        address timelockController = _createTimelock(
+            minDelay,
+            proposers,
+            executors
+        );
+        
         address votingToken = tokenFactory.createToken(
             tokenName,
             symbol,
             hodlers,
-            allocations
+            allocations,
+            totalSupply,
+            timelockController
         );
 
-        (address timelockController, address proxyAddress) = _createDao(
-            minDelay,
+        address proxyAddress = _createDao(
             votingToken,
-            daoName,
-            proposers,
-            executors
+            timelockController,
+            daoName
         );
 
         return (votingToken, timelockController, proxyAddress);
@@ -82,34 +89,32 @@ contract DaoFactory is Ownable {
             address
         )
     {
-        address wrappedAddress = tokenFactory.WrapToken(
+        address timelockController = _createTimelock(
+            minDelay,
+            proposers,
+            executors
+        );
+
+        address wrappedAddress = tokenFactory.wrapToken(
             votingTokenAddress,
             votingTokenName,
             votingTokenSymbol
         );
 
-        (address timelockController, address proxyAddress) = _createDao(
-            minDelay,
+        address proxyAddress = _createDao(
             wrappedAddress,
-            daoName,
-            proposers,
-            executors
+            timelockController,
+            daoName
         );
 
         return (wrappedAddress, timelockController, proxyAddress);
     }
 
     function _createDao(
-        uint256 minDelay,
         address votingToken,
-        string memory daoName,
-        address[] memory proposers,
-        address[] memory executors
-    ) private returns (address, address) {
-        address timelockController = address(
-            new TimelockController(minDelay, proposers, executors)
-        );
-
+        address timelockController,
+        string memory daoName
+    ) private returns (address) {
         address proxyAddress = address(
             new ERC1967Proxy(
                 governanceImplementation,
@@ -131,13 +136,23 @@ contract DaoFactory is Ownable {
             proxyAddress
         );
 
-        return (timelockController, proxyAddress);
+        return proxyAddress;
+    }
+
+    function _createTimelock(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors
+    ) private returns(address) {
+        address timelockController = address(
+            new TimelockController(minDelay, proposers, executors)
+        );
+        return timelockController;
     }
 
     function _configTimelock(address _timelock, address _proxyAddress) private {
         bytes32 PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
         bytes32 EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
-
         TimelockController(payable(_timelock)).grantRole(
             PROPOSER_ROLE,
             _proxyAddress
