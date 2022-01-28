@@ -2,14 +2,15 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
   DaoFactory__factory,
-  GovernanceToken,
-  GovernanceToken__factory,
+  VotesTokenWithSupply,
+  VotesTokenWithSupply__factory,
   MyGovernor,
   MyGovernor__factory,
   TimelockController,
   TimelockController__factory,
   TokenFactory,
   TokenFactory__factory,
+  VotesTokenWrapped,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -28,7 +29,9 @@ const expect = chai.expect;
 
 describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
-  let governanceToken: GovernanceToken;
+  let governanceToken: VotesTokenWithSupply;
+  let wrappedGovernanceToken: VotesTokenWrapped;
+  let testToken: TestToken;
   let dao: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
@@ -54,7 +57,9 @@ describe("Fractal DAO", function () {
       );
 
       // Create a new ERC20Votes token to bring as the DAO governance token
-      governanceToken = await new GovernanceToken__factory(deployer).deploy(
+      governanceToken = await new VotesTokenWithSupply__factory(
+        deployer
+      ).deploy(
         "Test Token",
         "TEST",
         [voterA.address, voterB.address, voterC.address],

@@ -1,10 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
-  GovernanceToken,
+  VotesTokenWithSupply,
   MyGovernor,
   TestToken,
-  WrappedToken,
+  VotesTokenWrapped,
 } from "../typechain";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
@@ -33,7 +33,7 @@ export type ProposalCreatedEvent = {
 };
 
 export async function delegateTokens(
-  governanceToken: GovernanceToken | WrappedToken,
+  governanceToken: VotesTokenWithSupply | VotesTokenWrapped,
   voters: SignerWithAddress[]
 ): Promise<void> {
   for (let i = 0; i < voters.length; i++) {
@@ -43,7 +43,7 @@ export async function delegateTokens(
 
 export async function wrapTokens(
   token: TestToken,
-  wrappedToken: WrappedToken,
+  wrappedToken: VotesTokenWrapped,
   users: SignerWithAddress[],
   amounts: BigNumber[]
 ): Promise<void> {

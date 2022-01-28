@@ -2,14 +2,20 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
   DaoFactory__factory,
-  GovernanceToken,
-  GovernanceToken__factory,
+  VotesTokenWithSupply,
+  VotesTokenWithSupply__factory,
+  MyGovernor,
+  MyGovernor__factory,
+  TestToken,
+  TestToken__factory,
   TimelockController,
   TimelockController__factory,
   MyGovernor,
   MyGovernor__factory,
   TokenFactory,
   TokenFactory__factory,
+  VotesTokenWrapped,
+  VotesTokenWrapped__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -28,7 +34,9 @@ const expect = chai.expect;
 
 describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
-  let governanceToken: GovernanceToken;
+  let governanceToken: VotesTokenWithSupply;
+  let wrappedGovernanceToken: VotesTokenWrapped;
+  let testToken: TestToken;
   let dao: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
@@ -81,7 +89,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      governanceToken = GovernanceToken__factory.connect(
+      governanceToken = VotesTokenWithSupply__factory.connect(
         daoInfo.votingToken,
         deployer
       );
