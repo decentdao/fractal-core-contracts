@@ -18,6 +18,7 @@ import { ethers, network } from "hardhat";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
+  ProposalCreatedEvent,
   delegateTokens,
   createDaoBringToken,
   propose,
@@ -31,8 +32,6 @@ const expect = chai.expect;
 describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
   let governanceToken: GovernanceToken;
-  let wrappedGovernanceToken: WrappedToken;
-  let testToken: TestToken;
   let dao: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
@@ -117,7 +116,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalId = await propose(
+      const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -126,34 +125,135 @@ describe("Fractal DAO", function () {
         "Proposal #1: Transfer 500 tokens to Voter B"
       );
 
-      expect(proposalId).to.be.gt(0);
+      expect(proposalCreatedEvent.proposalId).to.be.gt(0);
+      expect(proposalCreatedEvent.proposer).to.eq(voterA.address);
+      expect(proposalCreatedEvent.targets).to.deep.eq([
+        governanceToken.address.toString(),
+      ]);
+      expect(proposalCreatedEvent._values).to.deep.eq([BigNumber.from("0")]);
+      expect(proposalCreatedEvent.signatures).to.deep.eq([""]);
+      expect(proposalCreatedEvent.calldatas).to.deep.eq([transferCallData]);
+      expect(proposalCreatedEvent.description).to.eq(
+        "Proposal #1: Transfer 500 tokens to Voter B"
+      );
     });
 
-    it("Allows voting on a DAO proposal", async () => {
-      const transferCallData = governanceToken.interface.encodeFunctionData(
+    it("Creates two DAO proposals", async () => {
+      const transferCallDataOne = governanceToken.interface.encodeFunctionData(
         "transfer",
-        [voterB.address, ethers.utils.parseUnits("500", 18)]
+        [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalId = await propose(
+      const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
-        "Proposal #1: Transfer 500 tokens to Voter B"
+        transferCallDataOne,
+        "Proposal #1: Transfer 250 tokens to Voter B"
       );
 
-      await network.provider.send("evm_mine");
+      const transferCallDataTwo = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterC.address, ethers.utils.parseUnits("250", 18)]
+      );
 
-      // Voters A, B, C votes "For"
-      await vote(dao, proposalId, VoteType.For, voterA);
-      await vote(dao, proposalId, VoteType.For, voterB);
-      await vote(dao, proposalId, VoteType.For, voterC);
+      const proposalCreatedEventTwo = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallDataTwo,
+        "Proposal #2: Transfer 250 tokens to Voter C"
+      );
 
-      expect(await dao.hasVoted(proposalId, voterA.address)).to.eq(true);
-      expect(await dao.hasVoted(proposalId, voterB.address)).to.eq(true);
-      expect(await dao.hasVoted(proposalId, voterC.address)).to.eq(true);
+      expect(proposalCreatedEventOne.proposalId).to.be.gt(0);
+      expect(proposalCreatedEventOne.proposer).to.eq(voterA.address);
+      expect(proposalCreatedEventOne.targets).to.deep.eq([
+        governanceToken.address.toString(),
+      ]);
+      expect(proposalCreatedEventOne._values).to.deep.eq([BigNumber.from("0")]);
+      expect(proposalCreatedEventOne.signatures).to.deep.eq([""]);
+      expect(proposalCreatedEventOne.calldatas).to.deep.eq([
+        transferCallDataOne,
+      ]);
+      expect(proposalCreatedEventOne.description).to.eq(
+        "Proposal #1: Transfer 250 tokens to Voter B"
+      );
+
+      expect(proposalCreatedEventTwo.proposalId).to.be.gt(0);
+      expect(proposalCreatedEventTwo.proposer).to.eq(voterA.address);
+      expect(proposalCreatedEventTwo.targets).to.deep.eq([
+        governanceToken.address.toString(),
+      ]);
+      expect(proposalCreatedEventTwo._values).to.deep.eq([BigNumber.from("0")]);
+      expect(proposalCreatedEventTwo.signatures).to.deep.eq([""]);
+      expect(proposalCreatedEventTwo.calldatas).to.deep.eq([
+        transferCallDataTwo,
+      ]);
+      expect(proposalCreatedEventTwo.description).to.eq(
+        "Proposal #2: Transfer 250 tokens to Voter C"
+      );
+    });
+
+    it("Allows voting on two DAO proposals", async () => {
+      const transferCallDataOne = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("250", 18)]
+      );
+
+      const proposalCreatedEventOne = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallDataOne,
+        "Proposal #1: Transfer 250 tokens to Voter B"
+      );
+
+      const transferCallDataTwo = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterC.address, ethers.utils.parseUnits("250", 18)]
+      );
+
+      const proposalCreatedEventTwo = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallDataTwo,
+        "Proposal #2: Transfer 250 tokens to Voter C"
+      );
+
+      // Voters A, B, C votes "For" for proposal 1
+      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterC);
+
+      // Voters A, B, C votes "For" for proposal 2
+      await vote(dao, proposalCreatedEventTwo.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEventTwo.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEventTwo.proposalId, VoteType.For, voterC);
+
+      expect(
+        await dao.hasVoted(proposalCreatedEventOne.proposalId, voterA.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEventOne.proposalId, voterB.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEventOne.proposalId, voterC.address)
+      ).to.eq(true);
+
+      expect(
+        await dao.hasVoted(proposalCreatedEventTwo.proposalId, voterA.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEventTwo.proposalId, voterB.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEventTwo.proposalId, voterC.address)
+      ).to.eq(true);
     });
 
     it("Should execute a passing proposal", async () => {
@@ -162,7 +262,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalId = await propose(
+      const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -174,18 +274,24 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalId, VoteType.For, voterA);
-      await vote(dao, proposalId, VoteType.For, voterB);
-      await vote(dao, proposalId, VoteType.For, voterC);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
-      expect(await dao.hasVoted(proposalId, voterA.address)).to.eq(true);
-      expect(await dao.hasVoted(proposalId, voterB.address)).to.eq(true);
-      expect(await dao.hasVoted(proposalId, voterC.address)).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEvent.proposalId, voterA.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEvent.proposalId, voterB.address)
+      ).to.eq(true);
+      expect(
+        await dao.hasVoted(proposalCreatedEvent.proposalId, voterC.address)
+      ).to.eq(true);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalId);
+      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -203,7 +309,7 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("500.0", 18)
       );
 
-      await executeProposal(dao, voterA, proposalId);
+      await executeProposal(dao, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -228,7 +334,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalId = await propose(
+      const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -240,9 +346,9 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await expect(queueProposal(dao, voterA, proposalId)).to.be.revertedWith(
-        "Governor: proposal not successful"
-      );
+      await expect(
+        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+      ).to.be.revertedWith("Governor: proposal not successful");
     });
 
     it("Does not allow a proposal to be executed before it is queued", async () => {
@@ -251,7 +357,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalId = await propose(
+      const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -263,16 +369,16 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalId, VoteType.For, voterA);
-      await vote(dao, proposalId, VoteType.For, voterB);
-      await vote(dao, proposalId, VoteType.For, voterC);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await expect(executeProposal(dao, voterA, proposalId)).to.be.revertedWith(
-        "TimelockController: operation is not ready"
-      );
+      await expect(
+        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+      ).to.be.revertedWith("TimelockController: operation is not ready");
     });
   });
 });
