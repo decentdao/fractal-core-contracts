@@ -10,7 +10,6 @@ import {
   TimelockController__factory,
   TokenFactory,
   TokenFactory__factory,
-  VotesTokenWrapped,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -30,8 +29,6 @@ const expect = chai.expect;
 describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
   let governanceToken: VotesTokenWithSupply;
-  let wrappedGovernanceToken: VotesTokenWrapped;
-  let testToken: TestToken;
   let dao: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;

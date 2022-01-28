@@ -2,8 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
   DaoFactory__factory,
-  VotesTokenWithSupply,
-  VotesTokenWithSupply__factory,
   MyGovernor,
   MyGovernor__factory,
   TestToken,
@@ -33,7 +31,6 @@ const expect = chai.expect;
 
 describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
-  let governanceToken: VotesTokenWithSupply;
   let wrappedGovernanceToken: VotesTokenWrapped;
   let testToken: TestToken;
   let dao: MyGovernor;
