@@ -4,6 +4,8 @@ import {
   DaoFactory__factory,
   GovernanceToken,
   GovernanceToken__factory,
+  TimelockController,
+  TimelockController__factory,
   MyGovernor,
   MyGovernor__factory,
   TokenFactory,
@@ -28,6 +30,7 @@ describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
   let governanceToken: GovernanceToken;
   let dao: MyGovernor;
+  let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
   let deployer: SignerWithAddress;
   let wallet: SignerWithAddress;
@@ -70,6 +73,8 @@ describe("Fractal DAO", function () {
 
       // eslint-disable-next-line camelcase
       dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+
+      // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
         daoInfo.timelockController,
         deployer
@@ -325,9 +330,8 @@ describe("Fractal DAO", function () {
         "transfer",
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
-      console.log(await dao.quorumVotes());
 
-      const proposalId = await propose(
+      const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -337,29 +341,20 @@ describe("Fractal DAO", function () {
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalId, VoteType.For, voterA);
-      await vote(dao, proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await expect(queueProposal(dao, voterA, proposalId)).to.be.revertedWith(
-        "Governor: proposal not successful"
-      );
+      await expect(
+        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+      ).to.be.revertedWith("Governor: proposal not successful");
     });
 
     it("Does not allow a non proposalid queued", async () => {
       const transferCallData = governanceToken.interface.encodeFunctionData(
         "transfer",
         [voterB.address, ethers.utils.parseUnits("100", 18)]
-      );
-
-      const proposalId = await propose(
-        [governanceToken.address],
-        [BigNumber.from("0")],
-        dao,
-        voterA,
-        transferCallData,
-        "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       const fakeProposalId = await dao.hashProposal(
