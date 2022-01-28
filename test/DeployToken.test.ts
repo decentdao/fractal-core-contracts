@@ -30,6 +30,7 @@ describe("Fractal DAO", function () {
   let daoFactory: DaoFactory;
   let governanceToken: VotesTokenWithSupply;
   let dao: MyGovernor;
+  let governorImpl: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
   let deployer: SignerWithAddress;
@@ -47,15 +48,17 @@ describe("Fractal DAO", function () {
     beforeEach(async function () {
       [deployer, wallet, voterA, voterB, voterC] = await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
+      governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy(
-        tokenFactory.address
-      );
+      daoFactory = await new DaoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDaoAndToken(
         daoFactory,
+        ethers.utils.parseUnits("0", 18),
+        [wallet.address],
+        [wallet.address],
         "Test Token",
         "TTT",
         [voterA.address, voterB.address, voterC.address],
@@ -64,11 +67,10 @@ describe("Fractal DAO", function () {
           ethers.utils.parseUnits("100.0", 18),
           ethers.utils.parseUnits("100.0", 18),
         ],
-        ethers.utils.parseUnits("0", 18),
         ethers.utils.parseUnits("500.0", 18),
-        [wallet.address],
-        [wallet.address],
-        "Test DAO"
+        "Test DAO",
+        governorImpl.address,
+        tokenFactory.address
       );
 
       // eslint-disable-next-line camelcase
@@ -89,13 +91,6 @@ describe("Fractal DAO", function () {
       await delegateTokens(governanceToken, [voterA, voterB, voterC]);
     });
 
-    it("Should Set MyGovernor Implementation", async function () {
-      // eslint-disable-next-line no-unused-expressions
-      expect(await daoFactory.governanceImplementation()).to.be.properAddress;
-      // eslint-disable-next-line no-unused-expressions
-      expect(await daoFactory.tokenFactory()).to.be.properAddress;
-    });
-
     it("Created a DAO", async () => {
       const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
       const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
@@ -109,6 +104,9 @@ describe("Fractal DAO", function () {
       await expect(
         createDaoAndToken(
           daoFactory,
+          ethers.utils.parseUnits("0", 18),
+          [wallet.address],
+          [wallet.address],
           "Test Token",
           "TTT",
           [voterA.address, voterB.address, voterC.address],
@@ -116,17 +114,19 @@ describe("Fractal DAO", function () {
             ethers.utils.parseUnits("100.0", 18),
             ethers.utils.parseUnits("100.0", 18),
           ],
-          ethers.utils.parseUnits("0", 18),
           ethers.utils.parseUnits("500.0", 18),
-          [wallet.address],
-          [wallet.address],
-          "Test DAO"
+          "Test DAO",
+          governorImpl.address,
+          tokenFactory.address
         )
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
         createDaoAndToken(
           daoFactory,
+          ethers.utils.parseUnits("0", 18),
+          [wallet.address],
+          [wallet.address],
           "Test Token",
           "TTT",
           [voterA.address, voterB.address],
@@ -135,11 +135,10 @@ describe("Fractal DAO", function () {
             ethers.utils.parseUnits("100.0", 18),
             ethers.utils.parseUnits("100.0", 18),
           ],
-          ethers.utils.parseUnits("0", 18),
           ethers.utils.parseUnits("500.0", 18),
-          [wallet.address],
-          [wallet.address],
-          "Test DAO"
+          "Test DAO",
+          governorImpl.address,
+          tokenFactory.address
         )
       ).to.be.revertedWith("ArraysNotEqual()");
     });
@@ -165,6 +164,9 @@ describe("Fractal DAO", function () {
       // Create a new DAO using the DAO Factory
       daoInfo = await createDaoAndToken(
         daoFactory,
+        ethers.utils.parseUnits("0", 18),
+        [wallet.address],
+        [wallet.address],
         "Test Token",
         "TTT",
         [voterA.address, voterB.address, voterC.address],
@@ -173,11 +175,10 @@ describe("Fractal DAO", function () {
           ethers.utils.parseUnits("100.0", 18),
           ethers.utils.parseUnits("100.0", 18),
         ],
-        ethers.utils.parseUnits("0", 18),
-        ethers.utils.parseUnits("100.0", 18), // totalsupply less than allocations sum
-        [wallet.address],
-        [wallet.address],
-        "Test DAO"
+        ethers.utils.parseUnits("100.0", 18),
+        "Test DAO",
+        governorImpl.address,
+        tokenFactory.address
       );
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(

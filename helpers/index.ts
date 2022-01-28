@@ -58,27 +58,31 @@ export async function wrapTokens(
 
 export async function createDaoAndToken(
   _daoFactory: DaoFactory,
+  _minDelay: BigNumber,
+  _proposers: string[],
+  _executors: string[],
   _tokenName: string,
   _tokenSymbol: string,
   _hodlers: string[],
   _allocations: BigNumber[],
-  _minDelay: BigNumber,
   _totalSupply: BigNumber,
-  _proposers: string[],
-  _executors: string[],
-  _daoName: string
+  _daoName: string,
+  _governanceImplementation: string,
+  _tokenFactory: string
 ): Promise<DaoInfo> {
   // create DAO via factory
   const tx: ContractTransaction = await _daoFactory.createDaoAndToken(
+    _minDelay,
+    _proposers,
+    _executors,
     _tokenName,
     _tokenSymbol,
     _hodlers,
     _allocations,
-    _minDelay,
     _totalSupply,
-    _proposers,
-    _executors,
-    _daoName
+    _daoName,
+    _governanceImplementation,
+    _tokenFactory
   );
 
   const receipt: ContractReceipt = await tx.wait();
@@ -104,6 +108,8 @@ export async function createDaoAndToken(
 
 export async function createDaoWrapToken(
   _daoFactory: DaoFactory,
+  _governanceImplementation: string,
+  _votingTokenAddress: string,
   _tokenAddress: string,
   _tokenName: string,
   _tokenSymbol: string,
@@ -113,6 +119,8 @@ export async function createDaoWrapToken(
   _daoName: string
 ): Promise<DaoInfo> {
   const tx: ContractTransaction = await _daoFactory.createDaoWrapToken(
+    _governanceImplementation,
+    _votingTokenAddress,
     _tokenAddress,
     _tokenName,
     _tokenSymbol,
@@ -145,6 +153,7 @@ export async function createDaoWrapToken(
 
 export async function createDaoBringToken(
   _daoFactory: DaoFactory,
+  _governanceImplementation: string,
   _votingToken: string,
   _minDelay: BigNumber,
   _proposers: string[],
@@ -152,6 +161,7 @@ export async function createDaoBringToken(
   _daoName: string
 ): Promise<DaoInfo> {
   const tx: ContractTransaction = await _daoFactory.createDaoBringToken(
+    _governanceImplementation,
     _votingToken,
     _minDelay,
     _proposers,

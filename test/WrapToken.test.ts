@@ -34,6 +34,7 @@ describe("Fractal DAO", function () {
   let wrappedGovernanceToken: VotesTokenWrapped;
   let testToken: TestToken;
   let dao: MyGovernor;
+  let governorImpl: MyGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
   let deployer: SignerWithAddress;
@@ -51,11 +52,10 @@ describe("Fractal DAO", function () {
     beforeEach(async function () {
       [deployer, wallet, voterA, voterB, voterC] = await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
+      governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy(
-        tokenFactory.address
-      );
+      daoFactory = await new DaoFactory__factory(deployer).deploy();
 
       testToken = await new TestToken__factory(deployer).deploy(
         "Test Token",
@@ -71,7 +71,9 @@ describe("Fractal DAO", function () {
       // Create a new DAO using the DAO Factory and the existing test token
       daoInfo = await createDaoWrapToken(
         daoFactory,
+        governorImpl.address,
         testToken.address,
+        tokenFactory.address,
         "Test Token",
         "TEST",
         ethers.utils.parseUnits("0", 18),
@@ -114,11 +116,6 @@ describe("Fractal DAO", function () {
         );
 
       await delegateTokens(wrappedGovernanceToken, [voterA, voterB, voterC]);
-    });
-
-    it("Should Set MyGovernor Implementation", async function () {
-      return expect(await daoFactory.governanceImplementation()).to.be
-        .properAddress;
     });
 
     it("Created a DAO", async () => {
