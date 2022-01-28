@@ -97,8 +97,10 @@ describe("Fractal DAO", function () {
     });
 
     it("Should Set MyGovernor Implementation", async function () {
-      await expect(daoFactory.governanceImplementation()).to.be.properAddress;
-      await expect(daoFactory.governanceImplementation()).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
+      expect(await daoFactory.governanceImplementation()).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
+      expect(await daoFactory.tokenFactory()).to.be.properAddress;
     });
 
     it("Created a DAO", async () => {
