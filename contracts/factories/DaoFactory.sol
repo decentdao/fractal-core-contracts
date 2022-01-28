@@ -11,8 +11,6 @@ import "./TokenFactory.sol";
 
 contract DaoFactory is Ownable {
     using Address for address;
-    address public governanceImplementation;
-    TokenFactory public tokenFactory;
 
     error ArraysNotEqual();
     error UpdateAddress();
@@ -29,21 +27,18 @@ contract DaoFactory is Ownable {
         address newImplementation
     );
 
-    constructor(address tokenFactoryAddress) {
-        governanceImplementation = address(new MyGovernor());
-        tokenFactory = TokenFactory(tokenFactoryAddress);
-    }
-
     function createDaoAndToken(
+        uint256 minDelay,
+        address[] memory proposers,
+        address[] memory executors,
         string memory tokenName,
         string memory symbol,
         address[] memory hodlers,
         uint256[] memory allocations,
-        uint256 minDelay,
         uint256 totalSupply,
-        address[] memory proposers,
-        address[] memory executors,
-        string memory daoName
+        string memory daoName,
+        address governanceImplementation,
+        address tokenFactory
     )
         external
         returns (
@@ -58,7 +53,7 @@ contract DaoFactory is Ownable {
             executors
         );
         
-        address votingToken = tokenFactory.createToken(
+        address votingToken = TokenFactory(tokenFactory).createToken(
             tokenName,
             symbol,
             hodlers,
@@ -68,6 +63,7 @@ contract DaoFactory is Ownable {
         );
 
         address proxyAddress = _createDao(
+            governanceImplementation,
             votingToken,
             timelockController,
             daoName
@@ -77,7 +73,9 @@ contract DaoFactory is Ownable {
     }
 
     function createDaoWrapToken(
+        address governanceImplementation,
         address votingTokenAddress,
+        address tokenFactory,
         string memory votingTokenName,
         string memory votingTokenSymbol,
         uint256 minDelay,
@@ -98,13 +96,14 @@ contract DaoFactory is Ownable {
             executors
         );
 
-        address wrappedAddress = tokenFactory.wrapToken(
+        address wrappedAddress = TokenFactory(tokenFactory).wrapToken(
             votingTokenAddress,
             votingTokenName,
             votingTokenSymbol
         );
 
         address proxyAddress = _createDao(
+            governanceImplementation,
             wrappedAddress,
             timelockController,
             daoName
@@ -114,6 +113,7 @@ contract DaoFactory is Ownable {
     }
 
         function createDaoBringToken(
+        address governanceImplementation,
         address votingToken,
         uint256 minDelay,
         address[] memory proposers,
@@ -136,6 +136,7 @@ contract DaoFactory is Ownable {
         );
 
         address proxyAddress = _createDao(
+            governanceImplementation,
             votingToken,
             timelockController,
             daoName
@@ -145,6 +146,7 @@ contract DaoFactory is Ownable {
     }
 
     function _createDao(
+        address governanceImplementation,
         address votingToken,
         address timelockController,
         string memory daoName
@@ -195,15 +197,5 @@ contract DaoFactory is Ownable {
             EXECUTOR_ROLE,
             _proxyAddress
         );
-    }
-
-    function updateGovernanceImplementation(address newImplementation)
-        public
-        onlyOwner
-    {
-        address oldImpl = governanceImplementation;
-        if (oldImpl == newImplementation) revert UpdateAddress();
-        governanceImplementation = newImplementation;
-        emit GovernanceImplementationUpdated(oldImpl, newImplementation);
     }
 }
