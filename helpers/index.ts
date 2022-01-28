@@ -6,7 +6,6 @@ import {
   TestToken,
   VotesTokenWrapped,
 } from "../typechain";
-import { ethers } from "hardhat";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
 export const VoteType = {
@@ -19,6 +18,18 @@ export type DaoInfo = {
   votingToken: string;
   timelockController: string;
   daoProxy: string;
+};
+
+export type ProposalCreatedEvent = {
+  proposalId: BigNumber;
+  proposer: string;
+  targets: string[];
+  _values: BigNumber[];
+  signatures: string[];
+  calldatas: string[];
+  startBlock: BigNumber;
+  endBlock: BigNumber;
+  description: string;
 };
 
 export async function delegateTokens(
@@ -73,7 +84,7 @@ export async function createDaoAndToken(
   const receipt: ContractReceipt = await tx.wait();
 
   // eslint-disable-next-line prettier/prettier
-    const daoEvent = receipt.events?.filter((x) => {
+  const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
 
@@ -114,7 +125,7 @@ export async function createDaoWrapToken(
   const receipt: ContractReceipt = await tx.wait();
 
   // eslint-disable-next-line prettier/prettier
-    const daoEvent = receipt.events?.filter((x) => {
+  const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
 
@@ -151,7 +162,7 @@ export async function createDaoBringToken(
   const receipt: ContractReceipt = await tx.wait();
 
   // eslint-disable-next-line prettier/prettier
-    const daoEvent = receipt.events?.filter((x) => {
+  const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
 
@@ -176,8 +187,8 @@ export async function propose(
   _proposer: SignerWithAddress,
   _transferCallData: string,
   _description: string
-): Promise<BigNumber> {
-  await _dao
+): Promise<ProposalCreatedEvent> {
+  const tx: ContractTransaction = await _dao
     .connect(_proposer)
     ["propose(address[],uint256[],bytes[],string)"](
       _targets,
@@ -186,14 +197,41 @@ export async function propose(
       _description
     );
 
-  const proposalId = await _dao.hashProposal(
-    _targets,
-    _values,
-    [_transferCallData],
-    ethers.utils.id(_description)
-  );
+  const receipt: ContractReceipt = await tx.wait();
 
-  return proposalId;
+  // eslint-disable-next-line prettier/prettier
+  const _proposalCreatedEvent = receipt.events?.filter((x) => {
+    return x.event === "ProposalCreated";
+  });
+
+  if (
+    _proposalCreatedEvent === undefined ||
+    _proposalCreatedEvent[0].args === undefined
+  ) {
+    return {
+      proposalId: BigNumber.from("0"),
+      proposer: "",
+      targets: [""],
+      _values: [BigNumber.from("0")],
+      signatures: [""],
+      calldatas: [""],
+      startBlock: BigNumber.from("0"),
+      endBlock: BigNumber.from("0"),
+      description: "",
+    };
+  }
+
+  return {
+    proposalId: _proposalCreatedEvent[0].args[0],
+    proposer: _proposalCreatedEvent[0].args[1],
+    targets: _proposalCreatedEvent[0].args[2],
+    _values: _proposalCreatedEvent[0].args[3],
+    signatures: _proposalCreatedEvent[0].args[4],
+    calldatas: _proposalCreatedEvent[0].args[5],
+    startBlock: _proposalCreatedEvent[0].args[6],
+    endBlock: _proposalCreatedEvent[0].args[7],
+    description: _proposalCreatedEvent[0].args[8],
+  };
 }
 
 export async function vote(
