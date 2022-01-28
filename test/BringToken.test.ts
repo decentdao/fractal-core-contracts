@@ -6,19 +6,16 @@ import {
   GovernanceToken__factory,
   MyGovernor,
   MyGovernor__factory,
-  TestToken,
   TimelockController,
   TimelockController__factory,
   TokenFactory,
   TokenFactory__factory,
-  WrappedToken,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { BigNumber } from "ethers";
 import {
   VoteType,
-  ProposalCreatedEvent,
   delegateTokens,
   createDaoBringToken,
   propose,

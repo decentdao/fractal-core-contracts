@@ -6,7 +6,6 @@ import {
   TestToken,
   WrappedToken,
 } from "../typechain";
-import { ethers } from "hardhat";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
 export const VoteType = {
