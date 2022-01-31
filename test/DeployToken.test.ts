@@ -17,7 +17,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber } from "ethers";
 import {
   VoteType,
   delegateTokens,
