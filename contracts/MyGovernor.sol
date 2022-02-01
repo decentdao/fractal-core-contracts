@@ -25,17 +25,21 @@ contract MyGovernor is
     function initialize(
         string memory _name,
         ERC20VotesUpgradeable _token,
-        TimelockControllerUpgradeable _timelock
+        TimelockControllerUpgradeable _timelock,
+        uint256 _initialVotingDelay,
+        uint256 _initialVotingPeriod,
+        uint256 _initialProposalThreshold,
+        uint256 _initialQuorumNumeratorValue
     ) public initializer {
         __Governor_init(_name);
         __GovernorSettings_init(
-            1, /* 1 block */
-            5, /* 1 week */
-            0
+            _initialVotingDelay,
+            _initialVotingPeriod,
+            _initialProposalThreshold
         );
         __GovernorCompatibilityBravo_init();
         __GovernorVotes_init(_token);
-        __GovernorVotesQuorumFraction_init(4);
+        __GovernorVotesQuorumFraction_init(_initialQuorumNumeratorValue);
         __GovernorTimelockControl_init(_timelock);
         __Ownable_init();
         __UUPSUpgradeable_init();
