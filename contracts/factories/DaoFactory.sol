@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: Unlicense
 
 pragma solidity ^0.8.0;
 
@@ -223,6 +223,14 @@ contract DaoFactory is Ownable {
         TimelockController(payable(_timelock)).grantRole(
             EXECUTOR_ROLE,
             _proxyAddress
+        );
+        TimelockController(payable(_timelock)).renounceRole(
+            PROPOSER_ROLE,
+            address(this)
+        );
+        TimelockController(payable(_timelock)).renounceRole(
+            EXECUTOR_ROLE,
+            address(this)
         );
     }
 }
