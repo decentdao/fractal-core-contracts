@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../MyGovernor.sol";
 import "./TokenFactory.sol";
 
-contract DaoFactory is Ownable {
+contract DaoFactory {
     struct CreateDaoParameters {
         address governanceImplementation; 
         address[] proposers;

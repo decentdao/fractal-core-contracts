@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
@@ -17,7 +18,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber } from "ethers";
+import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
   delegateTokens,
@@ -1316,6 +1317,125 @@ describe("Fractal DAO", function () {
 
       expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
+      );
+    });
+
+    it("Should fractalize", async () => {
+      const transferCallData = daoFactory.interface.encodeFunctionData(
+        "createDaoAndToken",
+        [
+          {
+            createDaoParameters: {
+              governanceImplementation: governorImpl.address,
+              proposers: [proposerExecutor.address],
+              executors: [proposerExecutor.address],
+              daoName: "DAO Fractal",
+              minDelay: BigNumber.from("0"),
+              initialVotingDelay: BigNumber.from("1"),
+              initialVotingPeriod: BigNumber.from("1"),
+              initialProposalThreshold: BigNumber.from("5"),
+              initialQuorumNumeratorValue: BigNumber.from("4"),
+            },
+            tokenFactory: tokenFactory.address,
+            tokenName: "Fractal Token",
+            tokenSymbol: "FFF",
+            tokenTotalSupply: ethers.utils.parseUnits("500.0", 18),
+            hodlers: [voterA.address, voterB.address, voterC.address],
+            allocations: [
+              ethers.utils.parseUnits("100.0", 18),
+              ethers.utils.parseUnits("100.0", 18),
+              ethers.utils.parseUnits("100.0", 18),
+            ],
+          },
+        ]
+      );
+
+      const proposalCreatedEvent = await propose(
+        [daoFactory.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        transferCallData,
+        "Create DAO"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await network.provider.send("evm_mine");
+
+      const tx: ContractTransaction = await dao
+        .connect(voterA)
+        ["execute(uint256)"](proposalCreatedEvent.proposalId);
+      const receipt: ContractReceipt = await tx.wait();
+
+      const daoEvent = receipt.events?.filter((x) => {
+        return (
+          x.topics[0] ===
+          ethers.utils.id("DaoDeployed(address,address,address,address)")
+        );
+      });
+      if (daoEvent === undefined || daoEvent[0] === undefined) {
+        return {
+          votingToken: "0",
+          timelockController: "0",
+          daoProxy: "0",
+        };
+      }
+      const daoDecode = await daoFactory.interface.decodeEventLog(
+        "DaoDeployed",
+        daoEvent[0].data,
+        daoEvent[0].topics
+      );
+      daoInfo = {
+        votingToken: daoDecode.votingToken,
+        timelockController: daoDecode.timelockController,
+        daoProxy: daoDecode.daoProxy,
+      };
+
+      const fractalDao = MyGovernor__factory.connect(
+        daoInfo.daoProxy,
+        deployer
+      );
+      const fractalTime = TimelockController__factory.connect(
+        daoInfo.timelockController,
+        deployer
+      );
+      const fractalGov = VotesTokenWithSupply__factory.connect(
+        daoInfo.votingToken,
+        deployer
+      );
+
+      const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
+      const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
+      await expect(daoInfo.votingToken).to.equal(await fractalDao.token());
+      await expect(daoInfo.timelockController).to.equal(
+        await fractalDao.timelock()
+      );
+      await expect(fractalTime.hasRole(PROPOSER_ROLE, fractalDao.address));
+      await expect(fractalTime.hasRole(EXECUTOR_ROLE, fractalDao.address));
+
+      expect(await fractalGov.balanceOf(voterA.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
+      expect(await fractalGov.balanceOf(voterA.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
+
+      expect(await fractalGov.balanceOf(voterA.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
+
+      expect(await fractalGov.balanceOf(daoInfo.timelockController)).to.eq(
+        ethers.utils.parseUnits("200.0", 18)
       );
     });
 
