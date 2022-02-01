@@ -224,5 +224,13 @@ contract DaoFactory is Ownable {
             EXECUTOR_ROLE,
             _proxyAddress
         );
+        TimelockController(payable(_timelock)).renounceRole(
+            PROPOSER_ROLE,
+            address(this)
+        );
+        TimelockController(payable(_timelock)).renounceRole(
+            EXECUTOR_ROLE,
+            address(this)
+        );
     }
 }
