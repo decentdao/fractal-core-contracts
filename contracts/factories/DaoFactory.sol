@@ -5,12 +5,44 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "../MyGovernor.sol";
 import "./TokenFactory.sol";
 
 contract DaoFactory is Ownable {
-    using Address for address;
+    struct CreateDaoParameters {
+        address governanceImplementation; 
+        address[] proposers;
+        address[] executors;
+        string daoName;
+        uint256 minDelay;
+        uint256 initialVotingDelay;
+        uint256 initialVotingPeriod;
+        uint256 initialProposalThreshold;
+        uint256 initialQuorumNumeratorValue;
+    }
+
+    struct CreateDaoAndTokenParameters {
+       	CreateDaoParameters createDaoParameters;
+        address tokenFactory;
+        string tokenName;
+        string tokenSymbol;
+        uint256 tokenTotalSupply;
+        address[] hodlers;
+        uint256[] allocations;
+    }
+
+    struct CreateDaoWrapTokenParameters {
+       	CreateDaoParameters createDaoParameters;
+        address tokenFactory;
+        address tokenAddress;
+        string tokenName;
+        string tokenSymbol;
+    }
+
+    struct CreateDaoBringTokenParameters {
+       	CreateDaoParameters createDaoParameters;
+        address tokenAddress;
+    }
 
     error ArraysNotEqual();
     error UpdateAddress();
@@ -28,17 +60,7 @@ contract DaoFactory is Ownable {
     );
 
     function createDaoAndToken(
-        uint256 minDelay,
-        address[] memory proposers,
-        address[] memory executors,
-        string memory tokenName,
-        string memory symbol,
-        address[] memory hodlers,
-        uint256[] memory allocations,
-        uint256 totalSupply,
-        string memory daoName,
-        address governanceImplementation,
-        address tokenFactory
+        CreateDaoAndTokenParameters calldata createDaoAndTokenParameters
     )
         external
         returns (
@@ -48,40 +70,36 @@ contract DaoFactory is Ownable {
         )
     {
         address timelockController = _createTimelock(
-            minDelay,
-            proposers,
-            executors
+            createDaoAndTokenParameters.createDaoParameters.minDelay,
+            createDaoAndTokenParameters.createDaoParameters.proposers,
+            createDaoAndTokenParameters.createDaoParameters.executors
         );
         
-        address votingToken = TokenFactory(tokenFactory).createToken(
-            tokenName,
-            symbol,
-            hodlers,
-            allocations,
-            totalSupply,
+        address votingToken = TokenFactory(createDaoAndTokenParameters.tokenFactory).createToken(
+            createDaoAndTokenParameters.tokenName,
+            createDaoAndTokenParameters.tokenSymbol,
+            createDaoAndTokenParameters.hodlers,
+            createDaoAndTokenParameters.allocations,
+            createDaoAndTokenParameters.tokenTotalSupply,
             timelockController
         );
 
         address proxyAddress = _createDao(
-            governanceImplementation,
+            createDaoAndTokenParameters.createDaoParameters.governanceImplementation,
             votingToken,
             timelockController,
-            daoName
+            createDaoAndTokenParameters.createDaoParameters.daoName,
+            createDaoAndTokenParameters.createDaoParameters.initialVotingDelay,
+            createDaoAndTokenParameters.createDaoParameters.initialVotingPeriod,
+            createDaoAndTokenParameters.createDaoParameters.initialProposalThreshold,
+            createDaoAndTokenParameters.createDaoParameters.initialQuorumNumeratorValue
         );
 
         return (votingToken, timelockController, proxyAddress);
     }
 
     function createDaoWrapToken(
-        address governanceImplementation,
-        address votingTokenAddress,
-        address tokenFactory,
-        string memory votingTokenName,
-        string memory votingTokenSymbol,
-        uint256 minDelay,
-        address[] memory proposers,
-        address[] memory executors,
-        string memory daoName
+        CreateDaoWrapTokenParameters calldata createDaoWrapTokenParameters
     )
         external
         returns (
@@ -91,34 +109,33 @@ contract DaoFactory is Ownable {
         )
     {
         address timelockController = _createTimelock(
-            minDelay,
-            proposers,
-            executors
+            createDaoWrapTokenParameters.createDaoParameters.minDelay,
+            createDaoWrapTokenParameters.createDaoParameters.proposers,
+            createDaoWrapTokenParameters.createDaoParameters.executors
         );
 
-        address wrappedAddress = TokenFactory(tokenFactory).wrapToken(
-            votingTokenAddress,
-            votingTokenName,
-            votingTokenSymbol
+        address wrappedTokenAddress = TokenFactory(createDaoWrapTokenParameters.tokenFactory).wrapToken(
+            createDaoWrapTokenParameters.tokenAddress,
+            createDaoWrapTokenParameters.tokenName,
+            createDaoWrapTokenParameters.tokenSymbol
         );
 
         address proxyAddress = _createDao(
-            governanceImplementation,
-            wrappedAddress,
+            createDaoWrapTokenParameters.createDaoParameters.governanceImplementation,
+            wrappedTokenAddress,
             timelockController,
-            daoName
+            createDaoWrapTokenParameters.createDaoParameters.daoName,
+            createDaoWrapTokenParameters.createDaoParameters.initialVotingDelay,
+            createDaoWrapTokenParameters.createDaoParameters.initialVotingPeriod,
+            createDaoWrapTokenParameters.createDaoParameters.initialProposalThreshold,
+            createDaoWrapTokenParameters.createDaoParameters.initialQuorumNumeratorValue
         );
 
-        return (wrappedAddress, timelockController, proxyAddress);
+        return (wrappedTokenAddress, timelockController, proxyAddress);
     }
 
-        function createDaoBringToken(
-        address governanceImplementation,
-        address votingToken,
-        uint256 minDelay,
-        address[] memory proposers,
-        address[] memory executors,
-        string memory daoName
+    function createDaoBringToken(
+        CreateDaoBringTokenParameters calldata createDaoBringTokenParameters
     )
         external
         returns (
@@ -126,30 +143,36 @@ contract DaoFactory is Ownable {
             address,
             address
         )
-    {
-        if(votingToken.isContract() == false) revert AddressNotContract();
-        
+    {       
         address timelockController = _createTimelock(
-            minDelay,
-            proposers,
-            executors
+            createDaoBringTokenParameters.createDaoParameters.minDelay,
+            createDaoBringTokenParameters.createDaoParameters.proposers,
+            createDaoBringTokenParameters.createDaoParameters.executors
         );
 
         address proxyAddress = _createDao(
-            governanceImplementation,
-            votingToken,
+            createDaoBringTokenParameters.createDaoParameters.governanceImplementation,
+            createDaoBringTokenParameters.tokenAddress,
             timelockController,
-            daoName
+            createDaoBringTokenParameters.createDaoParameters.daoName,
+            createDaoBringTokenParameters.createDaoParameters.initialVotingDelay,
+            createDaoBringTokenParameters.createDaoParameters.initialVotingPeriod,
+            createDaoBringTokenParameters.createDaoParameters.initialProposalThreshold,
+            createDaoBringTokenParameters.createDaoParameters.initialQuorumNumeratorValue
         );
 
-        return (votingToken, timelockController, proxyAddress);
+        return (createDaoBringTokenParameters.tokenAddress, timelockController, proxyAddress);
     }
 
     function _createDao(
         address governanceImplementation,
         address votingToken,
         address timelockController,
-        string memory daoName
+        string memory daoName,
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        uint256 initialQuorumNumeratorValue
     ) private returns (address) {
         address proxyAddress = address(
             new ERC1967Proxy(
@@ -158,7 +181,11 @@ contract DaoFactory is Ownable {
                     MyGovernor(payable(address(0))).initialize.selector,
                     daoName,
                     votingToken,
-                    timelockController
+                    timelockController,
+                    initialVotingDelay,
+                    initialVotingPeriod,
+                    initialProposalThreshold,
+                    initialQuorumNumeratorValue
                 )
             )
         );
