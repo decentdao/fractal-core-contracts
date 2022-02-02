@@ -97,7 +97,6 @@ export async function createDaoAndToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  // eslint-disable-next-line prettier/prettier
   const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
@@ -152,7 +151,6 @@ export async function createDaoWrapToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  // eslint-disable-next-line prettier/prettier
   const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
@@ -201,7 +199,6 @@ export async function createDaoBringToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  // eslint-disable-next-line prettier/prettier
   const daoEvent = receipt.events?.filter((x) => {
     return x.event === "DaoDeployed";
   });
@@ -239,7 +236,6 @@ export async function propose(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  // eslint-disable-next-line prettier/prettier
   const _proposalCreatedEvent = receipt.events?.filter((x) => {
     return x.event === "ProposalCreated";
   });
