@@ -1,15 +1,11 @@
 import { ethers } from "hardhat";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { DaoFactory, DaoFactory__factory } from "../typechain";
+import { DaoFactory__factory } from "../typechain";
 
 async function main() {
-  let daoFactory: DaoFactory;
-  let deployer: SignerWithAddress;
+  const [deployer] = await ethers.getSigners();
+  const daoFactory = await new DaoFactory__factory(deployer).deploy();
 
-  [deployer] = await ethers.getSigners();
-  daoFactory = await new DaoFactory__factory(deployer).deploy();
-
-  console.log("Dao Factory Address", daoFactory.address);
+  console.log("DAO Factory Address", daoFactory.address);
 }
 
 main().catch((error) => {
