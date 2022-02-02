@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  DaoFactory,
+  DAOFactory,
   VotesTokenWithSupply,
   MyGovernor,
   TestToken,
@@ -14,10 +14,10 @@ export const VoteType = {
   Abstain: 2,
 };
 
-export type DaoInfo = {
+export type DAOInfo = {
   votingToken: string;
   timelockController: string;
-  daoProxy: string;
+  DAOProxy: string;
 };
 
 export type ProposalCreatedEvent = {
@@ -56,12 +56,12 @@ export async function wrapTokens(
   }
 }
 
-export async function createDaoAndToken(
-  _daoFactory: DaoFactory,
+export async function createDAOAndToken(
+  _DAOFactory: DAOFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _daoName: string,
+  _DAOName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
@@ -73,14 +73,14 @@ export async function createDaoAndToken(
   _tokenTotalSupply: BigNumber,
   _hodlers: string[],
   _allocations: BigNumber[]
-): Promise<DaoInfo> {
+): Promise<DAOInfo> {
   // create DAO via factory
-  const tx: ContractTransaction = await _daoFactory.createDaoAndToken({
-    createDaoParameters: {
+  const tx: ContractTransaction = await _DAOFactory.createDAOAndToken({
+    createDAOParameters: {
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      daoName: _daoName,
+      DAOName: _DAOName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -97,30 +97,30 @@ export async function createDaoAndToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  const daoEvent = receipt.events?.filter((x) => {
-    return x.event === "DaoDeployed";
+  const DAOEvent = receipt.events?.filter((x) => {
+    return x.event === "DAODeployed";
   });
 
-  if (daoEvent === undefined || daoEvent[0].args === undefined) {
+  if (DAOEvent === undefined || DAOEvent[0].args === undefined) {
     return {
       votingToken: "0",
       timelockController: "0",
-      daoProxy: "0",
+      DAOProxy: "0",
     };
   }
   return {
-    votingToken: daoEvent[0].args[1],
-    timelockController: daoEvent[0].args[2],
-    daoProxy: daoEvent[0].args[3],
+    votingToken: DAOEvent[0].args[1],
+    timelockController: DAOEvent[0].args[2],
+    DAOProxy: DAOEvent[0].args[3],
   };
 }
 
-export async function createDaoWrapToken(
-  _daoFactory: DaoFactory,
+export async function createDAOWrapToken(
+  _DAOFactory: DAOFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _daoName: string,
+  _DAOName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
@@ -130,13 +130,13 @@ export async function createDaoWrapToken(
   _tokenAddress: string,
   _tokenName: string,
   _tokenSymbol: string
-): Promise<DaoInfo> {
-  const tx: ContractTransaction = await _daoFactory.createDaoWrapToken({
-    createDaoParameters: {
+): Promise<DAOInfo> {
+  const tx: ContractTransaction = await _DAOFactory.createDAOWrapToken({
+    createDAOParameters: {
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      daoName: _daoName,
+      DAOName: _DAOName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -151,43 +151,43 @@ export async function createDaoWrapToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  const daoEvent = receipt.events?.filter((x) => {
-    return x.event === "DaoDeployed";
+  const DAOEvent = receipt.events?.filter((x) => {
+    return x.event === "DAODeployed";
   });
 
-  if (daoEvent === undefined || daoEvent[0].args === undefined) {
+  if (DAOEvent === undefined || DAOEvent[0].args === undefined) {
     return {
       votingToken: "0",
       timelockController: "0",
-      daoProxy: "0",
+      DAOProxy: "0",
     };
   }
   return {
-    votingToken: daoEvent[0].args[1],
-    timelockController: daoEvent[0].args[2],
-    daoProxy: daoEvent[0].args[3],
+    votingToken: DAOEvent[0].args[1],
+    timelockController: DAOEvent[0].args[2],
+    DAOProxy: DAOEvent[0].args[3],
   };
 }
 
-export async function createDaoBringToken(
-  _daoFactory: DaoFactory,
+export async function createDAOBringToken(
+  _DAOFactory: DAOFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _daoName: string,
+  _DAOName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
   _initialProposalThreshold: BigNumber,
   _initialQuorumNumeratorValue: BigNumber,
   _tokenAddress: string
-): Promise<DaoInfo> {
-  const tx: ContractTransaction = await _daoFactory.createDaoBringToken({
-    createDaoParameters: {
+): Promise<DAOInfo> {
+  const tx: ContractTransaction = await _DAOFactory.createDAOBringToken({
+    createDAOParameters: {
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      daoName: _daoName,
+      DAOName: _DAOName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -199,33 +199,33 @@ export async function createDaoBringToken(
 
   const receipt: ContractReceipt = await tx.wait();
 
-  const daoEvent = receipt.events?.filter((x) => {
-    return x.event === "DaoDeployed";
+  const DAOEvent = receipt.events?.filter((x) => {
+    return x.event === "DAODeployed";
   });
 
-  if (daoEvent === undefined || daoEvent[0].args === undefined) {
+  if (DAOEvent === undefined || DAOEvent[0].args === undefined) {
     return {
       votingToken: "0",
       timelockController: "0",
-      daoProxy: "0",
+      DAOProxy: "0",
     };
   }
   return {
-    votingToken: daoEvent[0].args[1],
-    timelockController: daoEvent[0].args[2],
-    daoProxy: daoEvent[0].args[3],
+    votingToken: DAOEvent[0].args[1],
+    timelockController: DAOEvent[0].args[2],
+    DAOProxy: DAOEvent[0].args[3],
   };
 }
 
 export async function propose(
   _targets: string[],
   _values: BigNumber[],
-  _dao: MyGovernor,
+  _DAO: MyGovernor,
   _proposer: SignerWithAddress,
   _transferCallData: string,
   _description: string
 ): Promise<ProposalCreatedEvent> {
-  const tx: ContractTransaction = await _dao
+  const tx: ContractTransaction = await _DAO
     .connect(_proposer)
     ["propose(address[],uint256[],bytes[],string)"](
       _targets,
@@ -271,26 +271,26 @@ export async function propose(
 }
 
 export async function vote(
-  _dao: MyGovernor,
+  _DAO: MyGovernor,
   _proposalId: BigNumber,
   _vote: number,
   _voter: SignerWithAddress
 ): Promise<void> {
-  await _dao.connect(_voter).castVote(_proposalId, _vote);
+  await _DAO.connect(_voter).castVote(_proposalId, _vote);
 }
 
 export async function queueProposal(
-  _dao: MyGovernor,
+  _DAO: MyGovernor,
   _queuer: SignerWithAddress,
   _proposalId: BigNumber
 ): Promise<void> {
-  await _dao.connect(_queuer)["queue(uint256)"](_proposalId);
+  await _DAO.connect(_queuer)["queue(uint256)"](_proposalId);
 }
 
 export async function executeProposal(
-  _dao: MyGovernor,
+  _DAO: MyGovernor,
   _executer: SignerWithAddress,
   _proposalId: BigNumber
 ): Promise<void> {
-  await _dao.connect(_executer)["execute(uint256)"](_proposalId);
+  await _DAO.connect(_executer)["execute(uint256)"](_proposalId);
 }

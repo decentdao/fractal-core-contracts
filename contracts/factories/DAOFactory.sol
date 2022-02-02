@@ -7,12 +7,12 @@ import "../MyGovernor.sol";
 import "./TokenFactory.sol";
 
 /// @notice A contract for creating new DAOs 
-contract DaoFactory {
-    struct CreateDaoParameters {
+contract DAOFactory {
+    struct CreateDAOParameters {
         address governanceImplementation; 
         address[] proposers;
         address[] executors;
-        string daoName;
+        string DAOName;
         uint256 minDelay;
         uint256 initialVotingDelay;
         uint256 initialVotingPeriod;
@@ -20,8 +20,8 @@ contract DaoFactory {
         uint256 initialQuorumNumeratorValue;
     }
 
-    struct CreateDaoAndTokenParameters {
-       	CreateDaoParameters createDaoParameters;
+    struct CreateDAOAndTokenParameters {
+       	CreateDAOParameters createDAOParameters;
         address tokenFactory;
         string tokenName;
         string tokenSymbol;
@@ -30,16 +30,16 @@ contract DaoFactory {
         uint256[] allocations;
     }
 
-    struct CreateDaoWrapTokenParameters {
-       	CreateDaoParameters createDaoParameters;
+    struct CreateDAOWrapTokenParameters {
+       	CreateDAOParameters createDAOParameters;
         address tokenFactory;
         address tokenAddress;
         string tokenName;
         string tokenSymbol;
     }
 
-    struct CreateDaoBringTokenParameters {
-       	CreateDaoParameters createDaoParameters;
+    struct CreateDAOBringTokenParameters {
+       	CreateDAOParameters createDAOParameters;
         address tokenAddress;
     }
 
@@ -47,11 +47,11 @@ contract DaoFactory {
     error UpdateAddress();
     error AddressNotContract();
 
-    event DaoDeployed(
+    event DAODeployed(
         address deployer,
         address votingToken,
         address timelockController,
-        address daoProxy
+        address DAOProxy
     );
     event GovernanceImplementationUpdated(
         address oldImplementation,
@@ -59,12 +59,12 @@ contract DaoFactory {
     );
 
     /// @notice Creates a new DAO and an ERC-20 token that supports voting
-    /// @param createDaoAndTokenParameters Struct of all DAO and token creation parameters
+    /// @param createDAOAndTokenParameters Struct of all DAO and token creation parameters
     /// @return The address of the created voting token contract
     /// @return The address of the deployed TimelockController contract
     /// @return The address of the proxy deployed for the created DAO
-    function createDaoAndToken(
-        CreateDaoAndTokenParameters calldata createDaoAndTokenParameters
+    function createDAOAndToken(
+        CreateDAOAndTokenParameters calldata createDAOAndTokenParameters
     )
         external
         returns (
@@ -74,29 +74,29 @@ contract DaoFactory {
         )
     {
         address timelockController = _createTimelock(
-            createDaoAndTokenParameters.createDaoParameters.minDelay,
-            createDaoAndTokenParameters.createDaoParameters.proposers,
-            createDaoAndTokenParameters.createDaoParameters.executors
+            createDAOAndTokenParameters.createDAOParameters.minDelay,
+            createDAOAndTokenParameters.createDAOParameters.proposers,
+            createDAOAndTokenParameters.createDAOParameters.executors
         );
         
-        address votingToken = TokenFactory(createDaoAndTokenParameters.tokenFactory).createToken(
-            createDaoAndTokenParameters.tokenName,
-            createDaoAndTokenParameters.tokenSymbol,
-            createDaoAndTokenParameters.hodlers,
-            createDaoAndTokenParameters.allocations,
-            createDaoAndTokenParameters.tokenTotalSupply,
+        address votingToken = TokenFactory(createDAOAndTokenParameters.tokenFactory).createToken(
+            createDAOAndTokenParameters.tokenName,
+            createDAOAndTokenParameters.tokenSymbol,
+            createDAOAndTokenParameters.hodlers,
+            createDAOAndTokenParameters.allocations,
+            createDAOAndTokenParameters.tokenTotalSupply,
             timelockController
         );
 
-        address proxyAddress = _createDao(
-            createDaoAndTokenParameters.createDaoParameters.governanceImplementation,
+        address proxyAddress = _createDAO(
+            createDAOAndTokenParameters.createDAOParameters.governanceImplementation,
             votingToken,
             timelockController,
-            createDaoAndTokenParameters.createDaoParameters.daoName,
-            createDaoAndTokenParameters.createDaoParameters.initialVotingDelay,
-            createDaoAndTokenParameters.createDaoParameters.initialVotingPeriod,
-            createDaoAndTokenParameters.createDaoParameters.initialProposalThreshold,
-            createDaoAndTokenParameters.createDaoParameters.initialQuorumNumeratorValue
+            createDAOAndTokenParameters.createDAOParameters.DAOName,
+            createDAOAndTokenParameters.createDAOParameters.initialVotingDelay,
+            createDAOAndTokenParameters.createDAOParameters.initialVotingPeriod,
+            createDAOAndTokenParameters.createDAOParameters.initialProposalThreshold,
+            createDAOAndTokenParameters.createDAOParameters.initialQuorumNumeratorValue
         );
 
         return (votingToken, timelockController, proxyAddress);
@@ -104,12 +104,12 @@ contract DaoFactory {
 
     /// @notice Creates a new DAO and wraps an existing ERC-20 token 
     /// @notice with a new governance token that supports voting
-    /// @param createDaoWrapTokenParameters Struct of all DAO and wrapped token creation parameters
+    /// @param createDAOWrapTokenParameters Struct of all DAO and wrapped token creation parameters
     /// @return The address of the created voting token contract
     /// @return The address of the deployed TimelockController contract
     /// @return The address of the proxy deployed for the created DAO
-    function createDaoWrapToken(
-        CreateDaoWrapTokenParameters calldata createDaoWrapTokenParameters
+    function createDAOWrapToken(
+        CreateDAOWrapTokenParameters calldata createDAOWrapTokenParameters
     )
         external
         returns (
@@ -119,38 +119,38 @@ contract DaoFactory {
         )
     {
         address timelockController = _createTimelock(
-            createDaoWrapTokenParameters.createDaoParameters.minDelay,
-            createDaoWrapTokenParameters.createDaoParameters.proposers,
-            createDaoWrapTokenParameters.createDaoParameters.executors
+            createDAOWrapTokenParameters.createDAOParameters.minDelay,
+            createDAOWrapTokenParameters.createDAOParameters.proposers,
+            createDAOWrapTokenParameters.createDAOParameters.executors
         );
 
-        address wrappedTokenAddress = TokenFactory(createDaoWrapTokenParameters.tokenFactory).wrapToken(
-            createDaoWrapTokenParameters.tokenAddress,
-            createDaoWrapTokenParameters.tokenName,
-            createDaoWrapTokenParameters.tokenSymbol
+        address wrappedTokenAddress = TokenFactory(createDAOWrapTokenParameters.tokenFactory).wrapToken(
+            createDAOWrapTokenParameters.tokenAddress,
+            createDAOWrapTokenParameters.tokenName,
+            createDAOWrapTokenParameters.tokenSymbol
         );
 
-        address proxyAddress = _createDao(
-            createDaoWrapTokenParameters.createDaoParameters.governanceImplementation,
+        address proxyAddress = _createDAO(
+            createDAOWrapTokenParameters.createDAOParameters.governanceImplementation,
             wrappedTokenAddress,
             timelockController,
-            createDaoWrapTokenParameters.createDaoParameters.daoName,
-            createDaoWrapTokenParameters.createDaoParameters.initialVotingDelay,
-            createDaoWrapTokenParameters.createDaoParameters.initialVotingPeriod,
-            createDaoWrapTokenParameters.createDaoParameters.initialProposalThreshold,
-            createDaoWrapTokenParameters.createDaoParameters.initialQuorumNumeratorValue
+            createDAOWrapTokenParameters.createDAOParameters.DAOName,
+            createDAOWrapTokenParameters.createDAOParameters.initialVotingDelay,
+            createDAOWrapTokenParameters.createDAOParameters.initialVotingPeriod,
+            createDAOWrapTokenParameters.createDAOParameters.initialProposalThreshold,
+            createDAOWrapTokenParameters.createDAOParameters.initialQuorumNumeratorValue
         );
 
         return (wrappedTokenAddress, timelockController, proxyAddress);
     }
 
     /// @notice Creates a new DAO with an existing ERC-20 token that supports voting
-    /// @param createDaoBringTokenParameters Struct of all DAO and existing voting token parameters
+    /// @param createDAOBringTokenParameters Struct of all DAO and existing voting token parameters
     /// @return The address of the voting token contract
     /// @return The address of the deployed TimelockController contract
     /// @return The address of the proxy deployed for the created DAO
-    function createDaoBringToken(
-        CreateDaoBringTokenParameters calldata createDaoBringTokenParameters
+    function createDAOBringToken(
+        CreateDAOBringTokenParameters calldata createDAOBringTokenParameters
     )
         external
         returns (
@@ -160,40 +160,40 @@ contract DaoFactory {
         )
     {       
         address timelockController = _createTimelock(
-            createDaoBringTokenParameters.createDaoParameters.minDelay,
-            createDaoBringTokenParameters.createDaoParameters.proposers,
-            createDaoBringTokenParameters.createDaoParameters.executors
+            createDAOBringTokenParameters.createDAOParameters.minDelay,
+            createDAOBringTokenParameters.createDAOParameters.proposers,
+            createDAOBringTokenParameters.createDAOParameters.executors
         );
 
-        address proxyAddress = _createDao(
-            createDaoBringTokenParameters.createDaoParameters.governanceImplementation,
-            createDaoBringTokenParameters.tokenAddress,
+        address proxyAddress = _createDAO(
+            createDAOBringTokenParameters.createDAOParameters.governanceImplementation,
+            createDAOBringTokenParameters.tokenAddress,
             timelockController,
-            createDaoBringTokenParameters.createDaoParameters.daoName,
-            createDaoBringTokenParameters.createDaoParameters.initialVotingDelay,
-            createDaoBringTokenParameters.createDaoParameters.initialVotingPeriod,
-            createDaoBringTokenParameters.createDaoParameters.initialProposalThreshold,
-            createDaoBringTokenParameters.createDaoParameters.initialQuorumNumeratorValue
+            createDAOBringTokenParameters.createDAOParameters.DAOName,
+            createDAOBringTokenParameters.createDAOParameters.initialVotingDelay,
+            createDAOBringTokenParameters.createDAOParameters.initialVotingPeriod,
+            createDAOBringTokenParameters.createDAOParameters.initialProposalThreshold,
+            createDAOBringTokenParameters.createDAOParameters.initialQuorumNumeratorValue
         );
 
-        return (createDaoBringTokenParameters.tokenAddress, timelockController, proxyAddress);
+        return (createDAOBringTokenParameters.tokenAddress, timelockController, proxyAddress);
     }
 
     /// @dev Creates a new DAO by deploying a new instance of MyGovernor
     /// @param governanceImplementation The address of the MyGovernor implementation contract
     /// @param timelockController The address of the TimelockController created for the DAO
-    /// @param daoName The name of the DAO
+    /// @param DAOName The name of the DAO
     /// @param initialVotingDelay The delay in blocks between when a proposal is submitted and voting begins
-    /// @param initialVotingPeriod The delay in blocks between when voting starts and voting ends
+    /// @param initialVotingPeriod The delay in blocks between when a proposal is submitted and voting ends
     /// @param initialProposalThreshold The number of votes required for a voter to be a proposer
     /// @param initialQuorumNumeratorValue The numerator for the quorum fraction - the number of votes required
     /// @param initialQuorumNumeratorValue for a proposal to be successful as a fraction of total supply
     /// @return The address of the proxy contract deployed for the created 
-    function _createDao(
+    function _createDAO(
         address governanceImplementation,
         address votingToken,
         address timelockController,
-        string memory daoName,
+        string memory DAOName,
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold,
@@ -204,7 +204,7 @@ contract DaoFactory {
                 governanceImplementation,
                 abi.encodeWithSelector(
                     MyGovernor(payable(address(0))).initialize.selector,
-                    daoName,
+                    DAOName,
                     votingToken,
                     timelockController,
                     initialVotingDelay,
@@ -218,7 +218,7 @@ contract DaoFactory {
 
         _configTimelock(timelockController, proxyAddress);
 
-        emit DaoDeployed(
+        emit DAODeployed(
             msg.sender,
             votingToken,
             timelockController,

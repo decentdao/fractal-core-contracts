@@ -1,11 +1,11 @@
 import { ethers } from "hardhat";
-import { DaoFactory__factory } from "../typechain";
+import { DAOFactory__factory } from "../typechain";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const daoFactory = await new DaoFactory__factory(deployer).deploy();
+  const DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
-  console.log("DAO Factory Address", daoFactory.address);
+  console.log("DAO Factory Address", DAOFactory.address);
 }
 
 main().catch((error) => {

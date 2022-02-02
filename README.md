@@ -3,9 +3,9 @@
 ## Governance
 
 The DAO factory contract supports deploying new DAO instances via three external functions:
-  1) `createDaoAndToken` - Creates both a DAO and a new ERC-20 governance token that supports voting
-  2) `createDaoWrapToken` - Creates a DAO and wraps an existing ERC-20 token with a new ERC-20 token which supports voting
-  3) `createDaoBringToken` - Creates a DAO with an existing ERC-20 token that already supports voting
+  1) `createDAOAndToken` - Creates both a DAO and a new ERC-20 governance token that supports voting
+  2) `createDAOWrapToken` - Creates a DAO and wraps an existing ERC-20 token with a new ERC-20 token which supports voting
+  3) `createDAOBringToken` - Creates a DAO with an existing ERC-20 token that already supports voting
 
 Governance is handled via the MyGovernor contract which is extended by OpenZepplin governance modules.
 

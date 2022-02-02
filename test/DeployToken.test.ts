@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  DaoFactory,
-  DaoFactory__factory,
+  DAOFactory,
+  DAOFactory__factory,
   VotesTokenWithSupply,
   VotesTokenWithSupply__factory,
   MyGovernor,
@@ -21,22 +21,22 @@ import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
   delegateTokens,
-  createDaoAndToken,
+  createDAOAndToken,
   vote,
   queueProposal,
   executeProposal,
   propose,
-  createDaoWrapToken,
+  createDAOWrapToken,
   wrapTokens,
-  createDaoBringToken,
+  createDAOBringToken,
 } from "../helpers";
 
 const expect = chai.expect;
 
 describe("Fractal DAO", function () {
-  let daoFactory: DaoFactory;
+  let DAOFactory: DAOFactory;
   let governanceToken: VotesTokenWithSupply;
-  let dao: MyGovernor;
+  let DAO: MyGovernor;
   let testToken: TestToken;
   let wrappedGovernanceToken: VotesTokenWrapped;
   let governorImpl: MyGovernor;
@@ -47,10 +47,10 @@ describe("Fractal DAO", function () {
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
   let voterC: SignerWithAddress;
-  let daoInfo: {
+  let DAOInfo: {
     votingToken: string;
     timelockController: string;
-    daoProxy: string;
+    DAOProxy: string;
   };
 
   describe("New Token", function () {
@@ -61,11 +61,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -88,17 +88,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -108,16 +108,16 @@ describe("Fractal DAO", function () {
     it("Created a DAO", async () => {
       const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
       const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
-      await expect(daoInfo.votingToken).to.equal(await dao.token());
-      await expect(daoInfo.timelockController).to.equal(await dao.timelock());
-      await expect(timelockController.hasRole(PROPOSER_ROLE, dao.address));
-      await expect(timelockController.hasRole(EXECUTOR_ROLE, dao.address));
+      await expect(DAOInfo.votingToken).to.equal(await DAO.token());
+      await expect(DAOInfo.timelockController).to.equal(await DAO.timelock());
+      await expect(timelockController.hasRole(PROPOSER_ROLE, DAO.address));
+      await expect(timelockController.hasRole(EXECUTOR_ROLE, DAO.address));
     });
 
     it("Revert if hodlers array length does not equal allocations array length", async () => {
       await expect(
-        createDaoAndToken(
-          daoFactory,
+        createDAOAndToken(
+          DAOFactory,
           governorImpl.address,
           [proposerExecutor.address],
           [proposerExecutor.address],
@@ -140,8 +140,8 @@ describe("Fractal DAO", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        createDaoAndToken(
-          daoFactory,
+        createDAOAndToken(
+          DAOFactory,
           governorImpl.address,
           [proposerExecutor.address],
           [proposerExecutor.address],
@@ -177,15 +177,15 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("200.0", 18)
       );
     });
 
     it("Total supply is less than allocations sum", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -218,7 +218,7 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("0.0", 18)
       );
     });
@@ -232,7 +232,7 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       testToken = await new TestToken__factory(deployer).deploy(
         "Test Token",
@@ -246,8 +246,8 @@ describe("Fractal DAO", function () {
       );
 
       // Create a new DAO using the DAO Factory and the existing test token
-      daoInfo = await createDaoWrapToken(
-        daoFactory,
+      DAOInfo = await createDAOWrapToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -264,17 +264,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       wrappedGovernanceToken = VotesTokenWrapped__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
     });
@@ -282,10 +282,10 @@ describe("Fractal DAO", function () {
     it("Created a DAO", async () => {
       const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
       const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
-      await expect(daoInfo.votingToken).to.equal(await dao.token());
-      await expect(daoInfo.timelockController).to.equal(await dao.timelock());
-      await expect(timelockController.hasRole(PROPOSER_ROLE, dao.address));
-      await expect(timelockController.hasRole(EXECUTOR_ROLE, dao.address));
+      await expect(DAOInfo.votingToken).to.equal(await DAO.token());
+      await expect(DAOInfo.timelockController).to.equal(await DAO.timelock());
+      await expect(timelockController.hasRole(PROPOSER_ROLE, DAO.address));
+      await expect(timelockController.hasRole(EXECUTOR_ROLE, DAO.address));
     });
 
     it("Should be able to wrap tokens", async () => {
@@ -356,16 +356,16 @@ describe("Fractal DAO", function () {
         ]
       );
       expect(
-        await wrappedGovernanceToken.balanceOf(daoInfo.timelockController)
+        await wrappedGovernanceToken.balanceOf(DAOInfo.timelockController)
       ).to.equal(ethers.utils.parseUnits("0", 18));
       await wrappedGovernanceToken
         .connect(voterA)
         .transfer(
-          daoInfo.timelockController,
+          DAOInfo.timelockController,
           ethers.utils.parseUnits("500.0", 18)
         );
       expect(
-        await wrappedGovernanceToken.balanceOf(daoInfo.timelockController)
+        await wrappedGovernanceToken.balanceOf(DAOInfo.timelockController)
       ).to.equal(ethers.utils.parseUnits("500", 18));
     });
   });
@@ -378,7 +378,7 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new ERC20Votes token to bring as the DAO governance token
       governanceToken = await new VotesTokenWithSupply__factory(
@@ -398,8 +398,8 @@ describe("Fractal DAO", function () {
 
       // Create a new DAO using the DAO Factory and the existing test token
 
-      daoInfo = await createDaoBringToken(
-        daoFactory,
+      DAOInfo = await createDAOBringToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -413,11 +413,11 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
     });
@@ -425,15 +425,15 @@ describe("Fractal DAO", function () {
     it("Created a DAO", async () => {
       const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
       const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
-      await expect(daoInfo.votingToken).to.equal(await dao.token());
-      await expect(daoInfo.timelockController).to.equal(await dao.timelock());
-      await expect(timelockController.hasRole(PROPOSER_ROLE, dao.address));
-      await expect(timelockController.hasRole(EXECUTOR_ROLE, dao.address));
+      await expect(DAOInfo.votingToken).to.equal(await DAO.token());
+      await expect(DAOInfo.timelockController).to.equal(await DAO.timelock());
+      await expect(timelockController.hasRole(PROPOSER_ROLE, DAO.address));
+      await expect(timelockController.hasRole(EXECUTOR_ROLE, DAO.address));
     });
 
     it("Initiate Timelock", async () => {
       expect(
-        await governanceToken.balanceOf(daoInfo.timelockController)
+        await governanceToken.balanceOf(DAOInfo.timelockController)
       ).to.equal(ethers.utils.parseUnits("0", 18));
       await governanceToken
         .connect(voterA)
@@ -442,7 +442,7 @@ describe("Fractal DAO", function () {
           ethers.utils.parseUnits("500.0", 18)
         );
       expect(
-        await governanceToken.balanceOf(daoInfo.timelockController)
+        await governanceToken.balanceOf(DAOInfo.timelockController)
       ).to.equal(ethers.utils.parseUnits("500", 18));
     });
   });
@@ -455,11 +455,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -482,17 +482,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -508,7 +508,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: Transfer 500 tokens to Voter B"
@@ -536,7 +536,7 @@ describe("Fractal DAO", function () {
       await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: Transfer 500 tokens to Voter B"
@@ -546,7 +546,7 @@ describe("Fractal DAO", function () {
         propose(
           [governanceToken.address],
           [BigNumber.from("0")],
-          dao,
+          DAO,
           voterA,
           transferCallData,
           "Proposal #1: Transfer 500 tokens to Voter B"
@@ -563,7 +563,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
@@ -577,7 +577,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventTwo = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataTwo,
         "Proposal #2: Transfer 250 tokens to Voter C"
@@ -621,11 +621,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -648,17 +648,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -674,7 +674,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
@@ -688,32 +688,32 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventTwo = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataTwo,
         "Proposal #2: Transfer 250 tokens to Voter C"
       );
 
       // Voters A, B, C votes "For" for proposal 1
-      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterB);
 
       // Voters A, B, C votes "For" for proposal 2
-      await vote(dao, proposalCreatedEventTwo.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEventTwo.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEventTwo.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEventTwo.proposalId, VoteType.For, voterB);
 
       expect(
-        await dao.hasVoted(proposalCreatedEventOne.proposalId, voterA.address)
+        await DAO.hasVoted(proposalCreatedEventOne.proposalId, voterA.address)
       ).to.eq(true);
       expect(
-        await dao.hasVoted(proposalCreatedEventOne.proposalId, voterB.address)
+        await DAO.hasVoted(proposalCreatedEventOne.proposalId, voterB.address)
       ).to.eq(true);
 
       expect(
-        await dao.hasVoted(proposalCreatedEventTwo.proposalId, voterA.address)
+        await DAO.hasVoted(proposalCreatedEventTwo.proposalId, voterA.address)
       ).to.eq(true);
       expect(
-        await dao.hasVoted(proposalCreatedEventTwo.proposalId, voterB.address)
+        await DAO.hasVoted(proposalCreatedEventTwo.proposalId, voterB.address)
       ).to.eq(true);
     });
 
@@ -726,13 +726,13 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await expect(
-        vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterA)
+        vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterA)
       ).to.be.revertedWith("Governor: vote not currently active");
     });
 
@@ -742,14 +742,14 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const fakeProposalId = await dao.hashProposal(
+      const fakeProposalId = await DAO.hashProposal(
         [governanceToken.address],
         [BigNumber.from("0")],
         [transferCallDataOne],
         ethers.utils.id("fake")
       );
       await expect(
-        vote(dao, fakeProposalId, VoteType.For, voterA)
+        vote(DAO, fakeProposalId, VoteType.For, voterA)
       ).to.be.revertedWith("Governor: unknown proposal id");
     });
 
@@ -762,15 +762,15 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterA);
       await expect(
-        vote(dao, proposalCreatedEventOne.proposalId, VoteType.Against, voterA)
+        vote(DAO, proposalCreatedEventOne.proposalId, VoteType.Against, voterA)
       ).to.be.revertedWith("GovernorCompatibilityBravo: vote already cast");
     });
 
@@ -783,21 +783,21 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
 
-      const proposalStatus = await dao.proposals(
+      const proposalStatus = await DAO.proposals(
         proposalCreatedEventOne.proposalId
       );
       expect(proposalStatus.abstainVotes).to.equal("0");
       expect(proposalStatus.forVotes).to.equal("0");
       expect(proposalStatus.againstVotes).to.equal("0");
       await vote(
-        dao,
+        DAO,
         proposalCreatedEventOne.proposalId,
         VoteType.For,
         proposerExecutor
@@ -816,20 +816,20 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
 
-      const proposalStatus = await dao.proposals(
+      const proposalStatus = await DAO.proposals(
         proposalCreatedEventOne.proposalId
       );
       expect(proposalStatus.abstainVotes).to.equal("0");
       expect(proposalStatus.forVotes).to.equal("0");
       expect(proposalStatus.againstVotes).to.equal("0");
-      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterC);
       expect(proposalStatus.abstainVotes).to.equal("0");
       expect(proposalStatus.forVotes).to.equal("0");
       expect(proposalStatus.againstVotes).to.equal("0");
@@ -838,7 +838,7 @@ describe("Fractal DAO", function () {
       expect(proposalStatus.forVotes).to.equal("0");
       expect(proposalStatus.againstVotes).to.equal("0");
       await expect(
-        vote(dao, proposalCreatedEventOne.proposalId, VoteType.Against, voterC)
+        vote(DAO, proposalCreatedEventOne.proposalId, VoteType.Against, voterC)
       ).to.be.revertedWith("GovernorCompatibilityBravo: vote already cast");
     });
 
@@ -852,15 +852,15 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
 
-      await vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterC);
-      const proposalStatus = await dao.proposals(
+      await vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterC);
+      const proposalStatus = await DAO.proposals(
         proposalCreatedEventOne.proposalId
       );
       expect(proposalStatus.forVotes).to.equal(
@@ -876,7 +876,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventOne = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataOne,
         "Proposal #1: Transfer 250 tokens to Voter B"
@@ -885,7 +885,7 @@ describe("Fractal DAO", function () {
         await network.provider.send("evm_mine");
       }
       await expect(
-        vote(dao, proposalCreatedEventOne.proposalId, VoteType.For, voterA)
+        vote(DAO, proposalCreatedEventOne.proposalId, VoteType.For, voterA)
       ).to.be.revertedWith("Governor: vote not currently active");
     });
   });
@@ -898,11 +898,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -925,17 +925,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -951,22 +951,22 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
-      const status = await dao.proposals(proposalCreatedEvent.proposalId);
+      const status = await DAO.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
-      const state = await dao.state(proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
+      const state = await DAO.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
     });
 
@@ -979,26 +979,26 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
-      const status = await dao.proposals(proposalCreatedEvent.proposalId);
+      const status = await DAO.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
 
-      await dao.connect(voterA).cancel(proposalCreatedEvent.proposalId);
+      await DAO.connect(voterA).cancel(proposalCreatedEvent.proposalId);
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        queueProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
-      const state = await dao.state(proposalCreatedEvent.proposalId);
+      const state = await DAO.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(2);
     });
 
@@ -1011,20 +1011,20 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        queueProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
 
@@ -1034,7 +1034,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const fakeProposalId = await dao.hashProposal(
+      const fakeProposalId = await DAO.hashProposal(
         [governanceToken.address],
         [BigNumber.from("0")],
         [transferCallData],
@@ -1043,7 +1043,7 @@ describe("Fractal DAO", function () {
 
       await network.provider.send("evm_mine");
       await expect(
-        vote(dao, fakeProposalId, VoteType.For, voterA)
+        vote(DAO, fakeProposalId, VoteType.For, voterA)
       ).to.be.revertedWith("Governor: unknown proposal id");
     });
 
@@ -1056,7 +1056,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1066,7 +1066,7 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        queueProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
   });
@@ -1079,11 +1079,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -1106,17 +1106,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -1132,22 +1132,22 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
-      const status = await dao.proposals(proposalCreatedEvent.proposalId);
+      const status = await DAO.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await dao.connect(voterA).cancel(proposalCreatedEvent.proposalId);
-      const state = await dao.state(proposalCreatedEvent.proposalId);
+      await DAO.connect(voterA).cancel(proposalCreatedEvent.proposalId);
+      const state = await DAO.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(2);
     });
     it("Revert only proposer cancel", async () => {
@@ -1159,7 +1159,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1168,7 +1168,7 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
       await expect(
-        dao.connect(voterB).cancel(proposalCreatedEvent.proposalId)
+        DAO.connect(voterB).cancel(proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("GovernorBravo: proposer above threshold");
     });
 
@@ -1181,26 +1181,26 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
-      const status = await dao.proposals(proposalCreatedEvent.proposalId);
+      const status = await DAO.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
-      const state = await dao.state(proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
+      const state = await DAO.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
-      await executeProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await executeProposal(DAO, voterA, proposalCreatedEvent.proposalId);
       await expect(
-        dao.connect(voterA).cancel(proposalCreatedEvent.proposalId)
+        DAO.connect(voterA).cancel(proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not active");
     });
   });
@@ -1213,11 +1213,11 @@ describe("Fractal DAO", function () {
       governorImpl = await new MyGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DaoFactory__factory(deployer).deploy();
+      DAOFactory = await new DAOFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -1240,17 +1240,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -1266,7 +1266,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1275,14 +1275,14 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1296,11 +1296,11 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await executeProposal(DAO, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1314,7 +1314,7 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
       );
     });
@@ -1322,14 +1322,14 @@ describe("Fractal DAO", function () {
     it("Should upgrade and a pass a proposal", async () => {
       const govUpgraded = await new MyGovernor__factory(deployer).deploy();
 
-      const transferCallData = dao.interface.encodeFunctionData("upgradeTo", [
+      const transferCallData = DAO.interface.encodeFunctionData("upgradeTo", [
         govUpgraded.address,
       ]);
 
       const proposalCreatedEvent = await propose(
-        [dao.address],
+        [DAO.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Upgrade Implementation"
@@ -1338,33 +1338,33 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
-      const tx: ContractTransaction = await dao
-        .connect(voterA)
-        ["execute(uint256)"](proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
+      const tx: ContractTransaction = await DAO.connect(voterA)[
+        "execute(uint256)"
+      ](proposalCreatedEvent.proposalId);
 
       const receipt: ContractReceipt = await tx.wait();
 
-      const daoEvent = receipt.events?.filter((x) => {
+      const DAOEvent = receipt.events?.filter((x) => {
         return x.topics[0] === ethers.utils.id("Upgraded(address)");
       });
-      if (daoEvent === undefined || daoEvent[0] === undefined) {
+      if (DAOEvent === undefined || DAOEvent[0] === undefined) {
         return;
       }
-      const daoDecode = await dao.interface.decodeEventLog(
+      const DAODecode = await DAO.interface.decodeEventLog(
         "Upgraded",
-        daoEvent[0].data,
-        daoEvent[0].topics
+        DAOEvent[0].data,
+        DAOEvent[0].topics
       );
-      expect(daoDecode[0]).to.equal(govUpgraded.address);
-      expect(daoDecode[0]).to.not.equal(governorImpl.address);
+      expect(DAODecode[0]).to.equal(govUpgraded.address);
+      expect(DAODecode[0]).to.not.equal(governorImpl.address);
 
       // Use new Impl
 
@@ -1376,7 +1376,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEventNew = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallDataNew,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1385,14 +1385,14 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEventNew.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEventNew.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEventNew.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEventNew.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEventNew.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEventNew.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEventNew.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEventNew.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1406,11 +1406,11 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(dao, voterA, proposalCreatedEventNew.proposalId);
+      await executeProposal(DAO, voterA, proposalCreatedEventNew.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1424,21 +1424,21 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await governanceToken.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await governanceToken.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
       );
     });
 
     it("Should fractalize", async () => {
-      const transferCallData = daoFactory.interface.encodeFunctionData(
-        "createDaoAndToken",
+      const transferCallData = DAOFactory.interface.encodeFunctionData(
+        "createDAOAndToken",
         [
           {
-            createDaoParameters: {
+            createDAOParameters: {
               governanceImplementation: governorImpl.address,
               proposers: [proposerExecutor.address],
               executors: [proposerExecutor.address],
-              daoName: "DAO Fractal",
+              DAOName: "DAO Fractal",
               minDelay: BigNumber.from("0"),
               initialVotingDelay: BigNumber.from("1"),
               initialVotingPeriod: BigNumber.from("1"),
@@ -1460,9 +1460,9 @@ describe("Fractal DAO", function () {
       );
 
       const proposalCreatedEvent = await propose(
-        [daoFactory.address],
+        [DAOFactory.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Create DAO"
@@ -1471,69 +1471,69 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
       await network.provider.send("evm_mine");
 
-      const tx: ContractTransaction = await dao
-        .connect(voterA)
-        ["execute(uint256)"](proposalCreatedEvent.proposalId);
+      const tx: ContractTransaction = await DAO.connect(voterA)[
+        "execute(uint256)"
+      ](proposalCreatedEvent.proposalId);
       const receipt: ContractReceipt = await tx.wait();
 
-      const daoEvent = receipt.events?.filter((x) => {
+      const DAOEvent = receipt.events?.filter((x) => {
         return (
           x.topics[0] ===
-          ethers.utils.id("DaoDeployed(address,address,address,address)")
+          ethers.utils.id("DAODeployed(address,address,address,address)")
         );
       });
-      if (daoEvent === undefined || daoEvent[0] === undefined) {
+      if (DAOEvent === undefined || DAOEvent[0] === undefined) {
         return {
           votingToken: "0",
           timelockController: "0",
-          daoProxy: "0",
+          DAOProxy: "0",
         };
       }
-      const daoDecode = await daoFactory.interface.decodeEventLog(
-        "DaoDeployed",
-        daoEvent[0].data,
-        daoEvent[0].topics
+      const DAODecode = await DAOFactory.interface.decodeEventLog(
+        "DAODeployed",
+        DAOEvent[0].data,
+        DAOEvent[0].topics
       );
-      daoInfo = {
-        votingToken: daoDecode.votingToken,
-        timelockController: daoDecode.timelockController,
-        daoProxy: daoDecode.daoProxy,
+      DAOInfo = {
+        votingToken: DAODecode.votingToken,
+        timelockController: DAODecode.timelockController,
+        DAOProxy: DAODecode.DAOProxy,
       };
 
       // eslint-disable-next-line camelcase
-      const fractalDao = MyGovernor__factory.connect(
-        daoInfo.daoProxy,
+      const fractalDAO = MyGovernor__factory.connect(
+        DAOInfo.DAOProxy,
         deployer
       );
       // eslint-disable-next-line camelcase
       const fractalTime = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
       // eslint-disable-next-line camelcase
       const fractalGov = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
       const PROPOSER_ROLE = ethers.utils.id("PROPOSER_ROLE");
       const EXECUTOR_ROLE = ethers.utils.id("EXECUTOR_ROLE");
-      await expect(daoInfo.votingToken).to.equal(await fractalDao.token());
-      await expect(daoInfo.timelockController).to.equal(
-        await fractalDao.timelock()
+      await expect(DAOInfo.votingToken).to.equal(await fractalDAO.token());
+      await expect(DAOInfo.timelockController).to.equal(
+        await fractalDAO.timelock()
       );
-      await expect(fractalTime.hasRole(PROPOSER_ROLE, fractalDao.address));
-      await expect(fractalTime.hasRole(EXECUTOR_ROLE, fractalDao.address));
+      await expect(fractalTime.hasRole(PROPOSER_ROLE, fractalDAO.address));
+      await expect(fractalTime.hasRole(EXECUTOR_ROLE, fractalDAO.address));
 
       expect(await fractalGov.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1546,7 +1546,7 @@ describe("Fractal DAO", function () {
         ethers.utils.parseUnits("100.0", 18)
       );
 
-      expect(await fractalGov.balanceOf(daoInfo.timelockController)).to.eq(
+      expect(await fractalGov.balanceOf(DAOInfo.timelockController)).to.eq(
         ethers.utils.parseUnits("200.0", 18)
       );
     });
@@ -1560,34 +1560,34 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
       await network.provider.send("evm_mine");
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
-      const status = await dao.proposals(proposalCreatedEvent.proposalId);
+      const status = await DAO.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
-      const state = await dao.state(proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
+      const state = await DAO.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
 
-      await dao.connect(voterA).cancel(proposalCreatedEvent.proposalId);
+      await DAO.connect(voterA).cancel(proposalCreatedEvent.proposalId);
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        executeProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
 
     it("Revert if execution is too early", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDaoAndToken(
-        daoFactory,
+      DAOInfo = await createDAOAndToken(
+        DAOFactory,
         governorImpl.address,
         [proposerExecutor.address],
         [proposerExecutor.address],
@@ -1610,17 +1610,17 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      DAO = MyGovernor__factory.connect(DAOInfo.DAOProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
-        daoInfo.timelockController,
+        DAOInfo.timelockController,
         deployer
       );
 
       // eslint-disable-next-line camelcase
       governanceToken = VotesTokenWithSupply__factory.connect(
-        daoInfo.votingToken,
+        DAOInfo.votingToken,
         deployer
       );
 
@@ -1634,7 +1634,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1643,16 +1643,16 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await queueProposal(DAO, voterA, proposalCreatedEvent.proposalId);
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        executeProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("TimelockController: operation is not ready");
     });
 
@@ -1662,7 +1662,7 @@ describe("Fractal DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const fakeProposalId = await dao.hashProposal(
+      const fakeProposalId = await DAO.hashProposal(
         [governanceToken.address],
         [BigNumber.from("0")],
         [transferCallData],
@@ -1671,7 +1671,7 @@ describe("Fractal DAO", function () {
 
       await network.provider.send("evm_mine");
       await expect(
-        executeProposal(dao, voterA, fakeProposalId)
+        executeProposal(DAO, voterA, fakeProposalId)
       ).to.be.revertedWith("Governor: unknown proposal id");
     });
 
@@ -1684,7 +1684,7 @@ describe("Fractal DAO", function () {
       const proposalCreatedEvent = await propose(
         [governanceToken.address],
         [BigNumber.from("0")],
-        dao,
+        DAO,
         voterA,
         transferCallData,
         "Proposal #1: transfer 100 tokens to Voter B"
@@ -1693,15 +1693,15 @@ describe("Fractal DAO", function () {
       await network.provider.send("evm_mine");
 
       // Voters A, B, C votes "For"
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
-      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(DAO, proposalCreatedEvent.proposalId, VoteType.For, voterC);
 
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        executeProposal(DAO, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("TimelockController: operation is not ready");
     });
   });
