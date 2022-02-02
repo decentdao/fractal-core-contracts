@@ -11,6 +11,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
+/**
+ * @dev Core of the governance system, exenced w/ Timelock, CompatibilityBravo, QuorumFraction.
+ * @dev Proxy Contract (UUPS) state stored on proxy and delgate calls to impl layer
+ * @notice Propose arbitrary transactions - vote on proposals - execute passing proposals on-chain
+ */
 contract MyGovernor is
     Initializable,
     GovernorUpgradeable,
@@ -22,6 +27,17 @@ contract MyGovernor is
     OwnableUpgradeable,
     UUPSUpgradeable
 {
+    /**
+    * @dev Configures DAO implementation
+    * @dev Called once during deployment atomically
+    * @param _name Name of the DAO
+    * @param _token Voting token uses snapshot feature
+    * @param _timelock Timelock vest proposals to allow detractors to exit system
+    * @param _initialVotingDelay Allow users to research proposals before voting period
+    * @param _initialVotingPeriod Length of voting period (blocks)
+    * @param _initialProposalThreshold Total tokens required to submit a proposal
+    * @param _initialQuorumNumeratorValue Total votes needed to reach quorum
+    */
     function initialize(
         string memory _name,
         ERC20VotesUpgradeable _token,
