@@ -214,6 +214,7 @@ contract DaoFactory {
                 )
             )
         );
+        MyGovernor(payable(proxyAddress)).transferOwnership(timelockController);
 
         _configTimelock(timelockController, proxyAddress);
 
