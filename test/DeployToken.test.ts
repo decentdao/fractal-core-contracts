@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   DaoFactory,
@@ -1511,14 +1510,17 @@ describe("Fractal DAO", function () {
         daoProxy: daoDecode.daoProxy,
       };
 
+      // eslint-disable-next-line camelcase
       const fractalDao = MyGovernor__factory.connect(
         daoInfo.daoProxy,
         deployer
       );
+      // eslint-disable-next-line camelcase
       const fractalTime = TimelockController__factory.connect(
         daoInfo.timelockController,
         deployer
       );
+      // eslint-disable-next-line camelcase
       const fractalGov = VotesTokenWithSupply__factory.connect(
         daoInfo.votingToken,
         deployer
