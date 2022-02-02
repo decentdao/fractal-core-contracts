@@ -1,40 +1,58 @@
-# Governance
+# Fractal
 
+## Governance
+
+The DAO factory contract supports deploying new DAO instances via three external functions:
+  1) createDaoAndToken - Creates both a DAO and a new ERC-20 governance token that supports voting
+  2) createDaoWrapToken - Creates a DAO and wraps an existing ERC-20 token with a new ERC-20 token which supports voting
+  3) createDaoBringToken - Creates a DAO with an existing ERC-20 token that already supports voting
+
+Governance is handled via the MyGovernor contract which is extended by OpenZepplin governance modules.
+- Currently the DAO supports
+-- ERC-20 token weighted voting
+-- Fractionalized quorum - percentage of token total supply required for a successful proposal
+-- Voting delay - The number of blocks between when a proposal is created and voting begins
+-- Voting periods - The number of blocks between when voting starts and ends
+-- Proposal threshold - The number of votes required for a voter to become a proposer
+-- Timelock Controller - Adds a delay in blocks between when a successful proposal is queued and when it can be executed
+
+Note: When using a timelock, it is the timelock that will execute proposals and thus the timelock that should hold any funds, ownership, and access control roles. Funds in the Governor contract are not currently retrievable when using a timelock! (As of version 4.3 there is a caveat when using the Compound Timelock: ETH in the timelock is not easily usable, so it is recommended to manage ERC20 funds only in this combination until a future version resolves the issue.)
+
+## Local Setup & Testing
+
+1) Clone the repository:
 ```shell
-Governance is handled via the Gov Contract and extended by the openzepplin modules.
-- Currently the dao supports 
--- erc20 weighted voting
--- fractionalized quorum
--- vote delays, voting periods, min proposal threshold(vote power)
-- timelock controller -  This allows users to exit the system if they disagree with a decision before it is executed. We will use OpenZeppelin’s TimelockController in combination with the GovernorTimelockControl module.
-
-When using a timelock, it is the timelock that will execute proposals and thus the timelock that should hold any funds, ownership, and access control roles. Funds in the Governor contract are not currently retrievable when using a timelock! (As of version 4.3 there is a caveat when using the Compound Timelock: ETH in the timelock is not easily usable, so it is recommended to manage ERC20 funds only in this combination until a future version resolves the issue.)
-
-references
-- https://docs.openzeppelin.com/contracts/4.x/governance#timelock
-
-Deployment Process 
-- Deploy Token and TimelockController
-- Deploy Governance DAO w/ token and timelockcontroller addresses as param
-- Set up timelock controller permissions
+git clone ...
 ```
 
-# Etherscan verification
-
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
+2) Lookup the recommended Node version to use in the .nvmrc file (currently 16.13.2), and install and use the correct version:
 ```shell
-hardhat run --network ropsten scripts/sample-script.ts
+nvm install 16.13.2
+nvm use 16.13.2
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
-
+3) Install necessary dependencies:
 ```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+npm install
 ```
 
-# Performance optimizations
+4) Compile contracts to create typechain files:
+```shell
+npm run compile
+```
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+5) Run the tests
+```shell
+npm run test
+```
+
+## Deployment
+
+Local Hardhat DAO Factory Deployment Process 
+Deploy DAO Factory:
+```shell
+npx hardhat run scripts/deploy.ts
+```
+
+## References
+- https://docs.openzeppelin.com/contracts/4.x/api/governance

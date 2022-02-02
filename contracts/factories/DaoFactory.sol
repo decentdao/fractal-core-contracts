@@ -184,7 +184,7 @@ contract DaoFactory {
     /// @param timelockController The address of the TimelockController created for the DAO
     /// @param daoName The name of the DAO
     /// @param initialVotingDelay The delay in blocks between when a proposal is submitted and voting begins
-    /// @param initialVotingPeriod The delay in blocks between when a proposal is submitted and voting ends
+    /// @param initialVotingPeriod The delay in blocks between when voting starts and voting ends
     /// @param initialProposalThreshold The number of votes required for a voter to be a proposer
     /// @param initialQuorumNumeratorValue The numerator for the quorum fraction - the number of votes required
     /// @param initialQuorumNumeratorValue for a proposal to be successful as a fraction of total supply
