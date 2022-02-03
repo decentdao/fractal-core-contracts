@@ -12,7 +12,7 @@ contract DAOFactory {
         address governanceImplementation; 
         address[] proposers;
         address[] executors;
-        string DAOName;
+        string daoName;
         uint256 minDelay;
         uint256 initialVotingDelay;
         uint256 initialVotingPeriod;
@@ -51,7 +51,7 @@ contract DAOFactory {
         address deployer,
         address votingToken,
         address timelockController,
-        address DAOProxy
+        address daoProxy
     );
     event GovernanceImplementationUpdated(
         address oldImplementation,
@@ -92,7 +92,7 @@ contract DAOFactory {
             createDAOAndTokenParameters.createDAOParameters.governanceImplementation,
             votingToken,
             timelockController,
-            createDAOAndTokenParameters.createDAOParameters.DAOName,
+            createDAOAndTokenParameters.createDAOParameters.daoName,
             createDAOAndTokenParameters.createDAOParameters.initialVotingDelay,
             createDAOAndTokenParameters.createDAOParameters.initialVotingPeriod,
             createDAOAndTokenParameters.createDAOParameters.initialProposalThreshold,
@@ -134,7 +134,7 @@ contract DAOFactory {
             createDAOWrapTokenParameters.createDAOParameters.governanceImplementation,
             wrappedTokenAddress,
             timelockController,
-            createDAOWrapTokenParameters.createDAOParameters.DAOName,
+            createDAOWrapTokenParameters.createDAOParameters.daoName,
             createDAOWrapTokenParameters.createDAOParameters.initialVotingDelay,
             createDAOWrapTokenParameters.createDAOParameters.initialVotingPeriod,
             createDAOWrapTokenParameters.createDAOParameters.initialProposalThreshold,
@@ -169,7 +169,7 @@ contract DAOFactory {
             createDAOBringTokenParameters.createDAOParameters.governanceImplementation,
             createDAOBringTokenParameters.tokenAddress,
             timelockController,
-            createDAOBringTokenParameters.createDAOParameters.DAOName,
+            createDAOBringTokenParameters.createDAOParameters.daoName,
             createDAOBringTokenParameters.createDAOParameters.initialVotingDelay,
             createDAOBringTokenParameters.createDAOParameters.initialVotingPeriod,
             createDAOBringTokenParameters.createDAOParameters.initialProposalThreshold,
@@ -182,7 +182,7 @@ contract DAOFactory {
     /// @dev Creates a new DAO by deploying a new instance of MyGovernor
     /// @param governanceImplementation The address of the MyGovernor implementation contract
     /// @param timelockController The address of the TimelockController created for the DAO
-    /// @param DAOName The name of the DAO
+    /// @param daoName The name of the DAO
     /// @param initialVotingDelay The delay in blocks between when a proposal is submitted and voting begins
     /// @param initialVotingPeriod The delay in blocks between when a proposal is submitted and voting ends
     /// @param initialProposalThreshold The number of votes required for a voter to be a proposer
@@ -193,7 +193,7 @@ contract DAOFactory {
         address governanceImplementation,
         address votingToken,
         address timelockController,
-        string memory DAOName,
+        string memory daoName,
         uint256 initialVotingDelay,
         uint256 initialVotingPeriod,
         uint256 initialProposalThreshold,
@@ -204,7 +204,7 @@ contract DAOFactory {
                 governanceImplementation,
                 abi.encodeWithSelector(
                     MyGovernor(payable(address(0))).initialize.selector,
-                    DAOName,
+                    daoName,
                     votingToken,
                     timelockController,
                     initialVotingDelay,
@@ -248,22 +248,22 @@ contract DAOFactory {
     /// @param _timelock The address of the TimelockController contract
     /// @param _proxyAddress The address of the MyGovernor proxy
     function _configTimelock(address _timelock, address _proxyAddress) private {
-        bytes32 PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
-        bytes32 EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
+        bytes32 proposerRole = keccak256("PROPOSER_ROLE");
+        bytes32 executorRole = keccak256("EXECUTOR_ROLE");
         TimelockController(payable(_timelock)).grantRole(
-            PROPOSER_ROLE,
+            proposerRole,
             _proxyAddress
         );
         TimelockController(payable(_timelock)).grantRole(
-            EXECUTOR_ROLE,
+            executorRole,
             _proxyAddress
         );
         TimelockController(payable(_timelock)).renounceRole(
-            PROPOSER_ROLE,
+            proposerRole,
             address(this)
         );
         TimelockController(payable(_timelock)).renounceRole(
-            EXECUTOR_ROLE,
+            executorRole,
             address(this)
         );
     }

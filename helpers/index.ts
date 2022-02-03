@@ -17,7 +17,7 @@ export const VoteType = {
 export type DAOInfo = {
   votingToken: string;
   timelockController: string;
-  DAOProxy: string;
+  daoProxy: string;
 };
 
 export type ProposalCreatedEvent = {
@@ -61,7 +61,7 @@ export async function createDAOAndToken(
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _DAOName: string,
+  _daoName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
@@ -80,7 +80,7 @@ export async function createDAOAndToken(
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      DAOName: _DAOName,
+      daoName: _daoName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -105,13 +105,13 @@ export async function createDAOAndToken(
     return {
       votingToken: "0",
       timelockController: "0",
-      DAOProxy: "0",
+      daoProxy: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
-    DAOProxy: DAOEvent[0].args[3],
+    daoProxy: DAOEvent[0].args[3],
   };
 }
 
@@ -120,7 +120,7 @@ export async function createDAOWrapToken(
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _DAOName: string,
+  _daoName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
@@ -136,7 +136,7 @@ export async function createDAOWrapToken(
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      DAOName: _DAOName,
+      daoName: _daoName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -159,13 +159,13 @@ export async function createDAOWrapToken(
     return {
       votingToken: "0",
       timelockController: "0",
-      DAOProxy: "0",
+      daoProxy: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
-    DAOProxy: DAOEvent[0].args[3],
+    daoProxy: DAOEvent[0].args[3],
   };
 }
 
@@ -174,7 +174,7 @@ export async function createDAOBringToken(
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
-  _DAOName: string,
+  _daoName: string,
   _minDelay: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
@@ -187,7 +187,7 @@ export async function createDAOBringToken(
       governanceImplementation: _governanceImplementation,
       proposers: _proposers,
       executors: _executors,
-      DAOName: _DAOName,
+      daoName: _daoName,
       minDelay: _minDelay,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
@@ -207,13 +207,13 @@ export async function createDAOBringToken(
     return {
       votingToken: "0",
       timelockController: "0",
-      DAOProxy: "0",
+      daoProxy: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
-    DAOProxy: DAOEvent[0].args[3],
+    daoProxy: DAOEvent[0].args[3],
   };
 }
 
@@ -271,26 +271,26 @@ export async function propose(
 }
 
 export async function vote(
-  _DAO: MyGovernor,
+  _dao: MyGovernor,
   _proposalId: BigNumber,
   _vote: number,
   _voter: SignerWithAddress
 ): Promise<void> {
-  await _DAO.connect(_voter).castVote(_proposalId, _vote);
+  await _dao.connect(_voter).castVote(_proposalId, _vote);
 }
 
 export async function queueProposal(
-  _DAO: MyGovernor,
+  _dao: MyGovernor,
   _queuer: SignerWithAddress,
   _proposalId: BigNumber
 ): Promise<void> {
-  await _DAO.connect(_queuer)["queue(uint256)"](_proposalId);
+  await _dao.connect(_queuer)["queue(uint256)"](_proposalId);
 }
 
 export async function executeProposal(
-  _DAO: MyGovernor,
+  _dao: MyGovernor,
   _executer: SignerWithAddress,
   _proposalId: BigNumber
 ): Promise<void> {
-  await _DAO.connect(_executer)["execute(uint256)"](_proposalId);
+  await _dao.connect(_executer)["execute(uint256)"](_proposalId);
 }
