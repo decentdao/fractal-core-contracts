@@ -43,10 +43,6 @@ contract BravoFactory {
         address tokenAddress;
     }
 
-    error ArraysNotEqual();
-    error UpdateAddress();
-    error AddressNotContract();
-
     event DAODeployed(
         address deployer,
         address votingToken,
