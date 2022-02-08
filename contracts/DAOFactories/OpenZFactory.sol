@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/governance/TimelockController.sol";
-import "../MyGovernor.sol";
-import "./TokenFactory.sol";
+import "../DAOConfigs/OpenZGovernor.sol";
+import "../TokenFactory.sol";
 
 /// @notice A contract for creating new DAOs 
-contract DAOFactory {
+contract OpenZFactory {
     struct CreateDAOParameters {
         address governanceImplementation; 
         address[] proposers;
@@ -203,7 +203,7 @@ contract DAOFactory {
             new ERC1967Proxy(
                 governanceImplementation,
                 abi.encodeWithSelector(
-                    MyGovernor(payable(address(0))).initialize.selector,
+                    OpenZGovernor(payable(address(0))).initialize.selector,
                     daoName,
                     votingToken,
                     timelockController,
@@ -214,7 +214,7 @@ contract DAOFactory {
                 )
             )
         );
-        MyGovernor(payable(proxyAddress)).transferOwnership(timelockController);
+        OpenZGovernor(payable(proxyAddress)).transferOwnership(timelockController);
 
         _configTimelock(timelockController, proxyAddress);
 

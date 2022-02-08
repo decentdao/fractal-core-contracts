@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "../voting-tokens/VotesTokenWithSupply.sol";
-import "../voting-tokens/VotesTokenWrapped.sol";
+import "./voting-tokens/VotesTokenWithSupply.sol";
+import "./voting-tokens/VotesTokenWrapped.sol";
 
 /// @notice A contract for creating new ERC-20 tokens and wrapping existing ERC-20 tokens
 contract TokenFactory {
