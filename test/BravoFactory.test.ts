@@ -1,11 +1,11 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  DAOFactory,
-  DAOFactory__factory,
+  BravoFactory,
+  BravoFactory__factory,
   VotesTokenWithSupply,
   VotesTokenWithSupply__factory,
-  MyGovernor,
-  MyGovernor__factory,
+  BravoGovernor,
+  BravoGovernor__factory,
   TimelockController,
   TimelockController__factory,
   TokenFactory,
@@ -29,17 +29,17 @@ import {
   createDAOWrapToken,
   wrapTokens,
   createDAOBringToken,
-} from "../helpers";
+} from "../helpers/Bravo";
 
 const expect = chai.expect;
 
-describe("Fractal DAO", function () {
-  let daoFactory: DAOFactory;
+describe("Bravo DAO", function () {
+  let daoFactory: BravoFactory;
   let governanceToken: VotesTokenWithSupply;
-  let dao: MyGovernor;
+  let dao: BravoGovernor;
   let testToken: TestToken;
   let wrappedGovernanceToken: VotesTokenWrapped;
-  let governorImpl: MyGovernor;
+  let governorImpl: BravoGovernor;
   let timelockController: TimelockController;
   let tokenFactory: TokenFactory;
   let deployer: SignerWithAddress;
@@ -58,10 +58,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -88,7 +88,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -229,10 +229,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       testToken = await new TestToken__factory(deployer).deploy(
         "Test Token",
@@ -264,7 +264,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -375,10 +375,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new ERC20Votes token to bring as the DAO governance token
       governanceToken = await new VotesTokenWithSupply__factory(
@@ -413,7 +413,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -452,10 +452,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -482,7 +482,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -618,10 +618,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -648,7 +648,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -895,10 +895,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -925,7 +925,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -1076,10 +1076,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -1106,7 +1106,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -1210,10 +1210,10 @@ describe("Fractal DAO", function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
       tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new MyGovernor__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
 
       // Deploy an instance of the DAO Factory
-      daoFactory = await new DAOFactory__factory(deployer).deploy();
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
       daoInfo = await createDAOAndToken(
@@ -1240,7 +1240,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
@@ -1320,7 +1320,7 @@ describe("Fractal DAO", function () {
     });
 
     it("Should upgrade and a pass a proposal", async () => {
-      const govUpgraded = await new MyGovernor__factory(deployer).deploy();
+      const govUpgraded = await new BravoGovernor__factory(deployer).deploy();
 
       const transferCallData = dao.interface.encodeFunctionData("upgradeTo", [
         govUpgraded.address,
@@ -1511,7 +1511,7 @@ describe("Fractal DAO", function () {
       };
 
       // eslint-disable-next-line camelcase
-      const fractalDAO = MyGovernor__factory.connect(
+      const fractalDAO = BravoGovernor__factory.connect(
         daoInfo.daoProxy,
         deployer
       );
@@ -1610,7 +1610,7 @@ describe("Fractal DAO", function () {
       );
 
       // eslint-disable-next-line camelcase
-      dao = MyGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(

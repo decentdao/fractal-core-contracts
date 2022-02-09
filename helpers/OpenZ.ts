@@ -1,12 +1,17 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  DAOFactory,
+  OpenZFactory,
   VotesTokenWithSupply,
-  MyGovernor,
+  OpenZGovernor,
   TestToken,
   VotesTokenWrapped,
 } from "../typechain";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import {
+  BigNumber,
+  ContractReceipt,
+  ContractTransaction,
+  ethers,
+} from "ethers";
 
 export const VoteType = {
   Against: 0,
@@ -57,7 +62,7 @@ export async function wrapTokens(
 }
 
 export async function createDAOAndToken(
-  _DAOFactory: DAOFactory,
+  _DAOFactory: OpenZFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
@@ -116,7 +121,7 @@ export async function createDAOAndToken(
 }
 
 export async function createDAOWrapToken(
-  _DAOFactory: DAOFactory,
+  _DAOFactory: OpenZFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
@@ -170,7 +175,7 @@ export async function createDAOWrapToken(
 }
 
 export async function createDAOBringToken(
-  _DAOFactory: DAOFactory,
+  _DAOFactory: OpenZFactory,
   _governanceImplementation: string,
   _proposers: string[],
   _executors: string[],
@@ -220,19 +225,14 @@ export async function createDAOBringToken(
 export async function propose(
   _targets: string[],
   _values: BigNumber[],
-  _DAO: MyGovernor,
+  _DAO: OpenZGovernor,
   _proposer: SignerWithAddress,
   _transferCallData: string,
   _description: string
 ): Promise<ProposalCreatedEvent> {
   const tx: ContractTransaction = await _DAO
     .connect(_proposer)
-    ["propose(address[],uint256[],bytes[],string)"](
-      _targets,
-      _values,
-      [_transferCallData],
-      _description
-    );
+    .propose(_targets, _values, [_transferCallData], _description);
 
   const receipt: ContractReceipt = await tx.wait();
 
@@ -271,7 +271,7 @@ export async function propose(
 }
 
 export async function vote(
-  _dao: MyGovernor,
+  _dao: OpenZGovernor,
   _proposalId: BigNumber,
   _vote: number,
   _voter: SignerWithAddress
@@ -280,17 +280,32 @@ export async function vote(
 }
 
 export async function queueProposal(
-  _dao: MyGovernor,
+  _dao: OpenZGovernor,
   _queuer: SignerWithAddress,
-  _proposalId: BigNumber
+  _targets: string[],
+  _values: BigNumber[],
+  _transferCallData: string[],
+  _description: string
 ): Promise<void> {
-  await _dao.connect(_queuer)["queue(uint256)"](_proposalId);
+  await _dao
+    .connect(_queuer)
+    .queue(_targets, _values, _transferCallData, ethers.utils.id(_description));
 }
 
 export async function executeProposal(
-  _dao: MyGovernor,
+  _dao: OpenZGovernor,
   _executer: SignerWithAddress,
-  _proposalId: BigNumber
+  _targets: string[],
+  _values: BigNumber[],
+  _transferCallData: string[],
+  _description: string
 ): Promise<void> {
-  await _dao.connect(_executer)["execute(uint256)"](_proposalId);
+  await _dao
+    .connect(_executer)
+    .execute(
+      _targets,
+      _values,
+      _transferCallData,
+      ethers.utils.id(_description)
+    );
 }

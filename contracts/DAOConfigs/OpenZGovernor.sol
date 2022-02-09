@@ -1,9 +1,9 @@
-//SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/compatibility/GovernorCompatibilityBravoUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
@@ -11,33 +11,20 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-/**
- * @dev Core of the governance system, exenced w/ Timelock, CompatibilityBravo, QuorumFraction.
- * @dev Proxy Contract (UUPS) state stored on proxy and delgate calls to impl layer
- * @notice Propose arbitrary transactions - vote on proposals - execute passing proposals on-chain
- */
-contract MyGovernor is
+contract OpenZGovernor is
     Initializable,
     GovernorUpgradeable,
     GovernorSettingsUpgradeable,
-    GovernorCompatibilityBravoUpgradeable,
+    GovernorCountingSimpleUpgradeable,
     GovernorVotesUpgradeable,
     GovernorVotesQuorumFractionUpgradeable,
     GovernorTimelockControlUpgradeable,
     OwnableUpgradeable,
     UUPSUpgradeable
 {
-    /**
-    * @dev Configures DAO implementation
-    * @dev Called once during deployment atomically
-    * @param _name Name of the DAO
-    * @param _token Voting token uses snapshot feature
-    * @param _timelock Timelock vest proposals to allow detractors to exit system
-    * @param _initialVotingDelay Allow users to research proposals before voting period
-    * @param _initialVotingPeriod Length of voting period (blocks)
-    * @param _initialProposalThreshold Total tokens required to submit a proposal
-    * @param _initialQuorumNumeratorValue Total votes needed to reach quorum
-    */
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
     function initialize(
         string memory _name,
         ERC20VotesUpgradeable _token,
@@ -53,7 +40,7 @@ contract MyGovernor is
             _initialVotingPeriod,
             _initialProposalThreshold
         );
-        __GovernorCompatibilityBravo_init();
+        __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(_initialQuorumNumeratorValue);
         __GovernorTimelockControl_init(_timelock);
@@ -108,11 +95,7 @@ contract MyGovernor is
     function state(uint256 proposalId)
         public
         view
-        override(
-            GovernorUpgradeable,
-            IGovernorUpgradeable,
-            GovernorTimelockControlUpgradeable
-        )
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -125,11 +108,7 @@ contract MyGovernor is
         string memory description
     )
         public
-        override(
-            GovernorUpgradeable,
-            GovernorCompatibilityBravoUpgradeable,
-            IGovernorUpgradeable
-        )
+        override(GovernorUpgradeable, IGovernorUpgradeable)
         returns (uint256)
     {
         return super.propose(targets, values, calldatas, description);
@@ -182,11 +161,7 @@ contract MyGovernor is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(
-            GovernorUpgradeable,
-            IERC165Upgradeable,
-            GovernorTimelockControlUpgradeable
-        )
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
