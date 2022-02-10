@@ -13,20 +13,40 @@ contract Treasury is Ownable, ERC721Holder {
 
   error ArraysNotEqual();
 
-  event Erc20TokensDeposited(
+  event EthDeposited(address sender, uint256 amount);
+
+  event EthWithdrawn(address[] recipients, uint256[] amounts);
+
+  event ERC20TokensDeposited(
     address[] tokenAddresses,
     address[] senders,
     uint256[] amounts
   );
 
-  event Erc20TokensWithdrawn(
+  event ERC20TokensWithdrawn(
+    address[] tokenAddresses,
+    address[] recipients,
+    uint256[] amounts
+  );
+
+  event ERC721TokensDeposited(
     address[] tokenAddresses,
     address[] senders,
-    uint256[] amounts
+    uint256[] tokenIds
+  );
+
+  event ERC721TokensWithdrawn(
+    address[] tokenAddresses,
+    address[] recipients,
+    uint256[] tokenIds
   );
 
   constructor(address initialOwner) {
     _transferOwnership(initialOwner);
+  }
+
+  receive() external payable {
+    emit EthDeposited(msg.sender, msg.value);
   }
 
   function withdrawEth(
@@ -40,6 +60,8 @@ contract Treasury is Ownable, ERC721Holder {
     for (uint256 index = 0; index < recipients.length; index++) {
       payable(recipients[index]).transfer(amounts[index]);
     }
+
+    emit EthWithdrawn(recipients, amounts);
   }
 
   function depositErc20Tokens(
@@ -62,7 +84,7 @@ contract Treasury is Ownable, ERC721Holder {
       );
     }
 
-    emit Erc20TokensDeposited(tokenAddresses, senders, amounts);
+    emit ERC20TokensDeposited(tokenAddresses, senders, amounts);
   }
 
   function withdrawErc20Tokens(
@@ -84,7 +106,7 @@ contract Treasury is Ownable, ERC721Holder {
       );
     }
 
-    emit Erc20TokensWithdrawn(tokenAddresses, recipients, amounts);
+    emit ERC20TokensWithdrawn(tokenAddresses, recipients, amounts);
   }
 
   function depositErc721Tokens(
@@ -106,6 +128,8 @@ contract Treasury is Ownable, ERC721Holder {
         tokenIds[index]
       );
     }
+
+    emit ERC721TokensDeposited(tokenAddresses, senders, tokenIds);
   }
 
   function withdrawErc721Tokens(
@@ -127,5 +151,7 @@ contract Treasury is Ownable, ERC721Holder {
         tokenIds[index]
       );
     }
+
+    emit ERC721TokensWithdrawn(tokenAddresses, recipients, tokenIds);
   }
 }
