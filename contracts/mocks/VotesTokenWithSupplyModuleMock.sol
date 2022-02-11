@@ -7,7 +7,7 @@ import "../ACL.sol";
 /**
  * @dev Initilizes Supply of votesToken
  */
-contract VotesTokenWithSupplyModule is VotesToken {
+contract VotesTokenWithSupplyModuleMock is VotesToken {
     ACL acl;
     bytes32[] roles;
 

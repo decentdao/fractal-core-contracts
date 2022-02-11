@@ -57,6 +57,8 @@ contract ACL is AccessControl {
         bytes32 _roleAdmin,
         address _manager
     ) internal {
+        require(!roleInitilized(_role), "Role already created");
+        _rolesInit[_role] = true;
         _setRoleAdmin(_role, _roleAdmin);
         _setupRole(_role, _manager);
     }
@@ -71,8 +73,6 @@ contract ACL is AccessControl {
             "Array not equal"
         );
         for (uint256 i; i < roles.length; i++) {
-            require(!roleInitilized(roles[i]), "Role already created");
-            _rolesInit[roles[i]] = true;
             _createPermission(roles[i], roleAdmin[i], manager[i]);
         }
     }

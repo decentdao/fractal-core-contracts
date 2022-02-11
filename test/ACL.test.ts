@@ -10,13 +10,11 @@ import {
   TimelockController__factory,
   TokenFactory,
   TokenFactory__factory,
-  VotesTokenWrapped,
   TokenFactoryModuleMock,
   ACL,
   ACL__factory,
   TokenFactoryModuleMock__factory,
-  VotesTokenWithSupplyModule,
-  VotesTokenWithSupplyModule__factory,
+  VotesTokenWithSupplyModuleMock__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -190,7 +188,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );
@@ -272,7 +270,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );
@@ -352,7 +350,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule2 = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule2 = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode2.tokenAddress,
         deployer
       );
@@ -440,7 +438,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );
@@ -511,7 +509,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule2 = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule2 = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode2.tokenAddress,
         deployer
       );
@@ -599,7 +597,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );
@@ -722,7 +720,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );
@@ -860,7 +858,7 @@ describe("ACL Contract", function () {
       );
 
       // eslint-disable-next-line camelcase
-      const tokenModule = VotesTokenWithSupplyModule__factory.connect(
+      const tokenModule = VotesTokenWithSupplyModuleMock__factory.connect(
         TokenDecode.tokenAddress,
         deployer
       );

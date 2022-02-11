@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "../Modules/VotesTokenWithSupplyModule.sol";
+import "./VotesTokenWithSupplyModuleMock.sol";
 
 /// @notice A contract for creating new ERC-20 tokens and wrapping existing ERC-20 tokens
 contract TokenFactoryModuleMock {
@@ -30,7 +30,7 @@ contract TokenFactoryModuleMock {
     ) external returns (address votingToken) {
         if (hodlers.length != allocations.length) revert ArraysNotEqual();
         votingToken = address(
-            new VotesTokenWithSupplyModule(
+            new VotesTokenWithSupplyModuleMock(
                 tokenName,
                 symbol,
                 hodlers,
