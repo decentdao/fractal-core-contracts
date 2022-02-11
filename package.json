@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "compile": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat clean && hardhat compile && hardhat test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
