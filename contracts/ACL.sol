@@ -1,17 +1,24 @@
-// SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.1 (governance/TimelockController.sol)
-
+//SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
- * @notice Created roles will be emitted during events. If you would like to reuse roles, find roles and use that role.
+ * @dev ACL contract acts as system level permission.
+ * ACL gets deployed during a DAO deployment
+ * When a user wants to deploy a module - they call this contract to verify permissions
+ * The module factory will deploy the module with a reference to the DAO's ACL
+ * @notice To deploy a module - You must propose two transactions (Create permissions via ACL, Deploy Module via Module Factory)
+ * The ACL will register the newly created role and the module will reference the ACL for the new role or a reused role.
  */
 contract ACL is AccessControl {
     mapping(bytes32 => bool) private _rolesInit;
     bytes32 public constant TIMELOCK = keccak256("TIMELOCK");
 
+    /**
+     * @dev Set Timelock as the DEFAULT ADMIN
+     * @param _timelock The timelock address
+     */
     constructor(address _timelock) {
         _rolesInit[TIMELOCK] = true;
         _setRoleAdmin(TIMELOCK, TIMELOCK);
@@ -32,32 +39,41 @@ contract ACL is AccessControl {
     }
 
     /**
-     * @dev Returns `true` if `account` has been granted `role`.
+     * @dev Returns `true` if `role` has been initilized.
      */
     function roleInitilized(bytes32 role) public view virtual returns (bool) {
         return _rolesInit[role];
     }
 
-
     /**
-    * @dev createPermission for CREATE_PERMISSIONS_ROLE
-    * @param _role The title of the role which can do an action in the system
-    * @param _roleAdmin The role which is the admin of the created role. Grant _mangers _role title
-    * @param _manager The address which has control over the action 
-    * @notice when the DAO want to deploy a module - It will need to set up permissions to use the module 
-    */
-    function _createPermission(bytes32 _role, bytes32 _roleAdmin, address _manager) internal {
+     * @dev createPermission for CREATE_PERMISSIONS_ROLE
+     * @param _role The title of the role which can do an action in the system
+     * @param _roleAdmin The role which is the admin of the created role. Grant _mangers _role title
+     * @param _manager The address which has control over the action
+     * @notice when the DAO want to deploy a module - It will need to set up permissions to use the module
+     */
+    function _createPermission(
+        bytes32 _role,
+        bytes32 _roleAdmin,
+        address _manager
+    ) internal {
         _setRoleAdmin(_role, _roleAdmin);
         _setupRole(_role, _manager);
     }
-    
-    function createPermissionBatch(bytes32[] calldata roles, bytes32[] calldata roleAdmin, address[] calldata manager) public onlyRoleOrOpenRole(TIMELOCK) {
-    require(roles.length == roleAdmin.length && roles.length == manager.length, "Array not equal");
-        for(uint i; i < roles.length; i ++) {
+
+    function createPermissionBatch(
+        bytes32[] calldata roles,
+        bytes32[] calldata roleAdmin,
+        address[] calldata manager
+    ) public onlyRoleOrOpenRole(TIMELOCK) {
+        require(
+            roles.length == roleAdmin.length && roles.length == manager.length,
+            "Array not equal"
+        );
+        for (uint256 i; i < roles.length; i++) {
             require(!roleInitilized(roles[i]), "Role already created");
             _rolesInit[roles[i]] = true;
             _createPermission(roles[i], roleAdmin[i], manager[i]);
-
         }
     }
 }

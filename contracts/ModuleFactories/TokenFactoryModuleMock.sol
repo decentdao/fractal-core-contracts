@@ -7,11 +7,7 @@ import "../Modules/VotesTokenWithSupplyModule.sol";
 contract TokenFactoryModuleMock {
     error ArraysNotEqual();
 
-    event TokenDeployed(
-        address tokenAddress,
-        string name,
-        string symbol
-    );
+    event TokenDeployed(address tokenAddress, string name, string symbol);
 
     /// @notice Creates a new ERC-20 token that supports DAO voting
     /// @param tokenName The name of the ERC-20 token
@@ -29,23 +25,22 @@ contract TokenFactoryModuleMock {
         uint256[] memory allocations,
         uint256 totalSupply,
         address treasury,
-        address acl
-    )
-        external
-        returns (
-            address votingToken
-        )
-    {
+        address acl,
+        bytes32[] memory _roles
+    ) external returns (address votingToken) {
         if (hodlers.length != allocations.length) revert ArraysNotEqual();
-        votingToken = address(new VotesTokenWithSupplyModule(
-            tokenName,
-            symbol,
-            hodlers,
-            allocations,
-            totalSupply,
-            treasury,
-            acl
-            ));
+        votingToken = address(
+            new VotesTokenWithSupplyModule(
+                tokenName,
+                symbol,
+                hodlers,
+                allocations,
+                totalSupply,
+                treasury,
+                acl,
+                _roles
+            )
+        );
         emit TokenDeployed(votingToken, tokenName, symbol);
     }
 }

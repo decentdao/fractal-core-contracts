@@ -18,6 +18,7 @@ export type DAOInfo = {
   votingToken: string;
   timelockController: string;
   daoProxy: string;
+  acl: string;
 };
 
 export type ProposalCreatedEvent = {
@@ -106,12 +107,14 @@ export async function createDAOAndToken(
       votingToken: "0",
       timelockController: "0",
       daoProxy: "0",
+      acl: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
     daoProxy: DAOEvent[0].args[3],
+    acl: DAOEvent[0].args[4],
   };
 }
 
@@ -160,12 +163,14 @@ export async function createDAOWrapToken(
       votingToken: "0",
       timelockController: "0",
       daoProxy: "0",
+      acl: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
     daoProxy: DAOEvent[0].args[3],
+    acl: DAOEvent[0].args[4],
   };
 }
 
@@ -208,12 +213,14 @@ export async function createDAOBringToken(
       votingToken: "0",
       timelockController: "0",
       daoProxy: "0",
+      acl: "0",
     };
   }
   return {
     votingToken: DAOEvent[0].args[1],
     timelockController: DAOEvent[0].args[2],
     daoProxy: DAOEvent[0].args[3],
+    acl: DAOEvent[0].args[4],
   };
 }
 
@@ -222,7 +229,7 @@ export async function propose(
   _values: BigNumber[],
   _DAO: BravoGovernor,
   _proposer: SignerWithAddress,
-  _transferCallData: string,
+  _transferCallData: string[],
   _description: string
 ): Promise<ProposalCreatedEvent> {
   const tx: ContractTransaction = await _DAO
@@ -230,7 +237,7 @@ export async function propose(
     ["propose(address[],uint256[],bytes[],string)"](
       _targets,
       _values,
-      [_transferCallData],
+      _transferCallData,
       _description
     );
 

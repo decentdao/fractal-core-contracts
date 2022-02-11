@@ -510,7 +510,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: Transfer 500 tokens to Voter B"
       );
 
@@ -538,7 +538,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: Transfer 500 tokens to Voter B"
       );
 
@@ -548,7 +548,7 @@ describe("Bravo DAO", function () {
           [BigNumber.from("0")],
           dao,
           voterA,
-          transferCallData,
+          [transferCallData],
           "Proposal #1: Transfer 500 tokens to Voter B"
         )
       ).to.be.revertedWith("Governor: proposal already exists");
@@ -565,7 +565,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
 
@@ -579,7 +579,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataTwo,
+        [transferCallDataTwo],
         "Proposal #2: Transfer 250 tokens to Voter C"
       );
 
@@ -676,7 +676,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
 
@@ -690,7 +690,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataTwo,
+        [transferCallDataTwo],
         "Proposal #2: Transfer 250 tokens to Voter C"
       );
 
@@ -728,7 +728,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await expect(
@@ -764,7 +764,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
@@ -785,7 +785,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
@@ -818,7 +818,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
@@ -854,7 +854,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       await network.provider.send("evm_mine");
@@ -878,7 +878,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataOne,
+        [transferCallDataOne],
         "Proposal #1: Transfer 250 tokens to Voter B"
       );
       for (let i = 0; i < 6; i++) {
@@ -953,7 +953,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -981,7 +981,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1013,7 +1013,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1058,7 +1058,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1134,7 +1134,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1161,7 +1161,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1183,7 +1183,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1268,7 +1268,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1331,7 +1331,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Upgrade Implementation"
       );
 
@@ -1378,7 +1378,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallDataNew,
+        [transferCallDataNew],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1464,7 +1464,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Create DAO"
       );
 
@@ -1562,7 +1562,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1636,7 +1636,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
@@ -1686,7 +1686,7 @@ describe("Bravo DAO", function () {
         [BigNumber.from("0")],
         dao,
         voterA,
-        transferCallData,
+        [transferCallData],
         "Proposal #1: transfer 100 tokens to Voter B"
       );
 
