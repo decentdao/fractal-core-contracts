@@ -13,10 +13,10 @@ import { BigNumber } from "ethers";
 import {
   TreasuryDepositEth,
   TreasuryWithdrawEth,
-  TreasuryDepositErc20Tokens,
-  TreasuryWithdrawErc20Tokens,
-  TreasuryDepositErc721Tokens,
-  TreasuryWithdrawErc721Tokens,
+  TreasuryDepositERC20Tokens,
+  TreasuryWithdrawERC20Tokens,
+  TreasuryDepositERC721Tokens,
+  TreasuryWithdrawERC721Tokens,
 } from "../helpers/Treasury";
 
 const expect = chai.expect;
@@ -216,7 +216,7 @@ describe("Treasury", function () {
     });
 
     it("Emits event when ERC-20 tokens are deposited", async () => {
-      const depositEvent = await TreasuryDepositErc20Tokens(
+      const depositEvent = await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -234,7 +234,7 @@ describe("Treasury", function () {
     });
 
     it("Receives ERC-20 tokens using the deposit function", async () => {
-      await TreasuryDepositErc20Tokens(
+      await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -251,7 +251,7 @@ describe("Treasury", function () {
     });
 
     it("Receives multiple ERC-20 tokens from multiple addresses using the deposit function", async () => {
-      await TreasuryDepositErc20Tokens(
+      await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -259,7 +259,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("20.0", 18)]
       );
 
-      await TreasuryDepositErc20Tokens(
+      await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -267,7 +267,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("30.0", 18)]
       );
 
-      await TreasuryDepositErc20Tokens(
+      await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenBravo.address],
@@ -275,7 +275,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("40.0", 18)]
       );
 
-      await TreasuryDepositErc20Tokens(
+      await TreasuryDepositERC20Tokens(
         treasury,
         owner,
         [erc20TokenBravo.address],
@@ -309,7 +309,7 @@ describe("Treasury", function () {
     });
 
     it("Emits event when ERC-20 tokens are withdrawn", async () => {
-      const withdrawEvent = await TreasuryWithdrawErc20Tokens(
+      const withdrawEvent = await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -327,7 +327,7 @@ describe("Treasury", function () {
     });
 
     it("Sends ERC-20 tokens using the withdraw function", async () => {
-      await TreasuryWithdrawErc20Tokens(
+      await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -344,7 +344,7 @@ describe("Treasury", function () {
     });
 
     it("Sends multiple ERC-20 tokens to multiple addresses using the withdraw function", async () => {
-      await TreasuryWithdrawErc20Tokens(
+      await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -352,7 +352,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("20.0", 18)]
       );
 
-      await TreasuryWithdrawErc20Tokens(
+      await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenAlpha.address],
@@ -360,7 +360,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("30.0", 18)]
       );
 
-      await TreasuryWithdrawErc20Tokens(
+      await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenBravo.address],
@@ -368,7 +368,7 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("40.0", 18)]
       );
 
-      await TreasuryWithdrawErc20Tokens(
+      await TreasuryWithdrawERC20Tokens(
         treasury,
         owner,
         [erc20TokenBravo.address],
@@ -403,7 +403,7 @@ describe("Treasury", function () {
 
     it("Reverts when a non-owner attempts to withdraw ERC-20 tokens", async () => {
       await expect(
-        TreasuryWithdrawErc20Tokens(
+        TreasuryWithdrawERC20Tokens(
           treasury,
           userA,
           [erc20TokenBravo.address],
@@ -415,7 +415,7 @@ describe("Treasury", function () {
 
     it("Reverts when the deposit function is called with inequal array lengths", async () => {
       await expect(
-        TreasuryDepositErc20Tokens(
+        TreasuryDepositERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address, erc20TokenBravo.address],
@@ -425,7 +425,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryDepositErc20Tokens(
+        TreasuryDepositERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address],
@@ -435,7 +435,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryDepositErc20Tokens(
+        TreasuryDepositERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address],
@@ -450,7 +450,7 @@ describe("Treasury", function () {
 
     it("Reverts when the withdraw function is called with inequal array lengths", async () => {
       await expect(
-        TreasuryWithdrawErc20Tokens(
+        TreasuryWithdrawERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address, erc20TokenBravo.address],
@@ -460,7 +460,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryWithdrawErc20Tokens(
+        TreasuryWithdrawERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address],
@@ -470,7 +470,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryWithdrawErc20Tokens(
+        TreasuryWithdrawERC20Tokens(
           treasury,
           owner,
           [erc20TokenAlpha.address],
@@ -561,7 +561,7 @@ describe("Treasury", function () {
     });
 
     it("Emits an event when ERC-721 tokens are deposited", async () => {
-      const depositEvent = await TreasuryDepositErc721Tokens(
+      const depositEvent = await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -577,7 +577,7 @@ describe("Treasury", function () {
     });
 
     it("Receives ERC-721 tokens using the deposit function", async () => {
-      await TreasuryDepositErc721Tokens(
+      await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -591,7 +591,7 @@ describe("Treasury", function () {
     });
 
     it("Receives multiple ERC-721 tokens from multiple addresses using the deposit function", async () => {
-      await TreasuryDepositErc721Tokens(
+      await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -599,7 +599,7 @@ describe("Treasury", function () {
         [BigNumber.from("2")]
       );
 
-      await TreasuryDepositErc721Tokens(
+      await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -607,7 +607,7 @@ describe("Treasury", function () {
         [BigNumber.from("3")]
       );
 
-      await TreasuryDepositErc721Tokens(
+      await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenBravo.address],
@@ -615,7 +615,7 @@ describe("Treasury", function () {
         [BigNumber.from("2")]
       );
 
-      await TreasuryDepositErc721Tokens(
+      await TreasuryDepositERC721Tokens(
         treasury,
         owner,
         [erc721TokenBravo.address],
@@ -641,7 +641,7 @@ describe("Treasury", function () {
     });
 
     it("Emits an event when ERC-721 tokens are withdrawn", async () => {
-      const withdrawEvent = await TreasuryWithdrawErc721Tokens(
+      const withdrawEvent = await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -657,7 +657,7 @@ describe("Treasury", function () {
     });
 
     it("Sends ERC-721 tokens using the withdraw function", async () => {
-      await TreasuryWithdrawErc721Tokens(
+      await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -671,7 +671,7 @@ describe("Treasury", function () {
     });
 
     it("Sends multiple ERC-721 tokens to multiple addresses using the withdraw function", async () => {
-      await TreasuryWithdrawErc721Tokens(
+      await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -679,7 +679,7 @@ describe("Treasury", function () {
         [BigNumber.from("0")]
       );
 
-      await TreasuryWithdrawErc721Tokens(
+      await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenAlpha.address],
@@ -687,7 +687,7 @@ describe("Treasury", function () {
         [BigNumber.from("1")]
       );
 
-      await TreasuryWithdrawErc721Tokens(
+      await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenBravo.address],
@@ -695,7 +695,7 @@ describe("Treasury", function () {
         [BigNumber.from("0")]
       );
 
-      await TreasuryWithdrawErc721Tokens(
+      await TreasuryWithdrawERC721Tokens(
         treasury,
         owner,
         [erc721TokenBravo.address],
@@ -722,7 +722,7 @@ describe("Treasury", function () {
 
     it("Reverts when a non-owner attempts to withdraw ERC-721 tokens", async () => {
       await expect(
-        TreasuryWithdrawErc721Tokens(
+        TreasuryWithdrawERC721Tokens(
           treasury,
           userA,
           [erc721TokenAlpha.address],
@@ -734,7 +734,7 @@ describe("Treasury", function () {
 
     it("Reverts when the deposit function is called with inequal array lengths", async () => {
       await expect(
-        TreasuryDepositErc721Tokens(
+        TreasuryDepositERC721Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address, erc721TokenBravo.address],
@@ -744,7 +744,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryDepositErc721Tokens(
+        TreasuryDepositERC721Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address],
@@ -754,7 +754,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryDepositErc721Tokens(
+        TreasuryDepositERC721Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address],
@@ -766,7 +766,7 @@ describe("Treasury", function () {
 
     it("Reverts when the withdraw function is called with inequal array lengths", async () => {
       await expect(
-        TreasuryWithdrawErc721Tokens(
+        TreasuryWithdrawERC721Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address, erc721TokenBravo.address],
@@ -776,7 +776,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryWithdrawErc721Tokens(
+        TreasuryWithdrawERC721Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address],
@@ -786,7 +786,7 @@ describe("Treasury", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        TreasuryWithdrawErc20Tokens(
+        TreasuryWithdrawERC20Tokens(
           treasury,
           owner,
           [erc721TokenAlpha.address],

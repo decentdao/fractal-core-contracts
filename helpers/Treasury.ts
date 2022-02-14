@@ -12,25 +12,25 @@ export type TreasuryEthWithdrawnEvent = {
   amounts: BigNumber[];
 };
 
-export type TreasuryErc20TokensDepositedEvent = {
+export type TreasuryERC20TokensDepositedEvent = {
   tokenAddresses: string[];
   senders: string[];
   amounts: BigNumber[];
 };
 
-export type TreasuryErc20TokensWithdrawnEvent = {
+export type TreasuryERC20TokensWithdrawnEvent = {
   tokenAddresses: string[];
   recipients: string[];
   amounts: BigNumber[];
 };
 
-export type TreasuryErc721TokensDepositedEvent = {
+export type TreasuryERC721TokensDepositedEvent = {
   tokenAddresses: string[];
   senders: string[];
   tokenIds: BigNumber[];
 };
 
-export type TreasuryErc721TokensWithdrawnEvent = {
+export type TreasuryERC721TokensWithdrawnEvent = {
   tokenAddresses: string[];
   recipients: string[];
   tokenIds: BigNumber[];
@@ -92,16 +92,16 @@ export async function TreasuryWithdrawEth(
   };
 }
 
-export async function TreasuryDepositErc20Tokens(
+export async function TreasuryDepositERC20Tokens(
   _treasury: Treasury,
   _caller: SignerWithAddress,
   _tokenAddresses: string[],
   _senders: string[],
   _amounts: BigNumber[]
-): Promise<TreasuryErc20TokensDepositedEvent> {
+): Promise<TreasuryERC20TokensDepositedEvent> {
   const tx: ContractTransaction = await _treasury
     .connect(_caller)
-    .depositErc20Tokens(_tokenAddresses, _senders, _amounts);
+    .depositERC20Tokens(_tokenAddresses, _senders, _amounts);
 
   const receipt: ContractReceipt = await tx.wait();
 
@@ -123,16 +123,16 @@ export async function TreasuryDepositErc20Tokens(
   };
 }
 
-export async function TreasuryWithdrawErc20Tokens(
+export async function TreasuryWithdrawERC20Tokens(
   _treasury: Treasury,
   _caller: SignerWithAddress,
   _tokenAddresses: string[],
   _recipients: string[],
   _amounts: BigNumber[]
-): Promise<TreasuryErc20TokensWithdrawnEvent> {
+): Promise<TreasuryERC20TokensWithdrawnEvent> {
   const tx: ContractTransaction = await _treasury
     .connect(_caller)
-    .withdrawErc20Tokens(_tokenAddresses, _recipients, _amounts);
+    .withdrawERC20Tokens(_tokenAddresses, _recipients, _amounts);
 
   const receipt: ContractReceipt = await tx.wait();
 
@@ -154,16 +154,16 @@ export async function TreasuryWithdrawErc20Tokens(
   };
 }
 
-export async function TreasuryDepositErc721Tokens(
+export async function TreasuryDepositERC721Tokens(
   _treasury: Treasury,
   _caller: SignerWithAddress,
   _tokenAddresses: string[],
   _senders: string[],
   _tokenIds: BigNumber[]
-): Promise<TreasuryErc721TokensDepositedEvent> {
+): Promise<TreasuryERC721TokensDepositedEvent> {
   const tx: ContractTransaction = await _treasury
     .connect(_caller)
-    .depositErc721Tokens(_tokenAddresses, _senders, _tokenIds);
+    .depositERC721Tokens(_tokenAddresses, _senders, _tokenIds);
 
   const receipt: ContractReceipt = await tx.wait();
 
@@ -185,16 +185,16 @@ export async function TreasuryDepositErc721Tokens(
   };
 }
 
-export async function TreasuryWithdrawErc721Tokens(
+export async function TreasuryWithdrawERC721Tokens(
   _treasury: Treasury,
   _caller: SignerWithAddress,
   _tokenAddresses: string[],
   _recipients: string[],
   _tokenIds: BigNumber[]
-): Promise<TreasuryErc721TokensWithdrawnEvent> {
+): Promise<TreasuryERC721TokensWithdrawnEvent> {
   const tx: ContractTransaction = await _treasury
     .connect(_caller)
-    .withdrawErc721Tokens(_tokenAddresses, _recipients, _tokenIds);
+    .withdrawERC721Tokens(_tokenAddresses, _recipients, _tokenIds);
 
   const receipt: ContractReceipt = await tx.wait();
 

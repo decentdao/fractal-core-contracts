@@ -41,14 +41,20 @@ contract Treasury is Ownable, ERC721Holder {
     uint256[] tokenIds
   );
 
+  /// @notice Creates a new treasury instance
+  /// @param initialOwner The address to initialize ownership of the contract to
   constructor(address initialOwner) {
     _transferOwnership(initialOwner);
   }
 
+  /// @notice Allows the contract to receive Ether
   receive() external payable {
     emit EthDeposited(msg.sender, msg.value);
   }
 
+  /// @notice Allows the owner to withdraw ETH to multiple addresses
+  /// @param recipients Array of addresses that ETH will be withdrawn to
+  /// @param amounts Array of amounts of ETH that will be withdrawnnn
   function withdrawEth(
     address[] calldata recipients,
     uint256[] calldata amounts
@@ -64,7 +70,11 @@ contract Treasury is Ownable, ERC721Holder {
     emit EthWithdrawn(recipients, amounts);
   }
 
-  function depositErc20Tokens(
+  /// @notice Allows the owner to deposit ERC-20 tokens from multiple addresses
+  /// @param tokenAddresses Array of token contract addresses
+  /// @param senders Array of addresses that the ERC-20 token will be transferred from
+  /// @param amounts Array of amounts of the ERC-20 token that will be transferred
+  function depositERC20Tokens(
     address[] calldata tokenAddresses,
     address[] calldata senders,
     uint256[] calldata amounts
@@ -87,7 +97,11 @@ contract Treasury is Ownable, ERC721Holder {
     emit ERC20TokensDeposited(tokenAddresses, senders, amounts);
   }
 
-  function withdrawErc20Tokens(
+  /// @notice Allows the owner to withdraw ERC-20 tokens from multiple addresses
+  /// @param tokenAddresses Array of token contract addresses
+  /// @param recipients Array of addresses that the ERC-20 token will be transferred to
+  /// @param amounts Array of amounts of the ERC-20 token that will be transferred 
+  function withdrawERC20Tokens(
     address[] calldata tokenAddresses,
     address[] calldata recipients,
     uint256[] calldata amounts
@@ -109,7 +123,11 @@ contract Treasury is Ownable, ERC721Holder {
     emit ERC20TokensWithdrawn(tokenAddresses, recipients, amounts);
   }
 
-  function depositErc721Tokens(
+  /// @notice Allows the owner to deposit ERC-721 tokens from multiple addresses
+  /// @param tokenAddresses Array of token contract addresses
+  /// @param senders Array of addresses that the ERC-721 tokens will be transferred from
+  /// @param tokenIds Array of amounts of the ERC-20 token that will be transferred 
+  function depositERC721Tokens(
     address[] calldata tokenAddresses,
     address[] calldata senders,
     uint256[] calldata tokenIds
@@ -132,7 +150,11 @@ contract Treasury is Ownable, ERC721Holder {
     emit ERC721TokensDeposited(tokenAddresses, senders, tokenIds);
   }
 
-  function withdrawErc721Tokens(
+  /// @notice Allows the owner to withdraw ERC-721 tokens from multiple addresses
+  /// @param tokenAddresses Array of token contract addresses
+  /// @param recipients Array of addresses that the ERC-721 tokens will be transferred to
+  /// @param tokenIds Array of amounts of the ERC-20 token that will be transferred 
+  function withdrawERC721Tokens(
     address[] calldata tokenAddresses,
     address[] calldata recipients,
     uint256[] calldata tokenIds
