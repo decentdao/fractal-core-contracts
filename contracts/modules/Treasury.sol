@@ -10,8 +10,8 @@ import "../ACL.sol";
 /// @notice A treasury module contract for managing a DAOs assets
 contract Treasury is ERC721Holder {
   using SafeERC20 for IERC20;
-  ACL acl;
-  bytes32 role;
+  ACL public acl;
+  bytes32 public role;
 
   error ArraysNotEqual();
   error NotRole();

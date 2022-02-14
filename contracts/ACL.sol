@@ -61,7 +61,7 @@ contract ACL is AccessControl {
         bytes32 _roleAdmin,
         address _manager
     ) internal {
-        if(roleInitilized(_role)) revert RoleCreated();
+        if (roleInitilized(_role)) revert RoleCreated();
         _rolesInit[_role] = true;
         _setRoleAdmin(_role, _roleAdmin);
         _setupRole(_role, _manager);
@@ -72,8 +72,8 @@ contract ACL is AccessControl {
         bytes32[] calldata roleAdmin,
         address[] calldata manager
     ) public onlyRoleOrOpenRole(TIMELOCK) {
-        if(roles.length != roleAdmin.length) revert ArrayNotEqual();
-        if(roles.length != manager.length) revert ArrayNotEqual();
+        if (roles.length != roleAdmin.length || roles.length != manager.length)
+            revert ArrayNotEqual();
         for (uint256 i; i < roles.length; i++) {
             _createPermission(roles[i], roleAdmin[i], manager[i]);
         }
