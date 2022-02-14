@@ -21,15 +21,15 @@ import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
   delegateTokens,
-  createDAOAndToken,
+  openZCreateDAOAndToken,
   vote,
-  queueProposal,
-  executeProposal,
-  propose,
-  createDAOWrapToken,
+  openZQueueProposal,
+  openZExecuteProposal,
+  openZPropose,
+  openZCreateDAOWrapToken,
   wrapTokens,
-  createDAOBringToken,
-} from "../helpers/OpenZ";
+  openZCreateDAOBringToken,
+} from "../helpers/Index";
 
 const expect = chai.expect;
 
@@ -64,7 +64,7 @@ describe("OpenZ DAO", function () {
       daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -116,7 +116,7 @@ describe("OpenZ DAO", function () {
 
     it("Revert if hodlers array length does not equal allocations array length", async () => {
       await expect(
-        createDAOAndToken(
+        openZCreateDAOAndToken(
           daoFactory,
           governorImpl.address,
           [proposerExecutor.address],
@@ -140,7 +140,7 @@ describe("OpenZ DAO", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        createDAOAndToken(
+        openZCreateDAOAndToken(
           daoFactory,
           governorImpl.address,
           [proposerExecutor.address],
@@ -184,7 +184,7 @@ describe("OpenZ DAO", function () {
 
     it("Total supply is less than allocations sum", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -246,7 +246,7 @@ describe("OpenZ DAO", function () {
       );
 
       // Create a new DAO using the DAO Factory and the existing test token
-      daoInfo = await createDAOWrapToken(
+      daoInfo = await openZCreateDAOWrapToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -398,7 +398,7 @@ describe("OpenZ DAO", function () {
 
       // Create a new DAO using the DAO Factory and the existing test token
 
-      daoInfo = await createDAOBringToken(
+      daoInfo = await openZCreateDAOBringToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -458,7 +458,7 @@ describe("OpenZ DAO", function () {
       daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -505,7 +505,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -533,7 +533,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      await propose(
+      await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -543,7 +543,7 @@ describe("OpenZ DAO", function () {
       );
 
       await expect(
-        propose(
+        openZPropose(
           [governanceToken.address],
           [BigNumber.from("0")],
           dao,
@@ -560,7 +560,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -574,7 +574,7 @@ describe("OpenZ DAO", function () {
         [voterC.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventTwo = await propose(
+      const proposalCreatedEventTwo = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -624,7 +624,7 @@ describe("OpenZ DAO", function () {
       daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -671,7 +671,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -685,7 +685,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventTwo = await propose(
+      const proposalCreatedEventTwo = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -723,7 +723,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -759,7 +759,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -780,7 +780,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -813,7 +813,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -849,7 +849,7 @@ describe("OpenZ DAO", function () {
       );
       await governanceToken.connect(voterC).delegate(proposerExecutor.address);
       await governanceToken.connect(voterC).delegate(voterC.address);
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -873,7 +873,7 @@ describe("OpenZ DAO", function () {
         "transfer",
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -901,7 +901,7 @@ describe("OpenZ DAO", function () {
       daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -948,7 +948,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -965,7 +965,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       const status = await dao.proposalVotes(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -983,7 +983,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -999,7 +999,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(
+        openZQueueProposal(
           dao,
           voterA,
           proposalCreatedEvent.targets,
@@ -1035,7 +1035,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1048,7 +1048,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(
+        openZQueueProposal(
           dao,
           voterA,
           proposalCreatedEvent.targets,
@@ -1071,7 +1071,7 @@ describe("OpenZ DAO", function () {
       daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1118,7 +1118,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1137,7 +1137,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -1162,7 +1162,7 @@ describe("OpenZ DAO", function () {
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(
+      await openZExecuteProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -1195,7 +1195,7 @@ describe("OpenZ DAO", function () {
         govUpgraded.address,
       ]);
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [dao.address],
         [BigNumber.from("0")],
         dao,
@@ -1214,7 +1214,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -1254,7 +1254,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEventNew = await propose(
+      const proposalCreatedEventNew = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1273,7 +1273,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEventNew.targets,
@@ -1298,7 +1298,7 @@ describe("OpenZ DAO", function () {
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(
+      await openZExecuteProposal(
         dao,
         voterA,
         proposalCreatedEventNew.targets,
@@ -1354,7 +1354,7 @@ describe("OpenZ DAO", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [daoFactory.address],
         [BigNumber.from("0")],
         dao,
@@ -1373,7 +1373,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -1460,7 +1460,7 @@ describe("OpenZ DAO", function () {
 
     it("Revert if execution is too early", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await openZCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1505,7 +1505,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1524,7 +1524,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await openZQueueProposal(
         dao,
         voterA,
         proposalCreatedEvent.targets,
@@ -1533,7 +1533,7 @@ describe("OpenZ DAO", function () {
         proposalCreatedEvent.description
       );
       await expect(
-        executeProposal(
+        openZExecuteProposal(
           dao,
           voterA,
           proposalCreatedEvent.targets,
@@ -1559,7 +1559,7 @@ describe("OpenZ DAO", function () {
 
       await network.provider.send("evm_mine");
       await expect(
-        executeProposal(
+        openZExecuteProposal(
           dao,
           voterA,
           [governanceToken.address],
@@ -1576,7 +1576,7 @@ describe("OpenZ DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await openZPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1596,7 +1596,7 @@ describe("OpenZ DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        executeProposal(
+        openZExecuteProposal(
           dao,
           voterA,
           proposalCreatedEvent.targets,

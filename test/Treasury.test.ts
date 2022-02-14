@@ -19,7 +19,7 @@ import {
   TreasuryWithdrawERC20Tokens,
   TreasuryDepositERC721Tokens,
   TreasuryWithdrawERC721Tokens,
-} from "../helpers/Treasury";
+} from "../helpers/Index";
 import { TreasuryFactory__factory } from "../typechain/factories/TreasuryFactory__factory";
 import { TreasuryFactory } from "../typechain/TreasuryFactory";
 
