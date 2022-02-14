@@ -44,11 +44,10 @@ contract Treasury is ERC721Holder {
     uint256[] tokenIds
   );
 
-    modifier onlyRole() {
-      if(!acl.hasRole(role, msg.sender)) revert NotRole();
-        _;
-    }
-
+  modifier onlyRole() {
+    if(!acl.hasRole(role, msg.sender)) revert NotRole();
+      _;
+  }
   
   /// @notice Creates a new treasury instance
   /// @param _acl Access controll list address
