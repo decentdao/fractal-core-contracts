@@ -1,17 +1,20 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "../ACL.sol";
 
 /// @notice A treasury module contract for managing a DAOs assets
-contract Treasury is Ownable, ERC721Holder {
+contract Treasury is ERC721Holder {
   using SafeERC20 for IERC20;
+  ACL acl;
+  bytes32 role;
 
   error ArraysNotEqual();
+  error NotRole();
 
   event EthDeposited(address sender, uint256 amount);
 
@@ -41,10 +44,18 @@ contract Treasury is Ownable, ERC721Holder {
     uint256[] tokenIds
   );
 
+    modifier onlyRole() {
+      if(!acl.hasRole(role, msg.sender)) revert NotRole();
+        _;
+    }
+
+  
   /// @notice Creates a new treasury instance
-  /// @param initialOwner The address to initialize ownership of the contract to
-  constructor(address initialOwner) {
-    _transferOwnership(initialOwner);
+  /// @param _acl Access controll list address
+  /// @param _role Array of roles for permissions
+  constructor(address _acl, bytes32 _role) {
+        acl = ACL(_acl);
+        role = _role;
   }
 
   /// @notice Allows the contract to receive Ether
@@ -58,7 +69,7 @@ contract Treasury is Ownable, ERC721Holder {
   function withdrawEth(
     address[] calldata recipients,
     uint256[] calldata amounts
-  ) external onlyOwner {
+  ) external onlyRole() {
     if (recipients.length != amounts.length) {
       revert ArraysNotEqual();
     }
@@ -78,7 +89,7 @@ contract Treasury is Ownable, ERC721Holder {
     address[] calldata tokenAddresses,
     address[] calldata senders,
     uint256[] calldata amounts
-  ) external onlyOwner {
+  ) external onlyRole(){
     if (
       tokenAddresses.length != senders.length ||
       tokenAddresses.length != amounts.length
@@ -105,7 +116,7 @@ contract Treasury is Ownable, ERC721Holder {
     address[] calldata tokenAddresses,
     address[] calldata recipients,
     uint256[] calldata amounts
-  ) external onlyOwner {
+  ) external onlyRole() {
     if (
       tokenAddresses.length != recipients.length ||
       tokenAddresses.length != amounts.length
@@ -131,7 +142,7 @@ contract Treasury is Ownable, ERC721Holder {
     address[] calldata tokenAddresses,
     address[] calldata senders,
     uint256[] calldata tokenIds
-  ) external onlyOwner {
+  ) external onlyRole() {
     if (
       tokenAddresses.length != senders.length ||
       tokenAddresses.length != tokenIds.length
@@ -158,7 +169,7 @@ contract Treasury is Ownable, ERC721Holder {
     address[] calldata tokenAddresses,
     address[] calldata recipients,
     uint256[] calldata tokenIds
-  ) external onlyOwner {
+  ) external onlyRole() {
     if (
       tokenAddresses.length != recipients.length ||
       tokenAddresses.length != tokenIds.length

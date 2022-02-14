@@ -14,6 +14,10 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract ACL is AccessControl {
     mapping(bytes32 => bool) private _rolesInit;
     bytes32 public constant TIMELOCK = keccak256("TIMELOCK");
+    /// Role Already Created
+    error RoleCreated();
+    /// Array Not Equal
+    error ArrayNotEqual();
 
     /**
      * @dev Set Timelock as the DEFAULT ADMIN
@@ -57,7 +61,7 @@ contract ACL is AccessControl {
         bytes32 _roleAdmin,
         address _manager
     ) internal {
-        require(!roleInitilized(_role), "Role already created");
+        if(roleInitilized(_role)) revert RoleCreated();
         _rolesInit[_role] = true;
         _setRoleAdmin(_role, _roleAdmin);
         _setupRole(_role, _manager);
@@ -68,10 +72,8 @@ contract ACL is AccessControl {
         bytes32[] calldata roleAdmin,
         address[] calldata manager
     ) public onlyRoleOrOpenRole(TIMELOCK) {
-        require(
-            roles.length == roleAdmin.length && roles.length == manager.length,
-            "Array not equal"
-        );
+        if(roles.length != roleAdmin.length) revert ArrayNotEqual();
+        if(roles.length != manager.length) revert ArrayNotEqual();
         for (uint256 i; i < roles.length; i++) {
             _createPermission(roles[i], roleAdmin[i], manager[i]);
         }
