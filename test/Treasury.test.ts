@@ -6,10 +6,12 @@ import {
   TestNft__factory,
   Treasury,
   Treasury__factory,
+  ACL,
+  ACL__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
+import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   TreasuryDepositEth,
   TreasuryWithdrawEth,
@@ -18,11 +20,16 @@ import {
   TreasuryDepositERC721Tokens,
   TreasuryWithdrawERC721Tokens,
 } from "../helpers/Treasury";
+import { TreasuryFactory__factory } from "../typechain/factories/TreasuryFactory__factory";
+import { TreasuryFactory } from "../typechain/TreasuryFactory";
 
 const expect = chai.expect;
 
 describe("Treasury", function () {
+  let treasuryFactory: TreasuryFactory;
   let treasury: Treasury;
+  // eslint-disable-next-line camelcase
+  let acl: ACL;
   let erc20TokenAlpha: TestToken;
   let erc20TokenBravo: TestToken;
   let erc721TokenAlpha: TestNft;
@@ -35,9 +42,31 @@ describe("Treasury", function () {
   describe("Treasury supports Ether", function () {
     beforeEach(async function () {
       [deployer, owner, userA, userB] = await ethers.getSigners();
-
-      // Deploy a new treasury with the Owner account configured as the initial owner
-      treasury = await new Treasury__factory(deployer).deploy(owner.address);
+      // init ACL/Permissions/Treasury
+      const ROLE = ethers.utils.id("ROLE");
+      const TIMELOCK = ethers.utils.id("TIMELOCK");
+      acl = await new ACL__factory(deployer).deploy(deployer.address);
+      await acl
+        .connect(deployer)
+        .createPermissionBatch([ROLE], [TIMELOCK], [owner.address]);
+      treasuryFactory = await new TreasuryFactory__factory(deployer).deploy();
+      const tx: ContractTransaction = await treasuryFactory.createTreasury(
+        acl.address,
+        ROLE
+      );
+      const receipt: ContractReceipt = await tx.wait();
+      const _proposalCreatedEvent = receipt.events?.filter((x) => {
+        return x.event === "TreasuryCreated";
+      });
+      if (
+        _proposalCreatedEvent === undefined ||
+        _proposalCreatedEvent[0].args === undefined
+      ) {
+        return {};
+      }
+      const treasuryAddress = _proposalCreatedEvent[0].args[0];
+      // eslint-disable-next-line camelcase
+      treasury = Treasury__factory.connect(treasuryAddress, deployer);
 
       await TreasuryDepositEth(
         treasury,
@@ -124,7 +153,7 @@ describe("Treasury", function () {
           [userA.address],
           [ethers.utils.parseUnits("1", 18)]
         )
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith("NotRole()");
     });
 
     it("Reverts when the withdraw function is called with inequal array lengths", async () => {
@@ -152,8 +181,31 @@ describe("Treasury", function () {
     beforeEach(async function () {
       [deployer, owner, userA, userB] = await ethers.getSigners();
 
-      // Deploy a new treasury with the Owner account configured as the initial owner
-      treasury = await new Treasury__factory(deployer).deploy(owner.address);
+      // init ACL/Permissions/Treasury
+      const ROLE = ethers.utils.id("ROLE");
+      const TIMELOCK = ethers.utils.id("TIMELOCK");
+      acl = await new ACL__factory(deployer).deploy(deployer.address);
+      await acl
+        .connect(deployer)
+        .createPermissionBatch([ROLE], [TIMELOCK], [owner.address]);
+      treasuryFactory = await new TreasuryFactory__factory(deployer).deploy();
+      const tx: ContractTransaction = await treasuryFactory.createTreasury(
+        acl.address,
+        ROLE
+      );
+      const receipt: ContractReceipt = await tx.wait();
+      const _proposalCreatedEvent = receipt.events?.filter((x) => {
+        return x.event === "TreasuryCreated";
+      });
+      if (
+        _proposalCreatedEvent === undefined ||
+        _proposalCreatedEvent[0].args === undefined
+      ) {
+        return {};
+      }
+      const treasuryAddress = _proposalCreatedEvent[0].args[0];
+      // eslint-disable-next-line camelcase
+      treasury = Treasury__factory.connect(treasuryAddress, deployer);
 
       erc20TokenAlpha = await new TestToken__factory(deployer).deploy(
         "ALPHA",
@@ -410,7 +462,7 @@ describe("Treasury", function () {
           [userB.address],
           [ethers.utils.parseUnits("50.0", 18)]
         )
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith("NotRole()");
     });
 
     it("Reverts when the deposit function is called with inequal array lengths", async () => {
@@ -488,8 +540,31 @@ describe("Treasury", function () {
     beforeEach(async function () {
       [deployer, owner, userA, userB] = await ethers.getSigners();
 
-      // Deploy a new treasury with the Owner account configured as the initial owner
-      treasury = await new Treasury__factory(deployer).deploy(owner.address);
+      // init ACL/Permissions/Treasury
+      const ROLE = ethers.utils.id("ROLE");
+      const TIMELOCK = ethers.utils.id("TIMELOCK");
+      acl = await new ACL__factory(deployer).deploy(deployer.address);
+      await acl
+        .connect(deployer)
+        .createPermissionBatch([ROLE], [TIMELOCK], [owner.address]);
+      treasuryFactory = await new TreasuryFactory__factory(deployer).deploy();
+      const tx: ContractTransaction = await treasuryFactory.createTreasury(
+        acl.address,
+        ROLE
+      );
+      const receipt: ContractReceipt = await tx.wait();
+      const _proposalCreatedEvent = receipt.events?.filter((x) => {
+        return x.event === "TreasuryCreated";
+      });
+      if (
+        _proposalCreatedEvent === undefined ||
+        _proposalCreatedEvent[0].args === undefined
+      ) {
+        return {};
+      }
+      const treasuryAddress = _proposalCreatedEvent[0].args[0];
+      // eslint-disable-next-line camelcase
+      treasury = Treasury__factory.connect(treasuryAddress, deployer);
 
       erc721TokenAlpha = await new TestNft__factory(deployer).deploy(
         "ALPHA",
@@ -729,7 +804,7 @@ describe("Treasury", function () {
           [userA.address],
           [BigNumber.from("0")]
         )
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWith("NotRole()");
     });
 
     it("Reverts when the deposit function is called with inequal array lengths", async () => {
