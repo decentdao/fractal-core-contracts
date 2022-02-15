@@ -33,7 +33,7 @@ import {
 
 const expect = chai.expect;
 
-describe.only("Bravo DAO", function () {
+describe("Bravo DAO", function () {
   let daoFactory: BravoFactory;
   let governanceToken: VotesTokenWithSupply;
   let dao: BravoGovernor;

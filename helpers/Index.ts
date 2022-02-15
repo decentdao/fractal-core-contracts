@@ -279,6 +279,7 @@ export async function openZCreateDAOAndToken(
   _executors: string[],
   _daoName: string,
   _minDelay: BigNumber,
+  _initialVoteExtension: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
   _initialProposalThreshold: BigNumber,
@@ -298,6 +299,7 @@ export async function openZCreateDAOAndToken(
       executors: _executors,
       daoName: _daoName,
       minDelay: _minDelay,
+      initialVoteExtension: _initialVoteExtension,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
       initialProposalThreshold: _initialProposalThreshold,
@@ -340,6 +342,7 @@ export async function openZCreateDAOWrapToken(
   _executors: string[],
   _daoName: string,
   _minDelay: BigNumber,
+  _initialVoteExtension: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
   _initialProposalThreshold: BigNumber,
@@ -356,6 +359,7 @@ export async function openZCreateDAOWrapToken(
       executors: _executors,
       daoName: _daoName,
       minDelay: _minDelay,
+      initialVoteExtension: _initialVoteExtension,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
       initialProposalThreshold: _initialProposalThreshold,
@@ -396,6 +400,7 @@ export async function openZCreateDAOBringToken(
   _executors: string[],
   _daoName: string,
   _minDelay: BigNumber,
+  _initialVoteExtension: BigNumber,
   _initialVotingDelay: BigNumber,
   _initialVotingPeriod: BigNumber,
   _initialProposalThreshold: BigNumber,
@@ -409,6 +414,7 @@ export async function openZCreateDAOBringToken(
       executors: _executors,
       daoName: _daoName,
       minDelay: _minDelay,
+      initialVoteExtension: _initialVoteExtension,
       initialVotingDelay: _initialVotingDelay,
       initialVotingPeriod: _initialVotingPeriod,
       initialProposalThreshold: _initialProposalThreshold,
@@ -497,12 +503,12 @@ export async function openZPropose(
   _values: BigNumber[],
   _DAO: OpenZGovernor,
   _proposer: SignerWithAddress,
-  _transferCallData: string,
+  _transferCallData: string[],
   _description: string
 ): Promise<ProposalCreatedEvent> {
   const tx: ContractTransaction = await _DAO
     .connect(_proposer)
-    .propose(_targets, _values, [_transferCallData], _description);
+    .propose(_targets, _values, _transferCallData, _description);
 
   const receipt: ContractReceipt = await tx.wait();
 

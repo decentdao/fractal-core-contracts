@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelo
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
+
 
 contract OpenZGovernor is
     Initializable,
@@ -20,15 +22,27 @@ contract OpenZGovernor is
     GovernorVotesQuorumFractionUpgradeable,
     GovernorTimelockControlUpgradeable,
     OwnableUpgradeable,
-    UUPSUpgradeable
+    UUPSUpgradeable,
+    GovernorPreventLateQuorumUpgradeable
 {
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() initializer {}
+    /**
+     * @dev Configures DAO implementation
+     * @dev Called once during deployment atomically
+     * @param _name Name of the DAO
+     * @param _token Voting token uses snapshot feature
+     * @param _timelock Timelock vest proposals to allow detractors to exit system
+     * @param _initialVoteExtension Allow users to vote if quorum attack is preformed
+     * @param _initialVotingDelay Allow users to research proposals before voting period
+     * @param _initialVotingPeriod Length of voting period (blocks)
+     * @param _initialProposalThreshold Total tokens required to submit a proposal
+     * @param _initialQuorumNumeratorValue Total votes needed to reach quorum
+     */
 
     function initialize(
         string memory _name,
         IVotesUpgradeable _token,
         TimelockControllerUpgradeable _timelock,
+        uint64 _initialVoteExtension,
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,
         uint256 _initialProposalThreshold,
@@ -46,6 +60,7 @@ contract OpenZGovernor is
         __GovernorTimelockControl_init(_timelock);
         __Ownable_init();
         __UUPSUpgradeable_init();
+        __GovernorPreventLateQuorum_init(_initialVoteExtension);
     }
 
     function _authorizeUpgrade(address newImplementation)
@@ -99,6 +114,34 @@ contract OpenZGovernor is
         returns (ProposalState)
     {
         return super.state(proposalId);
+    }
+
+        function proposalDeadline(uint256 proposalId)
+        public
+        view
+        virtual
+        override(
+            GovernorPreventLateQuorumUpgradeable,
+            GovernorUpgradeable,
+            IGovernorUpgradeable
+        )
+        returns (uint256)
+    {
+        return super.proposalDeadline(proposalId);
+    }
+
+    function _castVote(
+        uint256 proposalId,
+        address account,
+        uint8 support,
+        string memory reason
+    )
+        internal
+        virtual
+        override(GovernorUpgradeable, GovernorPreventLateQuorumUpgradeable)
+        returns (uint256)
+    {
+        return super._castVote(proposalId, account, support, reason);
     }
 
     function propose(
