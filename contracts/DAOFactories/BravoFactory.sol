@@ -15,6 +15,7 @@ contract BravoFactory {
         address[] executors;
         string daoName;
         uint256 minDelay;
+        uint64 initialVoteExtension;
         uint256 initialVotingDelay;
         uint256 initialVotingPeriod;
         uint256 initialProposalThreshold;
@@ -85,14 +86,9 @@ contract BravoFactory {
         address aclAddress = _createACL(timelockController);
 
         address proxyAddress = _createDAO(
-            createDAOAndTokenParameters.createDAOParameters.governanceImplementation,
+            createDAOAndTokenParameters.createDAOParameters,
             votingToken,
             timelockController,
-            createDAOAndTokenParameters.createDAOParameters.daoName,
-            createDAOAndTokenParameters.createDAOParameters.initialVotingDelay,
-            createDAOAndTokenParameters.createDAOParameters.initialVotingPeriod,
-            createDAOAndTokenParameters.createDAOParameters.initialProposalThreshold,
-            createDAOAndTokenParameters.createDAOParameters.initialQuorumNumeratorValue,
             aclAddress
         );
 
@@ -130,14 +126,9 @@ contract BravoFactory {
         address aclAddress = _createACL(timelockController);
 
         address proxyAddress = _createDAO(
-            createDAOWrapTokenParameters.createDAOParameters.governanceImplementation,
+            createDAOWrapTokenParameters.createDAOParameters,
             wrappedTokenAddress,
             timelockController,
-            createDAOWrapTokenParameters.createDAOParameters.daoName,
-            createDAOWrapTokenParameters.createDAOParameters.initialVotingDelay,
-            createDAOWrapTokenParameters.createDAOParameters.initialVotingPeriod,
-            createDAOWrapTokenParameters.createDAOParameters.initialProposalThreshold,
-            createDAOWrapTokenParameters.createDAOParameters.initialQuorumNumeratorValue,
             aclAddress
         );
         return (wrappedTokenAddress, timelockController, proxyAddress);
@@ -167,14 +158,9 @@ contract BravoFactory {
         address aclAddress = _createACL(timelockController);
 
         address proxyAddress = _createDAO(
-            createDAOBringTokenParameters.createDAOParameters.governanceImplementation,
+            createDAOBringTokenParameters.createDAOParameters,
             createDAOBringTokenParameters.tokenAddress,
             timelockController,
-            createDAOBringTokenParameters.createDAOParameters.daoName,
-            createDAOBringTokenParameters.createDAOParameters.initialVotingDelay,
-            createDAOBringTokenParameters.createDAOParameters.initialVotingPeriod,
-            createDAOBringTokenParameters.createDAOParameters.initialProposalThreshold,
-            createDAOBringTokenParameters.createDAOParameters.initialQuorumNumeratorValue,
             aclAddress
         );
 
@@ -182,39 +168,30 @@ contract BravoFactory {
     }
 
     /// @dev Creates a new DAO by deploying a new instance of MyGovernor
-    /// @param governanceImplementation The address of the MyGovernor implementation contract
+    /// @param createDAOParameters Struct of all DAO params
+    /// @param votingToken The address of the governanceToken
     /// @param timelockController The address of the TimelockController created for the DAO
-    /// @param daoName The name of the DAO
-    /// @param initialVotingDelay The delay in blocks between when a proposal is submitted and voting begins
-    /// @param initialVotingPeriod The delay in blocks between when a proposal is submitted and voting ends
-    /// @param initialProposalThreshold The number of votes required for a voter to be a proposer
-    /// @param initialQuorumNumeratorValue The numerator for the quorum fraction - the number of votes required
-    /// @param initialQuorumNumeratorValue for a proposal to be successful as a fraction of total supply
     /// @param acl The address of the ACL created for the DAO
     /// @return The address of the proxy contract deployed for the created 
     function _createDAO(
-        address governanceImplementation,
+        CreateDAOParameters calldata createDAOParameters,
         address votingToken,
         address timelockController,
-        string memory daoName,
-        uint256 initialVotingDelay,
-        uint256 initialVotingPeriod,
-        uint256 initialProposalThreshold,
-        uint256 initialQuorumNumeratorValue,
         address acl
     ) private returns (address) {
         address proxyAddress = address(
             new ERC1967Proxy(
-                governanceImplementation,
+                createDAOParameters.governanceImplementation,
                 abi.encodeWithSelector(
                     BravoGovernor(payable(address(0))).initialize.selector,
-                    daoName,
+                    createDAOParameters.daoName,
                     votingToken,
                     timelockController,
-                    initialVotingDelay,
-                    initialVotingPeriod,
-                    initialProposalThreshold,
-                    initialQuorumNumeratorValue
+                    createDAOParameters.initialVoteExtension,
+                    createDAOParameters.initialVotingDelay,
+                    createDAOParameters.initialVotingPeriod,
+                    createDAOParameters.initialProposalThreshold,
+                    createDAOParameters.initialQuorumNumeratorValue
                 )
             )
         );
