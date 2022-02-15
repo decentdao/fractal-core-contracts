@@ -33,7 +33,7 @@ import {
 
 const expect = chai.expect;
 
-describe("Bravo DAO", function () {
+describe.only("Bravo DAO", function () {
   let daoFactory: BravoFactory;
   let governanceToken: VotesTokenWithSupply;
   let dao: BravoGovernor;
@@ -1091,7 +1091,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1139,7 +1139,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1154,7 +1154,7 @@ describe("Bravo DAO", function () {
       await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
       await network.provider.send("evm_mine");
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.revertedWith("Governor: proposal not successful");
     });
 
@@ -1164,7 +1164,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1183,11 +1183,11 @@ describe("Bravo DAO", function () {
         proposalCreatedEvent.proposalId
       );
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.revertedWith("Governor: proposal not successful");
       expect(currentBlock).lt(currentDeadline);
       await network.provider.send("evm_mine");
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const afterBlock = await ethers.provider.getBlockNumber();
       const afterDeadline = await dao.proposalDeadline(
         proposalCreatedEvent.proposalId

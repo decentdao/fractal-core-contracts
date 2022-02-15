@@ -35,6 +35,7 @@ contract BravoGovernor is
      * @param _name Name of the DAO
      * @param _token Voting token uses snapshot feature
      * @param _timelock Timelock vest proposals to allow detractors to exit system
+     * @param _initialVoteExtension Allow users to vote if quorum attack is preformed
      * @param _initialVotingDelay Allow users to research proposals before voting period
      * @param _initialVotingPeriod Length of voting period (blocks)
      * @param _initialProposalThreshold Total tokens required to submit a proposal
