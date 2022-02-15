@@ -114,7 +114,8 @@ describe("Bravo DAO", function () {
       await expect(timelockController.hasRole(EXECUTOR_ROLE, dao.address));
     });
 
-    it("Created a token that supports ERC-165", async () => {
+    it("Supports ERC-165", async () => {
+      expect(await dao.supportsInterface("0x01ffc9a7")).to.equal(true);
       expect(await governanceToken.supportsInterface("0x01ffc9a7")).to.equal(
         true
       );
