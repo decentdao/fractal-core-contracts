@@ -114,6 +114,18 @@ describe("Bravo DAO", function () {
       await expect(timelockController.hasRole(EXECUTOR_ROLE, dao.address));
     });
 
+    it("Created a token that supports ERC-165", async () => {
+      expect(await governanceToken.supportsInterface("0x01ffc9a7")).to.equal(
+        true
+      );
+      expect(await governanceToken.supportsInterface("0x36372b07")).to.equal(
+        true
+      );
+      expect(await governanceToken.supportsInterface("0xffffffff")).to.equal(
+        false
+      );
+    });
+
     it("Revert if hodlers array length does not equal allocations array length", async () => {
       await expect(
         bravoCreateDAOAndToken(
