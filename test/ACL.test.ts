@@ -22,11 +22,11 @@ import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
   delegateTokens,
-  createDAOAndToken,
+  bravoCreateDAOAndToken,
   vote,
-  queueProposal,
-  propose,
-} from "../helpers/Bravo";
+  bravoQueueProposal,
+  bravoPropose,
+} from "../helpers/Index";
 
 const expect = chai.expect;
 
@@ -76,7 +76,7 @@ describe("ACL Contract", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -150,7 +150,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -169,7 +169,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -232,7 +232,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -251,7 +251,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -312,7 +312,7 @@ describe("ACL Contract", function () {
           [ethers.utils.id("MINTER2")],
         ]);
 
-      const proposalCreatedEvent2 = await propose(
+      const proposalCreatedEvent2 = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -331,7 +331,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent2.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent2.proposalId);
       const tx2: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent2.proposalId);
@@ -400,7 +400,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -419,7 +419,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -471,7 +471,7 @@ describe("ACL Contract", function () {
           [ethers.utils.id("MINTER")],
         ]);
 
-      const proposalCreatedEvent2 = await propose(
+      const proposalCreatedEvent2 = await bravoPropose(
         [moduleFactory.address],
         [BigNumber.from("0")],
         dao,
@@ -490,7 +490,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent2.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent2.proposalId);
       const tx2: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent2.proposalId);
@@ -559,7 +559,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -578,7 +578,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -633,7 +633,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address],
         [BigNumber.from("0")],
         dao,
@@ -652,7 +652,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       await expect(
         dao.connect(voterA)["execute(uint256)"](proposalCreatedEvent.proposalId)
       ).to.revertedWith("TimelockController: underlying transaction reverted");
@@ -682,7 +682,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -701,7 +701,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -750,7 +750,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEventOverwrite = await propose(
+      const proposalCreatedEventOverwrite = await bravoPropose(
         [acl.address],
         [BigNumber.from("0")],
         dao,
@@ -784,7 +784,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(
+      await bravoQueueProposal(
         dao,
         voterA,
         proposalCreatedEventOverwrite.proposalId
@@ -820,7 +820,7 @@ describe("ACL Contract", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [acl.address, moduleFactory.address],
         [BigNumber.from("0"), BigNumber.from("0")],
         dao,
@@ -839,7 +839,7 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -884,7 +884,7 @@ describe("ACL Contract", function () {
         [timelockController.address, ethers.utils.parseUnits("100.0", 18)]
       );
 
-      const proposalCreatedEventMint = await propose(
+      const proposalCreatedEventMint = await bravoPropose(
         [tokenModule.address],
         [BigNumber.from("0")],
         dao,
@@ -918,7 +918,11 @@ describe("ACL Contract", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEventMint.proposalId);
+      await bravoQueueProposal(
+        dao,
+        voterA,
+        proposalCreatedEventMint.proposalId
+      );
       await expect(
         dao
           .connect(voterA)

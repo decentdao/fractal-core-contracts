@@ -21,15 +21,15 @@ import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 import {
   VoteType,
   delegateTokens,
-  createDAOAndToken,
+  bravoCreateDAOAndToken,
   vote,
-  queueProposal,
-  executeProposal,
-  propose,
-  createDAOWrapToken,
+  bravoQueueProposal,
+  bravoExecuteProposal,
+  bravoPropose,
+  bravoCreateDAOWrapToken,
   wrapTokens,
-  createDAOBringToken,
-} from "../helpers/Bravo";
+  bravoCreateDAOBringToken,
+} from "../helpers/Index";
 
 const expect = chai.expect;
 
@@ -64,7 +64,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -117,7 +117,7 @@ describe("Bravo DAO", function () {
 
     it("Revert if hodlers array length does not equal allocations array length", async () => {
       await expect(
-        createDAOAndToken(
+        bravoCreateDAOAndToken(
           daoFactory,
           governorImpl.address,
           [proposerExecutor.address],
@@ -142,7 +142,7 @@ describe("Bravo DAO", function () {
       ).to.be.revertedWith("ArraysNotEqual()");
 
       await expect(
-        createDAOAndToken(
+        bravoCreateDAOAndToken(
           daoFactory,
           governorImpl.address,
           [proposerExecutor.address],
@@ -187,7 +187,7 @@ describe("Bravo DAO", function () {
 
     it("Total supply is less than allocations sum", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -250,7 +250,7 @@ describe("Bravo DAO", function () {
       );
 
       // Create a new DAO using the DAO Factory and the existing test token
-      daoInfo = await createDAOWrapToken(
+      daoInfo = await bravoCreateDAOWrapToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -403,7 +403,7 @@ describe("Bravo DAO", function () {
 
       // Create a new DAO using the DAO Factory and the existing test token
 
-      daoInfo = await createDAOBringToken(
+      daoInfo = await bravoCreateDAOBringToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -464,7 +464,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -512,7 +512,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -540,7 +540,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("500", 18)]
       );
 
-      await propose(
+      await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -550,7 +550,7 @@ describe("Bravo DAO", function () {
       );
 
       await expect(
-        propose(
+        bravoPropose(
           [governanceToken.address],
           [BigNumber.from("0")],
           dao,
@@ -567,7 +567,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -581,7 +581,7 @@ describe("Bravo DAO", function () {
         [voterC.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventTwo = await propose(
+      const proposalCreatedEventTwo = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -631,7 +631,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -679,7 +679,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -693,7 +693,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventTwo = await propose(
+      const proposalCreatedEventTwo = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -731,7 +731,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -767,7 +767,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -788,7 +788,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -821,7 +821,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
 
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -857,7 +857,7 @@ describe("Bravo DAO", function () {
       );
       await governanceToken.connect(voterC).delegate(proposerExecutor.address);
       await governanceToken.connect(voterC).delegate(voterC.address);
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -881,7 +881,7 @@ describe("Bravo DAO", function () {
         "transfer",
         [voterB.address, ethers.utils.parseUnits("250", 18)]
       );
-      const proposalCreatedEventOne = await propose(
+      const proposalCreatedEventOne = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -909,7 +909,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -957,7 +957,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -974,7 +974,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       const status = await dao.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const state = await dao.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
     });
@@ -985,7 +985,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1005,7 +1005,7 @@ describe("Bravo DAO", function () {
 
       await dao.connect(voterA).cancel(proposalCreatedEvent.proposalId);
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
       const state = await dao.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(2);
@@ -1017,7 +1017,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1033,7 +1033,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
 
@@ -1062,7 +1062,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1075,7 +1075,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
   });
@@ -1207,7 +1207,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1255,7 +1255,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1282,7 +1282,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1304,7 +1304,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1321,10 +1321,10 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       const status = await dao.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const state = await dao.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
-      await executeProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoExecuteProposal(dao, voterA, proposalCreatedEvent.proposalId);
       await expect(
         dao.connect(voterA).cancel(proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not active");
@@ -1342,7 +1342,7 @@ describe("Bravo DAO", function () {
       daoFactory = await new BravoFactory__factory(deployer).deploy();
 
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1390,7 +1390,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1409,7 +1409,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1427,7 +1427,7 @@ describe("Bravo DAO", function () {
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoExecuteProposal(dao, voterA, proposalCreatedEvent.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1453,7 +1453,7 @@ describe("Bravo DAO", function () {
         govUpgraded.address,
       ]);
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [dao.address],
         [BigNumber.from("0")],
         dao,
@@ -1472,7 +1472,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const tx: ContractTransaction = await dao
         .connect(voterA)
         ["execute(uint256)"](proposalCreatedEvent.proposalId);
@@ -1500,7 +1500,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEventNew = await propose(
+      const proposalCreatedEventNew = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1519,7 +1519,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEventNew.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEventNew.proposalId);
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1537,7 +1537,11 @@ describe("Bravo DAO", function () {
         ethers.utils.parseUnits("200.0", 18)
       );
 
-      await executeProposal(dao, voterA, proposalCreatedEventNew.proposalId);
+      await bravoExecuteProposal(
+        dao,
+        voterA,
+        proposalCreatedEventNew.proposalId
+      );
 
       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
         ethers.utils.parseUnits("100.0", 18)
@@ -1587,7 +1591,7 @@ describe("Bravo DAO", function () {
         ]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [daoFactory.address],
         [BigNumber.from("0")],
         dao,
@@ -1606,7 +1610,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       await network.provider.send("evm_mine");
 
       const tx: ContractTransaction = await dao
@@ -1685,7 +1689,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1702,19 +1706,19 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       const status = await dao.proposals(proposalCreatedEvent.proposalId);
       expect(status.forVotes).gt(status.againstVotes);
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       const state = await dao.state(proposalCreatedEvent.proposalId);
       expect(state).to.eq(5);
 
       await dao.connect(voterA).cancel(proposalCreatedEvent.proposalId);
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoExecuteProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("Governor: proposal not successful");
     });
 
     it("Revert if execution is too early", async () => {
       // Create a new DAO using the DAO Factory
-      daoInfo = await createDAOAndToken(
+      daoInfo = await bravoCreateDAOAndToken(
         daoFactory,
         governorImpl.address,
         [proposerExecutor.address],
@@ -1760,7 +1764,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1779,9 +1783,9 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
       await network.provider.send("evm_mine");
 
-      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      await bravoQueueProposal(dao, voterA, proposalCreatedEvent.proposalId);
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoExecuteProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("TimelockController: operation is not ready");
     });
 
@@ -1800,7 +1804,7 @@ describe("Bravo DAO", function () {
 
       await network.provider.send("evm_mine");
       await expect(
-        executeProposal(dao, voterA, fakeProposalId)
+        bravoExecuteProposal(dao, voterA, fakeProposalId)
       ).to.be.revertedWith("Governor: unknown proposal id");
     });
 
@@ -1810,7 +1814,7 @@ describe("Bravo DAO", function () {
         [voterB.address, ethers.utils.parseUnits("100", 18)]
       );
 
-      const proposalCreatedEvent = await propose(
+      const proposalCreatedEvent = await bravoPropose(
         [governanceToken.address],
         [BigNumber.from("0")],
         dao,
@@ -1830,7 +1834,7 @@ describe("Bravo DAO", function () {
       await network.provider.send("evm_mine");
 
       await expect(
-        executeProposal(dao, voterA, proposalCreatedEvent.proposalId)
+        bravoExecuteProposal(dao, voterA, proposalCreatedEvent.proposalId)
       ).to.be.revertedWith("TimelockController: operation is not ready");
     });
   });
