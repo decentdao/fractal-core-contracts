@@ -83,6 +83,7 @@ describe("ACL Contract", function () {
         [proposerExecutor.address],
         "Test DAO",
         BigNumber.from("0"),
+        BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
         BigNumber.from("0"),
@@ -98,6 +99,7 @@ describe("ACL Contract", function () {
           ethers.utils.parseUnits("100.0", 18),
         ]
       );
+
       // Init Contracts
       // eslint-disable-next-line camelcase
       dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);

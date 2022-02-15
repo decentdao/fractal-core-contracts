@@ -27,7 +27,7 @@ contract OpenZGovernor is
 
     function initialize(
         string memory _name,
-        ERC20VotesUpgradeable _token,
+        IVotesUpgradeable _token,
         TimelockControllerUpgradeable _timelock,
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,

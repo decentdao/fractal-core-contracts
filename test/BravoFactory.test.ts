@@ -71,6 +71,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         "Test DAO",
         BigNumber.from("0"),
+        BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
         BigNumber.from("0"),
@@ -123,6 +124,7 @@ describe("Bravo DAO", function () {
           [proposerExecutor.address],
           "Test DAO",
           BigNumber.from("0"),
+          BigNumber.from("0"),
           BigNumber.from("1"),
           BigNumber.from("5"),
           BigNumber.from("0"),
@@ -146,6 +148,7 @@ describe("Bravo DAO", function () {
           [proposerExecutor.address],
           [proposerExecutor.address],
           "Test DAO",
+          BigNumber.from("0"),
           BigNumber.from("0"),
           BigNumber.from("1"),
           BigNumber.from("5"),
@@ -190,6 +193,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -252,6 +256,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -341,7 +346,7 @@ describe("Bravo DAO", function () {
             ethers.utils.parseUnits("100.0", 18),
           ]
         )
-      ).to.revertedWith("ERC20: transfer amount exceeds allowance");
+      ).to.revertedWith("ERC20: insufficient allowance");
     });
 
     it("Initiate Timelock", async () => {
@@ -405,6 +410,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         "Test DAO",
         BigNumber.from("0"),
+        BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
         BigNumber.from("0"),
@@ -464,6 +470,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -630,6 +637,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -908,6 +916,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         "Test DAO",
         BigNumber.from("0"),
+        BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
         BigNumber.from("0"),
@@ -1071,6 +1080,122 @@ describe("Bravo DAO", function () {
     });
   });
 
+  describe("PreventLateQuorum", function () {
+    beforeEach(async function () {
+      [deployer, proposerExecutor, voterA, voterB, voterC] =
+        await ethers.getSigners();
+      tokenFactory = await new TokenFactory__factory(deployer).deploy();
+      governorImpl = await new BravoGovernor__factory(deployer).deploy();
+
+      // Deploy an instance of the DAO Factory
+      daoFactory = await new BravoFactory__factory(deployer).deploy();
+
+      // Create a new DAO using the DAO Factory
+      daoInfo = await createDAOAndToken(
+        daoFactory,
+        governorImpl.address,
+        [proposerExecutor.address],
+        [proposerExecutor.address],
+        "Test DAO",
+        BigNumber.from("0"),
+        BigNumber.from("5"),
+        BigNumber.from("1"),
+        BigNumber.from("5"),
+        BigNumber.from("0"),
+        BigNumber.from("4"),
+        tokenFactory.address,
+        "Test Token",
+        "TTT",
+        ethers.utils.parseUnits("500.0", 18),
+        [voterA.address, voterB.address, voterC.address],
+        [
+          ethers.utils.parseUnits("100.0", 18),
+          ethers.utils.parseUnits("100.0", 18),
+          ethers.utils.parseUnits("100.0", 18),
+        ]
+      );
+
+      // eslint-disable-next-line camelcase
+      dao = BravoGovernor__factory.connect(daoInfo.daoProxy, deployer);
+
+      // eslint-disable-next-line camelcase
+      timelockController = TimelockController__factory.connect(
+        daoInfo.timelockController,
+        deployer
+      );
+
+      // eslint-disable-next-line camelcase
+      governanceToken = VotesTokenWithSupply__factory.connect(
+        daoInfo.votingToken,
+        deployer
+      );
+
+      await delegateTokens(governanceToken, [voterA, voterB, voterC]);
+    });
+
+    it("Queues proposal w/ quorum delay", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalCreatedEvent = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+      await network.provider.send("evm_mine");
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await network.provider.send("evm_mine");
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await network.provider.send("evm_mine");
+      await expect(
+        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+      ).to.revertedWith("Governor: proposal not successful");
+    });
+
+    it("Reverts if Quorum delay is not respected ", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalCreatedEvent = await propose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        dao,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+      await network.provider.send("evm_mine");
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterA);
+      await network.provider.send("evm_mine");
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterB);
+      await vote(dao, proposalCreatedEvent.proposalId, VoteType.For, voterC);
+      await network.provider.send("evm_mine");
+      const currentBlock = await ethers.provider.getBlockNumber();
+      const currentDeadline = await dao.proposalDeadline(
+        proposalCreatedEvent.proposalId
+      );
+      await expect(
+        queueProposal(dao, voterA, proposalCreatedEvent.proposalId)
+      ).to.revertedWith("Governor: proposal not successful");
+      expect(currentBlock).lt(currentDeadline);
+      await network.provider.send("evm_mine");
+      await queueProposal(dao, voterA, proposalCreatedEvent.proposalId);
+      const afterBlock = await ethers.provider.getBlockNumber();
+      const afterDeadline = await dao.proposalDeadline(
+        proposalCreatedEvent.proposalId
+      );
+      expect(afterBlock).gt(afterDeadline);
+    });
+  });
+
   describe("Cancel", function () {
     beforeEach(async function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
@@ -1088,6 +1213,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -1222,6 +1348,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         [proposerExecutor.address],
         "Test DAO",
+        BigNumber.from("0"),
         BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
@@ -1440,6 +1567,7 @@ describe("Bravo DAO", function () {
               executors: [proposerExecutor.address],
               daoName: "DAO Fractal",
               minDelay: BigNumber.from("0"),
+              initialVoteExtension: BigNumber.from("0"),
               initialVotingDelay: BigNumber.from("1"),
               initialVotingPeriod: BigNumber.from("1"),
               initialProposalThreshold: BigNumber.from("5"),
@@ -1593,6 +1721,7 @@ describe("Bravo DAO", function () {
         [proposerExecutor.address],
         "Test DAO",
         BigNumber.from("5"),
+        BigNumber.from("0"),
         BigNumber.from("1"),
         BigNumber.from("5"),
         BigNumber.from("0"),
