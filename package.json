@@ -2,8 +2,9 @@
   "name": "fractal-framework",
   "version": "0.2.0",
   "scripts": {
+    "clean": "hardhat clean",
     "compile": "hardhat compile",
-    "test": "hardhat clean && hardhat compile && hardhat test"
+    "test": "hardhat test"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
