@@ -40,21 +40,21 @@ describe.only("DAO", () => {
       const [account] = await ethers.getSigners();
       await expect(
         accessControl.grantRole(ethers.utils.keccak256(Buffer.from("new role")), ethers.constants.AddressZero)
-      ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
+      ).to.be.revertedWith(`MissingRole("${account.address}", "${ethers.constants.HashZero}"`)
     });
 
     it("doesn't allow anyone to grant the EXECUTE role", async () => {
       const [account] = await ethers.getSigners();
       await expect(
         accessControl.grantRole(await dao.EXECUTE_ROLE(), ethers.constants.AddressZero)
-      ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
+      ).to.be.revertedWith(`MissingRole("${account.address}", "${ethers.constants.HashZero}"`)
     });
 
     it("doesn't allow anyone to revoke existing roles", async () => {
       const [account] = await ethers.getSigners();
       await expect(
         accessControl.revokeRole(await dao.EXECUTE_ROLE(), dao.address)
-      ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
+      ).to.be.revertedWith(`MissingRole("${account.address}", "${ethers.constants.HashZero}"`)
     });
 
     it("doesn't allow anyone to call `execute`", async () => {
