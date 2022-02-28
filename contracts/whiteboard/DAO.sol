@@ -13,6 +13,7 @@ contract DAO is IDAO, ERC165, Initializable {
     IDAOAccessControl public accessControl;
     bytes32 public EXECUTE_ROLE;
 
+    // Are clones upgradeable
     function initialize(
         address accessControlPrototype,
         address[] memory executors,
