@@ -21,8 +21,7 @@ contract DAOAccessControl is
         address[][] memory members
     ) public initializer returns (bytes32 EXECUTE_ROLE) {
         if (
-            roles.length != roleAdmins.length ||
-            roleAdmins.length != members.length
+            roles.length != roleAdmins.length
         ) {
             revert InvalidRoles();
         }
