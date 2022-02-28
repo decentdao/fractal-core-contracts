@@ -27,10 +27,9 @@ contract DAOAccessControl is
         }
 
         EXECUTE_ROLE = keccak256(
-            abi.encodePacked(block.chainid, dao, "EXECUTE")
+            abi.encodePacked(dao, "EXECUTE")
         );
 
-        // is this necessary?
         _grantRole(DEFAULT_ADMIN_ROLE, dao);
 
         unchecked {
