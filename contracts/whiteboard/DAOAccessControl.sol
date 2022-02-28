@@ -47,21 +47,6 @@ contract DAOAccessControl is
         }
     }
 
-    // ///////
-    // // TODO: this is hacky maybe
-
-    // function grantRole(bytes32, address) public virtual override {
-    //     revert NoOp();
-    // }
-
-    // function grantRole(string calldata roleID, address moduleAddress, address account) public {
-    //     bytes32 role = keccak256(abi.encodePacked(block.chainid, moduleAddress, roleID));
-    //     _checkRole(getRoleAdmin(role), _msgSender());
-    //     _grantRole(role, account);
-    // }
-
-    // ///////
-
     function supportsInterface(bytes4 interfaceId)
         public
         view
