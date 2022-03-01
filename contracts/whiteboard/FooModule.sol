@@ -15,7 +15,7 @@ contract FooModule {
     modifier authorized {
         // TODO: confirm that msg.sig behaves like msg.sender (changes between contract/function hops)
         
-        if (!accessControl.isAuthorized(msg.sender, address(this), msg.sig)) {
+        if (!accessControl.actionIsAuthorized(msg.sender, address(this), msg.sig)) {
             revert NotAuthorized();
         }
         _;

@@ -3,7 +3,7 @@ import { DAO, DAOAccessControl, DAOFactory } from "../typechain";
 import { expect } from "chai";
 import { ContractTransaction, BytesLike } from "ethers";
 
-describe.only("DAOFactory", () => {
+describe("DAOFactory", () => {
   let daoFactory: DAOFactory;
   let daoPrototype: DAO;
   let daoAccessControlPrototype: DAOAccessControl;

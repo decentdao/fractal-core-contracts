@@ -14,11 +14,17 @@ interface IDAOAccessControl is IAccessControl {
         bytes32[] memory roles,
         bytes32[] memory rolesAdmins,
         address[][] memory members
-    ) external returns (bytes32 EXECUTE_ROLE);
+    ) external;
 
-    function isAuthorized(
+    function actionIsAuthorized(
         address sender,
         address module,
         bytes4 sig
-    ) external returns (bool);
+    ) external returns (bool isAuthorized);
+
+    function addActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external;
+
+    function removeActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external;
+
+    function getActionRoles(bytes32 action) external view returns(bytes32[] memory roles);
 }
