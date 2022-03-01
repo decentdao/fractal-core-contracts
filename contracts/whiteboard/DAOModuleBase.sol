@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IDAOAccessControl.sol";
 
-abstract contract ModuleBase {
+abstract contract DAOModuleBase {
     error NotAuthorized();
 
     IDAOAccessControl public accessControl;

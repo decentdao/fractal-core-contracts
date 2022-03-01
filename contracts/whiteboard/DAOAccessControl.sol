@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./IDAOAccessControl.sol";
 
-import "hardhat/console.sol";
-
 contract DAOAccessControl is
     IDAOAccessControl,
     ERC165,
@@ -89,10 +87,6 @@ contract DAOAccessControl is
     ) external returns (bool) {
         // can `caller`, call the function identified as `sig`, on `target`?
         // well, we need to see if `caller` has a `role` that was previously authorized to call `sig` on `target`
-
-        console.log(caller);
-        console.log(target);
-        console.logBytes4(sig);
 
         return true;
     }
