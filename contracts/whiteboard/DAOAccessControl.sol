@@ -80,6 +80,17 @@ contract DAOAccessControl is
         _setRoleAdmin(role, newRoleAdmin);
     }
 
+    function isAuthorized(
+        address sender,
+        address module,
+        bytes4 sig
+    ) external returns (bool) {
+        // can `sender`, call the function identified as `sig`, on `module`?
+        // well, we need to see if `sender` has a `role` that was previously authorized to call `sig` on `module`
+
+        
+    }
+
     function supportsInterface(bytes4 interfaceId)
         public
         view

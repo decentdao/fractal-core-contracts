@@ -15,4 +15,10 @@ interface IDAOAccessControl is IAccessControl {
         bytes32[] memory rolesAdmins,
         address[][] memory members
     ) external returns (bytes32 EXECUTE_ROLE);
+
+    function isAuthorized(
+        address sender,
+        address module,
+        bytes4 sig
+    ) external returns (bool);
 }
