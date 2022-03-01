@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import "./IDAOAccessControl.sol";
 
+import "hardhat/console.sol";
+
 contract DAOAccessControl is
     IDAOAccessControl,
     ERC165,
@@ -81,14 +83,18 @@ contract DAOAccessControl is
     }
 
     function isAuthorized(
-        address sender,
-        address module,
+        address caller,
+        address target,
         bytes4 sig
     ) external returns (bool) {
-        // can `sender`, call the function identified as `sig`, on `module`?
-        // well, we need to see if `sender` has a `role` that was previously authorized to call `sig` on `module`
+        // can `caller`, call the function identified as `sig`, on `target`?
+        // well, we need to see if `caller` has a `role` that was previously authorized to call `sig` on `target`
 
-        
+        console.log(caller);
+        console.log(target);
+        console.logBytes4(sig);
+
+        return true;
     }
 
     function supportsInterface(bytes4 interfaceId)

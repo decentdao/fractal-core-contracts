@@ -4,7 +4,7 @@ import { BytesLike } from "ethers";
 import { ethers } from "hardhat";
 import { DAOFactory, DAO, DAOAccessControl } from "../typechain";
 
-describe.only("DAO", () => {
+describe("DAO", () => {
   let daoFactory: DAOFactory;
   let daoPrototype: DAO;
   let daoAccessControlPrototype: DAOAccessControl;

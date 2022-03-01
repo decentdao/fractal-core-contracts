@@ -1,35 +1,21 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./IDAOAccessControl.sol";
+import "./ModuleBase.sol";
+import "hardhat/console.sol";
 
-contract FooModule {
-    error NotAuthorized();
+contract FooModule is ModuleBase {
+    constructor(address accessControl) ModuleBase(accessControl) {}
 
-    IDAOAccessControl public accessControl;
-
-    constructor(address _accessControl) {
-        accessControl = IDAOAccessControl(_accessControl);
+    function fooPermissionedA() public authorized {
+        console.log("foo permissioned A");
     }
 
-    modifier authorized {
-        // TODO: confirm that msg.sig behaves like msg.sender (changes between contract/function hops)
-        
-        if (!accessControl.isAuthorized(msg.sender, address(this), msg.sig)) {
-            revert NotAuthorized();
-        }
-        _;
+    function fooPermissionedB() public authorized {
+        console.log("foo permissioned B");
     }
 
-    function permissionedA() public authorized {
-
-    }
-
-    function permissionedB() public authorized {
-        
-    }
-
-    function permissionedC() public authorized {
-        
+    function fooPermissionedC() public authorized {
+        console.log("foo permissioned C");
     }
 }
