@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-// TODO: maybe we should use the enumerable version, for frontend purposes
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 
 interface IDAOAccessControl is IAccessControl {
@@ -17,8 +16,8 @@ interface IDAOAccessControl is IAccessControl {
     ) external;
 
     function actionIsAuthorized(
-        address sender,
-        address module,
+        address caller,
+        address target,
         bytes4 sig
     ) external returns (bool isAuthorized);
 

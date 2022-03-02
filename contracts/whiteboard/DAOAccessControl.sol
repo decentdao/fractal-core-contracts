@@ -115,16 +115,16 @@ contract DAOAccessControl is
     }
 
     function actionIsAuthorized(
-        address sender,
-        address module,
+        address caller,
+        address target,
         bytes4 sig
     ) external view override returns (bool isAuthorized) {
-        bytes32 action = keccak256(abi.encodePacked(module, sig));
+        bytes32 action = keccak256(abi.encodePacked(target, sig));
         bytes32[] memory roles = _actionsToRoles[action];
         uint256 roleLength = roles.length;
 
         for (uint256 i = 0; i < roleLength; ) {
-            if (hasRole(roles[i], sender)) {
+            if (hasRole(roles[i], caller)) {
                 isAuthorized = true;
                 break;
             }

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./IDAOAccessControl.sol";
 
-contract FooModule {
+abstract contract DAOModuleBase {
     error NotAuthorized();
 
     IDAOAccessControl public accessControl;
@@ -13,23 +13,9 @@ contract FooModule {
     }
 
     modifier authorized {
-        // TODO: confirm that msg.sig behaves like msg.sender (changes between contract/function hops)
-        
         if (!accessControl.actionIsAuthorized(msg.sender, address(this), msg.sig)) {
             revert NotAuthorized();
         }
         _;
-    }
-
-    function permissionedA() public authorized {
-
-    }
-
-    function permissionedB() public authorized {
-        
-    }
-
-    function permissionedC() public authorized {
-        
     }
 }
