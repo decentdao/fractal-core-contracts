@@ -134,7 +134,7 @@ contract DAOAccessControl is
         }
     }
 
-    function addActionRoles(
+    function addActionsRoles(
         bytes32[] calldata actions,
         bytes32[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {

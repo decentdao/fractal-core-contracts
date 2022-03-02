@@ -23,7 +23,7 @@ interface IDAOAccessControl is IAccessControl {
 
     // TODO: make sure all the public/external functions are in here
 
-    function addActionRoles(
+    function addActionsRoles(
         bytes32[] calldata actions,
         bytes32[][] calldata roles
     ) external;

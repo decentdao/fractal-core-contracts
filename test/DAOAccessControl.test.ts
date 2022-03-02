@@ -224,7 +224,7 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
       expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
         roleA,
         roleB,
@@ -241,7 +241,7 @@ describe.only("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(executor1)
-          .addActionRoles([action1, action2], [[roleA, roleB], [roleA]])
+          .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]])
       ).to.reverted;
     });
 
@@ -250,7 +250,7 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
 
       // Should not add a role that has already been added
       await daoAccessControl
@@ -274,7 +274,7 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
 
       // Should not add a role that has already been added
       await expect(
