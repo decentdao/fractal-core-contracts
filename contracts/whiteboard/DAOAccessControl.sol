@@ -22,9 +22,8 @@ contract DAOAccessControl is
         bytes32[] memory roleAdmins,
         address[][] memory members
     ) public initializer {
-        if (roles.length != roleAdmins.length) {
-            revert InvalidRoles();
-        }
+        if (roles.length != roleAdmins.length) revert InvalidRoles();
+        if (roles.length != members.length) revert InvalidRoles();
 
         bytes32 EXECUTE_ROLE = keccak256("EXECUTE");
 
@@ -46,6 +45,8 @@ contract DAOAccessControl is
         bytes32[] memory roleAdmins,
         address[][] memory members
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+      if (roles.length != roleAdmins.length) revert InvalidRoles();
+      if (roles.length != members.length) revert InvalidRoles();
         for (uint256 i = 0; i < roles.length; i++) {
             _setRoleAdmin(roles[i], roleAdmins[i]);
             for (uint256 j = 0; j < members[i].length; j++) {
@@ -102,14 +103,20 @@ contract DAOAccessControl is
         }
     }
 
-    function addActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addActionRoles(bytes32[] calldata actions, bytes32[][] calldata roles) external override onlyRole(DEFAULT_ADMIN_ROLE) {
       if(actions.length != roles.length) {
         revert ArraysNotEqual();
       }
 
       uint256 arrayLength = actions.length;
       for(uint256 i; i < arrayLength;) {
-        _addActionRole(actions[i], roles[i]);
+          uint256 roleslength = roles[i].length;
+          for(uint256 j; j < roleslength;){
+              _addActionRole(actions[i], roles[i][j]);
+                unchecked {
+                    j++;
+                }
+          }
         unchecked {
           i++;
         }
@@ -120,14 +127,20 @@ contract DAOAccessControl is
       actionsToRoles[action].push(role);
     }
 
-    function removeActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+    function removeActionRoles(bytes32[] calldata actions, bytes32[][] calldata roles) external override onlyRole(DEFAULT_ADMIN_ROLE) {
       if(actions.length != roles.length) {
         revert ArraysNotEqual();
       }
 
-      uint256 arrayLength = actions.length;
-      for(uint256 i; i < arrayLength;) {
-        _removeActionRole(actions[i], roles[i]);
+      uint256 actionsLength = actions.length;
+      for(uint256 i; i < actionsLength;) {
+        uint256 roleslength = roles[i].length;
+        for(uint256 j; j<roleslength;){
+          _removeActionRole(actions[i], roles[i][j]);
+          unchecked {
+          j++;
+        }
+        }
         unchecked {
           i++;
         }
@@ -149,8 +162,22 @@ contract DAOAccessControl is
       }
     }
 
-    function getActionRoles(bytes32 action) external view override returns(bytes32[] memory roles) {
+    function getActionRoles(bytes32 action) public view override returns(bytes32[] memory roles) {
       return actionsToRoles[action];
+    }
+
+    function isRoleAuthorized(bytes32 action, bytes32 role) external view override returns(bool isTrue) {
+      bytes32[] memory roles = getActionRoles(action);
+      uint256 roleslength = roles.length;
+      for(uint256 i; i<roleslength;){
+        if(roles[i] == role) {
+          isTrue = true;
+          break;
+        }
+        unchecked {
+          i++;
+        }
+      }
     }
 
     function supportsInterface(bytes4 interfaceId)

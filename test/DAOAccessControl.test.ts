@@ -48,62 +48,240 @@ describe.only("DAO Access Control Contract", function () {
 
     // DAO Access Control contract deployment
     daoAccessControl = await new DAOAccessControl__factory(deployer).deploy();
-
-    // Initialize with roleA as the admin of roleB
-    await daoAccessControl.initialize(
-      dao.address,
-      [executor1.address, executor2.address, executor3.address],
-      [roleB],
-      [roleA],
-      [
-        [roleAMember1.address, roleAMember2.address],
-        [roleBMember1.address, roleBMember2.address],
-      ]
-    );
-
-    // Give both roleA and roleB authorization over action1
-    // Give roleA authorization over action2
-    await daoAccessControl
-      .connect(dao)
-      .addActionRoles([action1, action1, action2], [roleA, roleB, roleA]);
   });
 
-  it("Should setup initial roles and actions", async () => {
-    expect(
-      await daoAccessControl.hasRole(executorRole, executor1.address)
-    ).to.eq(true);
+  describe("Initilize Access Control", function () {
+    beforeEach(async function () {
+      // Initialize with roleA as the admin of roleB
+      await daoAccessControl.initialize(
+        dao.address,
+        [executor1.address, executor2.address, executor3.address],
+        [roleB, roleA],
+        [roleA, defaultAdminRole],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+    });
 
-    expect(
-      await daoAccessControl.hasRole(executorRole, executor2.address)
-    ).to.eq(true);
+    it("Should setup Executor Role", async () => {
+      // Assign Executor Role
+      expect(
+        await daoAccessControl.hasRole(executorRole, executor1.address)
+      ).to.eq(true);
 
-    expect(
-      await daoAccessControl.hasRole(executorRole, executor3.address)
-    ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(executorRole, executor2.address)
+      ).to.eq(true);
 
-    expect(await daoAccessControl.getRoleAdmin(executorRole)).to.eq(
-      defaultAdminRole
-    );
+      expect(
+        await daoAccessControl.hasRole(executorRole, executor3.address)
+      ).to.eq(true);
 
-    expect(await daoAccessControl.hasRole(defaultAdminRole, dao.address)).to.eq(
-      true
-    );
+      expect(await daoAccessControl.getRoleAdmin(executorRole)).to.eq(
+        defaultAdminRole
+      );
+    });
 
-    expect(
-      await daoAccessControl.hasRole(defaultAdminRole, executor1.address)
-    ).to.eq(false);
+    it("Should setup Default Admin Role", async () => {
+      // Default Admin
+      expect(
+        await daoAccessControl.hasRole(defaultAdminRole, dao.address)
+      ).to.eq(true);
 
-    expect(
-      await daoAccessControl.hasRole(defaultAdminRole, roleAMember1.address)
-    ).to.eq(false);
+      expect(
+        await daoAccessControl.hasRole(defaultAdminRole, executor1.address)
+      ).to.eq(false);
 
-    expect(
-      await daoAccessControl.hasRole(defaultAdminRole, roleBMember1.address)
-    ).to.eq(false);
+      expect(
+        await daoAccessControl.hasRole(defaultAdminRole, roleAMember1.address)
+      ).to.eq(false);
 
-    expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
-      roleA,
-      roleB,
-    ]);
+      expect(
+        await daoAccessControl.hasRole(defaultAdminRole, roleBMember1.address)
+      ).to.eq(false);
+    });
+
+    it("Should setup Roles", async () => {
+      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
+        true
+      );
+    });
+  });
+
+  describe("Create New Roles", function () {
+    beforeEach(async function () {
+      // Initialize with roleA as the admin of roleB
+      await daoAccessControl.initialize(
+        dao.address,
+        [executor1.address, executor2.address, executor3.address],
+        [],
+        [],
+        []
+      );
+    });
+
+    it("Should batch create Roles", async () => {
+      await daoAccessControl.connect(dao).batchCreateRoles(
+        [roleB, roleA],
+        [roleA, defaultAdminRole],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.getRoleAdmin(roleB)).to.eq(roleA);
+      expect(await daoAccessControl.getRoleAdmin(roleA)).to.eq(
+        defaultAdminRole
+      );
+    });
+
+    it("Should override/update Role Admins", async () => {
+      await daoAccessControl.connect(dao).batchCreateRoles(
+        [roleB, roleA],
+        [roleA, defaultAdminRole],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      await daoAccessControl
+        .connect(dao)
+        .batchCreateRoles([roleA, roleB], [roleB, defaultAdminRole], [[], []]);
+
+      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
+        true
+      );
+      expect(await daoAccessControl.getRoleAdmin(roleA)).to.eq(roleB);
+      expect(await daoAccessControl.getRoleAdmin(roleB)).to.eq(
+        defaultAdminRole
+      );
+    });
+
+    it("Should revert UnAuthorized (batch create)", async () => {
+      await expect(
+        daoAccessControl.connect(executor1).batchCreateRoles(
+          [roleB, roleA],
+          [roleA, defaultAdminRole],
+          [
+            [roleBMember1.address, roleBMember2.address],
+            [roleAMember1.address, roleAMember2.address],
+          ]
+        )
+      ).to.reverted;
+    });
+  });
+
+  describe("Action Roles", function () {
+    beforeEach(async function () {
+      // Initialize with roleA as the admin of roleB
+      await daoAccessControl.initialize(
+        dao.address,
+        [executor1.address, executor2.address, executor3.address],
+        [roleB, roleA],
+        [roleA, defaultAdminRole],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+    });
+    it("Should setup Actions", async () => {
+      // Give both roleA and roleB authorization over action1
+      // Give roleA authorization over action2
+      await daoAccessControl
+        .connect(dao)
+        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+      expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
+        roleA,
+        roleB,
+      ]);
+
+      expect(await daoAccessControl.getActionRoles(action2)).to.deep.eq([
+        roleA,
+      ]);
+    });
+
+    it("Should revert Non-Authorized User (Add)", async () => {
+      // Give both roleA and roleB authorization over action1
+      // Give roleA authorization over action2
+      await expect(
+        daoAccessControl
+          .connect(executor1)
+          .addActionRoles([action1, action2], [[roleA, roleB], [roleA]])
+      ).to.reverted;
+    });
+
+    it("Should Remove Actions", async () => {
+      // Give both roleA and roleB authorization over action1
+      // Give roleA authorization over action2
+      await daoAccessControl
+        .connect(dao)
+        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+
+      // Should not add a role that has already been added
+      await daoAccessControl
+        .connect(dao)
+        .removeActionRoles([action1, action2], [[roleA], [roleB]]);
+
+      expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
+        roleB,
+      ]);
+
+      expect(await daoAccessControl.isRoleAuthorized(action1, roleA)).to.eq(
+        false
+      );
+      expect(await daoAccessControl.isRoleAuthorized(action2, roleB)).to.eq(
+        false
+      );
+    });
+
+    it("Should Remove Actions (Remove)", async () => {
+      // Give both roleA and roleB authorization over action1
+      // Give roleA authorization over action2
+      await daoAccessControl
+        .connect(dao)
+        .addActionRoles([action1, action2], [[roleA, roleB], [roleA]]);
+
+      // Should not add a role that has already been added
+      await expect(
+        daoAccessControl
+          .connect(executor1)
+          .removeActionRoles([action1, action2], [[roleA], [roleB]])
+      ).to.reverted;
+    });
   });
 });

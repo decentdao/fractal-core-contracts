@@ -22,9 +22,11 @@ interface IDAOAccessControl is IAccessControl {
         bytes4 sig
     ) external returns (bool isAuthorized);
 
-    function addActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external;
+    function addActionRoles(bytes32[] calldata actions, bytes32[][] calldata roles) external;
 
-    function removeActionRoles(bytes32[] calldata actions, bytes32[] calldata roles) external;
+    function removeActionRoles(bytes32[] calldata actions, bytes32[][] calldata roles) external;
 
     function getActionRoles(bytes32 action) external view returns(bytes32[] memory roles);
+    
+    function isRoleAuthorized(bytes32 action, bytes32 role) external view returns(bool isTrue);
 }
