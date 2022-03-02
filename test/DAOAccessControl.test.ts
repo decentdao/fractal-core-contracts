@@ -132,7 +132,7 @@ describe.only("DAO Access Control Contract", function () {
     });
 
     it("Should batch create Roles", async () => {
-      await daoAccessControl.connect(dao).batchCreateRoles(
+      await daoAccessControl.connect(dao).createRoles(
         [roleB, roleA],
         [roleA, defaultAdminRole],
         [
@@ -160,7 +160,7 @@ describe.only("DAO Access Control Contract", function () {
     });
 
     it("Should override/update Role Admins", async () => {
-      await daoAccessControl.connect(dao).batchCreateRoles(
+      await daoAccessControl.connect(dao).createRoles(
         [roleB, roleA],
         [roleA, defaultAdminRole],
         [
@@ -171,7 +171,7 @@ describe.only("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(dao)
-        .batchCreateRoles([roleA, roleB], [roleB, defaultAdminRole], [[], []]);
+        .createRoles([roleA, roleB], [roleB, defaultAdminRole], [[], []]);
 
       expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
         true
@@ -193,7 +193,7 @@ describe.only("DAO Access Control Contract", function () {
 
     it("Should revert UnAuthorized (batch create)", async () => {
       await expect(
-        daoAccessControl.connect(executor1).batchCreateRoles(
+        daoAccessControl.connect(executor1).createRoles(
           [roleB, roleA],
           [roleA, defaultAdminRole],
           [
@@ -255,7 +255,7 @@ describe.only("DAO Access Control Contract", function () {
       // Should not add a role that has already been added
       await daoAccessControl
         .connect(dao)
-        .removeActionRoles([action1, action2], [[roleA], [roleB]]);
+        .removeActionsRoles([action1, action2], [[roleA], [roleB]]);
 
       expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
         roleB,
@@ -280,7 +280,7 @@ describe.only("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(executor1)
-          .removeActionRoles([action1, action2], [[roleA], [roleB]])
+          .removeActionsRoles([action1, action2], [[roleA], [roleB]])
       ).to.reverted;
     });
   });
