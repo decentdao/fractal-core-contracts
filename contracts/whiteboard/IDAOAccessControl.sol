@@ -4,8 +4,16 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 
 interface IDAOAccessControl is IAccessControl {
-    error InvalidRoles();
-    error NoOp();
+    error ArraysNotEqual();
+
+    event RolesAndAdminsGranted(
+        string[] roles,
+        string[] roleAdmins,
+        address[][] members
+    );
+    event RoleAdminUpdated(string role, string roleAdmin);
+    event ActionRoleAdded(bytes32 action, string role);
+    event ActionRoleRemoved(bytes32 action, string role);
 
     function initialize(
         address dao,

@@ -13,12 +13,6 @@ contract DAOAccessControl is
     AccessControl
 {
     mapping(bytes32 => bytes32[]) private _actionsToRoles;
-    error ArraysNotEqual();
-
-    event RolesAndAdminsGranted(string[] roles, string[] roleAdmins, address[][] members);
-    event RoleAdminUpdated(string role, string roleAdmin);
-    event ActionRoleAdded(bytes32 action, string role);
-    event ActionRoleRemoved(bytes32 action, string role);
 
     function initialize(
         address dao,
@@ -55,18 +49,24 @@ contract DAOAccessControl is
         string[] memory roleAdmins,
         address[][] memory members
     ) private {
-        if (roles.length != roleAdmins.length) revert InvalidRoles();
-        if (roles.length != members.length) revert InvalidRoles();
+        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
+        if (roles.length != members.length) revert ArraysNotEqual();
 
         // TODO: accept "roles" and "rolesAdmins" as strings
         // TODO: emit some events
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
-            _setRoleAdmin(keccak256(abi.encodePacked(roles[i])), keccak256(abi.encodePacked(roleAdmins[i])));
+            _setRoleAdmin(
+                keccak256(abi.encodePacked(roles[i])),
+                keccak256(abi.encodePacked(roleAdmins[i]))
+            );
 
             uint256 membersLength = members[i].length;
             for (uint256 j = 0; j < membersLength; ) {
-                _grantRole(keccak256(abi.encodePacked(roles[i])), members[i][j]);
+                _grantRole(
+                    keccak256(abi.encodePacked(roles[i])),
+                    members[i][j]
+                );
                 unchecked {
                     j++;
                 }
@@ -76,14 +76,14 @@ contract DAOAccessControl is
             }
         }
 
-      emit RolesAndAdminsGranted(roles, roleAdmins, members);
+        emit RolesAndAdminsGranted(roles, roleAdmins, members);
     }
 
     function updateRolesAdmins(
         string[] calldata roles,
         string[] calldata roleAdmins
     ) public {
-        if (roles.length != roleAdmins.length) revert InvalidRoles();
+        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
 
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
@@ -98,7 +98,10 @@ contract DAOAccessControl is
         internal
         onlyRole(getRoleAdmin(getRoleAdmin(keccak256(abi.encodePacked(role)))))
     {
-        _setRoleAdmin(keccak256(abi.encodePacked(role)), keccak256(abi.encodePacked(roleAdmin)));
+        _setRoleAdmin(
+            keccak256(abi.encodePacked(role)),
+            keccak256(abi.encodePacked(roleAdmin))
+        );
 
         emit RoleAdminUpdated(role, roleAdmin);
     }
@@ -127,9 +130,7 @@ contract DAOAccessControl is
         bytes32[] calldata actions,
         string[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (actions.length != roles.length) {
-            revert ArraysNotEqual();
-        }
+        if (actions.length != roles.length) revert ArraysNotEqual();
 
         uint256 actionsLength = actions.length;
         for (uint256 i = 0; i < actionsLength; ) {
@@ -156,9 +157,7 @@ contract DAOAccessControl is
         bytes32[] calldata actions,
         string[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (actions.length != roles.length) {
-            revert ArraysNotEqual();
-        }
+        if (actions.length != roles.length) revert ArraysNotEqual();
 
         uint256 actionsLength = actions.length;
         for (uint256 i = 0; i < actionsLength; ) {
@@ -178,7 +177,9 @@ contract DAOAccessControl is
     function _removeActionRole(bytes32 action, string calldata role) internal {
         uint256 rolesLength = _actionsToRoles[action].length;
         for (uint256 i = 0; i < rolesLength; ) {
-            if (_actionsToRoles[action][i] == keccak256(abi.encodePacked(role))) {
+            if (
+                _actionsToRoles[action][i] == keccak256(abi.encodePacked(role))
+            ) {
                 _actionsToRoles[action][i] = _actionsToRoles[action][
                     rolesLength - 1
                 ];
