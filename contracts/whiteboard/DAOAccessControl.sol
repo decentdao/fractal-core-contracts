@@ -72,26 +72,6 @@ contract DAOAccessControl is
         }
     }
 
-    function grantRoles(bytes32[] memory roles, address[][] memory members)
-        public
-    {
-        if (roles.length != members.length) revert InvalidRoles();
-
-        uint256 rolesLength = roles.length;
-        for (uint256 i = 0; i < rolesLength; ) {
-            uint256 membersLength = members[i].length;
-            for (uint256 j = 0; j < membersLength; ) {
-                grantRole(roles[i], members[i][j]);
-                unchecked {
-                    j++;
-                }
-            }
-            unchecked {
-                i++;
-            }
-        }
-    }
-
     function updateRolesAdmins(
         bytes32[] calldata roles,
         bytes32[] calldata newRoleAdmins
