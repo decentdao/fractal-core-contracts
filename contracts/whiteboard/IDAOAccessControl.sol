@@ -10,8 +10,8 @@ interface IDAOAccessControl is IAccessControl {
     function initialize(
         address dao,
         address[] memory executors,
-        bytes32[] memory roles,
-        bytes32[] memory rolesAdmins,
+        string[] memory roles,
+        string[] memory rolesAdmins,
         address[][] memory members
     ) external;
 
@@ -25,12 +25,12 @@ interface IDAOAccessControl is IAccessControl {
 
     function addActionsRoles(
         bytes32[] calldata actions,
-        bytes32[][] calldata roles
+        string[][] calldata roles
     ) external;
 
     function removeActionsRoles(
         bytes32[] calldata actions,
-        bytes32[][] calldata roles
+        string[][] calldata roles
     ) external;
 
     function getActionRoles(bytes32 action)

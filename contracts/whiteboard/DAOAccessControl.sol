@@ -15,11 +15,16 @@ contract DAOAccessControl is
     mapping(bytes32 => bytes32[]) private _actionsToRoles;
     error ArraysNotEqual();
 
+    event RolesAndAdminsGranted(string[] roles, string[] roleAdmins, address[][] members);
+    event RoleAdminUpdated(string role, string roleAdmin);
+    event ActionRoleAdded(bytes32 action, string role);
+    event ActionRoleRemoved(bytes32 action, string role);
+
     function initialize(
         address dao,
         address[] memory executors,
-        bytes32[] memory roles,
-        bytes32[] memory roleAdmins,
+        string[] memory roles,
+        string[] memory roleAdmins,
         address[][] memory members
     ) public initializer {
         bytes32 EXECUTE_ROLE = keccak256("EXECUTE");
@@ -37,17 +42,17 @@ contract DAOAccessControl is
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
-    function createRoles(
-        bytes32[] memory roles,
-        bytes32[] memory roleAdmins,
+    function grantRolesAndAdmins(
+        string[] memory roles,
+        string[] memory roleAdmins,
         address[][] memory members
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
     function _grantRolesAndAdmins(
-        bytes32[] memory roles,
-        bytes32[] memory roleAdmins,
+        string[] memory roles,
+        string[] memory roleAdmins,
         address[][] memory members
     ) private {
         if (roles.length != roleAdmins.length) revert InvalidRoles();
@@ -57,11 +62,11 @@ contract DAOAccessControl is
         // TODO: emit some events
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
-            _setRoleAdmin(roles[i], roleAdmins[i]);
+            _setRoleAdmin(keccak256(abi.encodePacked(roles[i])), keccak256(abi.encodePacked(roleAdmins[i])));
 
             uint256 membersLength = members[i].length;
             for (uint256 j = 0; j < membersLength; ) {
-                _grantRole(roles[i], members[i][j]);
+                _grantRole(keccak256(abi.encodePacked(roles[i])), members[i][j]);
                 unchecked {
                     j++;
                 }
@@ -70,28 +75,32 @@ contract DAOAccessControl is
                 i++;
             }
         }
+
+      emit RolesAndAdminsGranted(roles, roleAdmins, members);
     }
 
     function updateRolesAdmins(
-        bytes32[] calldata roles,
-        bytes32[] calldata newRoleAdmins
+        string[] calldata roles,
+        string[] calldata roleAdmins
     ) public {
-        if (roles.length != newRoleAdmins.length) revert InvalidRoles();
+        if (roles.length != roleAdmins.length) revert InvalidRoles();
 
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
-            _updateRoleAdmin(roles[i], newRoleAdmins[i]);
+            _updateRoleAdmin(roles[i], roleAdmins[i]);
             unchecked {
                 i++;
             }
         }
     }
 
-    function _updateRoleAdmin(bytes32 role, bytes32 newRoleAdmin)
+    function _updateRoleAdmin(string calldata role, string calldata roleAdmin)
         internal
-        onlyRole(getRoleAdmin(getRoleAdmin(role)))
+        onlyRole(getRoleAdmin(getRoleAdmin(keccak256(abi.encodePacked(role)))))
     {
-        _setRoleAdmin(role, newRoleAdmin);
+        _setRoleAdmin(keccak256(abi.encodePacked(role)), keccak256(abi.encodePacked(roleAdmin)));
+
+        emit RoleAdminUpdated(role, roleAdmin);
     }
 
     function actionIsAuthorized(
@@ -116,7 +125,7 @@ contract DAOAccessControl is
 
     function addActionsRoles(
         bytes32[] calldata actions,
-        bytes32[][] calldata roles
+        string[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (actions.length != roles.length) {
             revert ArraysNotEqual();
@@ -137,13 +146,15 @@ contract DAOAccessControl is
         }
     }
 
-    function _addActionRole(bytes32 action, bytes32 role) internal {
-        _actionsToRoles[action].push(role);
+    function _addActionRole(bytes32 action, string calldata role) internal {
+        _actionsToRoles[action].push(keccak256(abi.encodePacked(role)));
+
+        emit ActionRoleAdded(action, role);
     }
 
     function removeActionsRoles(
         bytes32[] calldata actions,
-        bytes32[][] calldata roles
+        string[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (actions.length != roles.length) {
             revert ArraysNotEqual();
@@ -164,14 +175,17 @@ contract DAOAccessControl is
         }
     }
 
-    function _removeActionRole(bytes32 action, bytes32 role) internal {
+    function _removeActionRole(bytes32 action, string calldata role) internal {
         uint256 rolesLength = _actionsToRoles[action].length;
         for (uint256 i = 0; i < rolesLength; ) {
-            if (_actionsToRoles[action][i] == role) {
+            if (_actionsToRoles[action][i] == keccak256(abi.encodePacked(role))) {
                 _actionsToRoles[action][i] = _actionsToRoles[action][
                     rolesLength - 1
                 ];
                 _actionsToRoles[action].pop();
+
+                emit ActionRoleRemoved(action, role);
+
                 break;
             }
             unchecked {

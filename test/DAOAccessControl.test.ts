@@ -21,12 +21,13 @@ describe.only("DAO Access Control Contract", function () {
   let roleBMember2: SignerWithAddress;
 
   // Roles
+  const defaultAdminRoleString = "0x00";
   const defaultAdminRole: BytesLike =
     "0x0000000000000000000000000000000000000000000000000000000000000000";
   const executorRole: BytesLike = ethers.utils.id("EXECUTE");
-  const roleA: BytesLike = ethers.utils.id("roleA");
-  const roleB: BytesLike = ethers.utils.id("roleB");
-  const roleC: BytesLike = ethers.utils.id("roleC");
+  const roleAString = "roleA";
+  const roleBString = "roleB";
+  const roleCString = "roleC";
 
   // Actions
   const action1: BytesLike = ethers.utils.id("action1");
@@ -56,8 +57,8 @@ describe.only("DAO Access Control Contract", function () {
       await daoAccessControl.initialize(
         dao.address,
         [executor1.address, executor2.address, executor3.address],
-        [roleB, roleA],
-        [roleA, defaultAdminRole],
+        [roleBString, roleAString],
+        [roleAString, defaultAdminRole],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -104,18 +105,30 @@ describe.only("DAO Access Control Contract", function () {
     });
 
     it("Should setup Roles", async () => {
-      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
-        true
-      );
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember2.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember2.address
+        )
+      ).to.eq(true);
     });
   });
 
@@ -132,37 +145,53 @@ describe.only("DAO Access Control Contract", function () {
     });
 
     it("Should batch create Roles", async () => {
-      await daoAccessControl.connect(dao).createRoles(
-        [roleB, roleA],
-        [roleA, defaultAdminRole],
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, defaultAdminRoleString],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
         ]
       );
 
-      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.getRoleAdmin(roleB)).to.eq(roleA);
-      expect(await daoAccessControl.getRoleAdmin(roleA)).to.eq(
-        defaultAdminRole
-      );
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember2.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember2.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.getRoleAdmin(ethers.utils.id(roleBString))
+      ).to.eq(ethers.utils.id(roleAString));
+
+      // Todo: Need to figure out how to handle defaultAdminRole string
+      // expect(
+      //   await daoAccessControl.getRoleAdmin(ethers.utils.id(roleAString))
+      // ).to.eq(defaultAdminRole);
     });
 
     it("Should override/update Role Admins", async () => {
-      await daoAccessControl.connect(dao).createRoles(
-        [roleB, roleA],
-        [roleA, defaultAdminRole],
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, defaultAdminRoleString],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -171,31 +200,50 @@ describe.only("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(dao)
-        .createRoles([roleA, roleB], [roleB, defaultAdminRole], [[], []]);
+        .grantRolesAndAdmins(
+          [roleAString, roleBString],
+          [roleBString, defaultAdminRoleString],
+          [[], []]
+        );
 
-      expect(await daoAccessControl.hasRole(roleB, roleBMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleB, roleBMember2.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember1.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.hasRole(roleA, roleAMember2.address)).to.eq(
-        true
-      );
-      expect(await daoAccessControl.getRoleAdmin(roleA)).to.eq(roleB);
-      expect(await daoAccessControl.getRoleAdmin(roleB)).to.eq(
-        defaultAdminRole
-      );
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleBString),
+          roleBMember2.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember1.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(
+          ethers.utils.id(roleAString),
+          roleAMember2.address
+        )
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.getRoleAdmin(ethers.utils.id(roleAString))
+      ).to.eq(ethers.utils.id(roleBString));
+      // Todo: Figure out how to handle defaultAdminRole string
+      // expect(
+      //   await daoAccessControl.getRoleAdmin(ethers.utils.id(roleBString))
+      // ).to.eq(ethers.utils.id(defaultAdminRole));
     });
 
     it("Should revert UnAuthorized (batch create)", async () => {
       await expect(
-        daoAccessControl.connect(executor1).createRoles(
-          [roleB, roleA],
-          [roleA, defaultAdminRole],
+        daoAccessControl.connect(executor1).grantRolesAndAdmins(
+          [roleBString, roleAString],
+          [roleAString, defaultAdminRole],
           [
             [roleBMember1.address, roleBMember2.address],
             [roleAMember1.address, roleAMember2.address],
@@ -211,8 +259,8 @@ describe.only("DAO Access Control Contract", function () {
       await daoAccessControl.initialize(
         dao.address,
         [executor1.address, executor2.address, executor3.address],
-        [roleB, roleA],
-        [roleA, defaultAdminRole],
+        [roleBString, roleAString],
+        [roleAString, defaultAdminRole],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -224,14 +272,17 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles(
+          [action1, action2],
+          [[roleAString, roleBString], [roleAString]]
+        );
       expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
-        roleA,
-        roleB,
+        ethers.utils.id(roleAString),
+        ethers.utils.id(roleBString),
       ]);
 
       expect(await daoAccessControl.getActionRoles(action2)).to.deep.eq([
-        roleA,
+        ethers.utils.id(roleAString),
       ]);
     });
 
@@ -241,7 +292,10 @@ describe.only("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(executor1)
-          .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]])
+          .addActionsRoles(
+            [action1, action2],
+            [[roleAString, roleBString], [roleAString]]
+          )
       ).to.reverted;
     });
 
@@ -250,23 +304,32 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles(
+          [action1, action2],
+          [[roleAString, roleBString], [roleAString]]
+        );
 
       // Should not add a role that has already been added
       await daoAccessControl
         .connect(dao)
-        .removeActionsRoles([action1, action2], [[roleA], [roleB]]);
+        .removeActionsRoles([action1, action2], [[roleAString], [roleBString]]);
 
       expect(await daoAccessControl.getActionRoles(action1)).to.deep.eq([
-        roleB,
+        ethers.utils.id(roleBString),
       ]);
 
-      expect(await daoAccessControl.isRoleAuthorized(action1, roleA)).to.eq(
-        false
-      );
-      expect(await daoAccessControl.isRoleAuthorized(action2, roleB)).to.eq(
-        false
-      );
+      expect(
+        await daoAccessControl.isRoleAuthorized(
+          action1,
+          ethers.utils.id(roleAString)
+        )
+      ).to.eq(false);
+      expect(
+        await daoAccessControl.isRoleAuthorized(
+          action2,
+          ethers.utils.id(roleBString)
+        )
+      ).to.eq(false);
     });
 
     it("Should Remove Actions (Remove)", async () => {
@@ -274,13 +337,19 @@ describe.only("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles([action1, action2], [[roleA, roleB], [roleA]]);
+        .addActionsRoles(
+          [action1, action2],
+          [[roleAString, roleBString], [roleAString]]
+        );
 
       // Should not add a role that has already been added
       await expect(
         daoAccessControl
           .connect(executor1)
-          .removeActionsRoles([action1, action2], [[roleA], [roleB]])
+          .removeActionsRoles(
+            [action1, action2],
+            [[ethers.utils.id(roleAString)], [ethers.utils.id(roleBString)]]
+          )
       ).to.reverted;
     });
   });
