@@ -12,8 +12,8 @@ interface IDAOAccessControl is IAccessControl {
         address[][] members
     );
     event RoleAdminUpdated(string role, string roleAdmin);
-    event ActionRoleAdded(bytes32 action, string role);
-    event ActionRoleRemoved(bytes32 action, string role);
+    event ActionRoleAdded(address target, string functionDesc, bytes32 action, bytes32 role);
+    event ActionRoleRemoved(bytes32 action, bytes32 role);
 
     function initialize(
         address dao,
@@ -32,13 +32,14 @@ interface IDAOAccessControl is IAccessControl {
     // TODO: make sure all the public/external functions are in here
 
     function addActionsRoles(
-        bytes32[] calldata actions,
-        string[][] calldata roles
+        address[] calldata targets,
+        string[] calldata functionDescs,
+        bytes32[][] calldata roles
     ) external;
 
     function removeActionsRoles(
         bytes32[] calldata actions,
-        string[][] calldata roles
+        bytes32[][] calldata roles
     ) external;
 
     function getActionRoles(bytes32 action)

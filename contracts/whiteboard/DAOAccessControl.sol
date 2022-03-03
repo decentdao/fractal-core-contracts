@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IDAOAccessControl.sol";
+import "hardhat/console.sol";
 
 contract DAOAccessControl is
     IDAOAccessControl,
@@ -14,6 +15,10 @@ contract DAOAccessControl is
 {
     mapping(bytes32 => bytes32[]) private _actionsToRoles;
 
+    // todo: Can we pass this into grantRolesAndAdmins
+    // todo: pass the executor role in with the factory contract
+    // todo: remove the executors params
+    // todo: Set up actions - execute is just an action
     function initialize(
         address dao,
         address[] memory executors,
@@ -21,18 +26,7 @@ contract DAOAccessControl is
         string[] memory roleAdmins,
         address[][] memory members
     ) public initializer {
-        bytes32 EXECUTE_ROLE = keccak256("EXECUTE");
-
         _grantRole(DEFAULT_ADMIN_ROLE, dao);
-
-        uint256 executorsLength = executors.length;
-        for (uint256 i = 0; i < executorsLength; ) {
-            _grantRole(EXECUTE_ROLE, executors[i]);
-            unchecked {
-                i++;
-            }
-        }
-
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
@@ -52,8 +46,6 @@ contract DAOAccessControl is
         if (roles.length != roleAdmins.length) revert ArraysNotEqual();
         if (roles.length != members.length) revert ArraysNotEqual();
 
-        // TODO: accept "roles" and "rolesAdmins" as strings
-        // TODO: emit some events
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
             _setRoleAdmin(
@@ -63,6 +55,7 @@ contract DAOAccessControl is
 
             uint256 membersLength = members[i].length;
             for (uint256 j = 0; j < membersLength; ) {
+                // provide checks for each user attempting to add members to a role
                 _grantRole(
                     keccak256(abi.encodePacked(roles[i])),
                     members[i][j]
@@ -79,64 +72,19 @@ contract DAOAccessControl is
         emit RolesAndAdminsGranted(roles, roleAdmins, members);
     }
 
-    function updateRolesAdmins(
-        string[] calldata roles,
-        string[] calldata roleAdmins
-    ) public {
-        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
-
-        uint256 rolesLength = roles.length;
-        for (uint256 i = 0; i < rolesLength; ) {
-            _updateRoleAdmin(roles[i], roleAdmins[i]);
-            unchecked {
-                i++;
-            }
-        }
-    }
-
-    function _updateRoleAdmin(string calldata role, string calldata roleAdmin)
-        internal
-        onlyRole(getRoleAdmin(getRoleAdmin(keccak256(abi.encodePacked(role)))))
-    {
-        _setRoleAdmin(
-            keccak256(abi.encodePacked(role)),
-            keccak256(abi.encodePacked(roleAdmin))
-        );
-
-        emit RoleAdminUpdated(role, roleAdmin);
-    }
-
-    function actionIsAuthorized(
-        address caller,
-        address target,
-        bytes4 sig
-    ) external view override returns (bool isAuthorized) {
-        bytes32 action = keccak256(abi.encodePacked(target, sig));
-        bytes32[] memory roles = _actionsToRoles[action];
-        uint256 roleLength = roles.length;
-
-        for (uint256 i = 0; i < roleLength; ) {
-            if (hasRole(roles[i], caller)) {
-                isAuthorized = true;
-                break;
-            }
-            unchecked {
-                i++;
-            }
-        }
-    }
-
     function addActionsRoles(
-        bytes32[] calldata actions,
-        string[][] calldata roles
+        address[] calldata targets,
+        string[] calldata functionDescs,
+        bytes32[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (actions.length != roles.length) revert ArraysNotEqual();
+        if (targets.length != functionDescs.length) revert ArraysNotEqual();
+        if (targets.length != roles.length) revert ArraysNotEqual();
 
-        uint256 actionsLength = actions.length;
-        for (uint256 i = 0; i < actionsLength; ) {
+        uint256 targetsLength = targets.length;
+        for (uint256 i = 0; i < targetsLength; ) {
             uint256 rolesLength = roles[i].length;
             for (uint256 j = 0; j < rolesLength; ) {
-                _addActionRole(actions[i], roles[i][j]);
+                _addActionRole(targets[i], functionDescs[i], roles[i][j]);
                 unchecked {
                     j++;
                 }
@@ -147,15 +95,19 @@ contract DAOAccessControl is
         }
     }
 
-    function _addActionRole(bytes32 action, string calldata role) internal {
-        _actionsToRoles[action].push(keccak256(abi.encodePacked(role)));
+    // Is funcDesc "afunctionName(uint, address)" enough to read?
+    function _addActionRole(address target, string memory functionDesc, bytes32 role) internal {
+        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
+        bytes32 action = keccak256(abi.encodePacked(target, encodedSig));
+        _actionsToRoles[action].push(role);
 
-        emit ActionRoleAdded(action, role);
+        emit ActionRoleAdded(target, functionDesc, action, role);
     }
 
+    // todo: bytes32 for roles
     function removeActionsRoles(
         bytes32[] calldata actions,
-        string[][] calldata roles
+        bytes32[][] calldata roles
     ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
         if (actions.length != roles.length) revert ArraysNotEqual();
 
@@ -174,11 +126,11 @@ contract DAOAccessControl is
         }
     }
 
-    function _removeActionRole(bytes32 action, string calldata role) internal {
+    function _removeActionRole(bytes32 action, bytes32 role) internal {
         uint256 rolesLength = _actionsToRoles[action].length;
         for (uint256 i = 0; i < rolesLength; ) {
             if (
-                _actionsToRoles[action][i] == keccak256(abi.encodePacked(role))
+                _actionsToRoles[action][i] == role
             ) {
                 _actionsToRoles[action][i] = _actionsToRoles[action][
                     rolesLength - 1
@@ -187,6 +139,26 @@ contract DAOAccessControl is
 
                 emit ActionRoleRemoved(action, role);
 
+                break;
+            }
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    function actionIsAuthorized(
+        address caller,
+        address target,
+        bytes4 sig
+    ) external view override returns (bool isAuthorized) {
+        bytes32 action = keccak256(abi.encodePacked(target, sig));
+        bytes32[] memory roles = _actionsToRoles[action];
+        uint256 roleLength = roles.length;
+
+        for (uint256 i = 0; i < roleLength; ) {
+            if (hasRole(roles[i], caller)) {
+                isAuthorized = true;
                 break;
             }
             unchecked {
