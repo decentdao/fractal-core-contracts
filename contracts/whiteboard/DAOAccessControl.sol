@@ -1,82 +1,208 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 import "./IDAOAccessControl.sol";
-import "hardhat/console.sol";
 
 contract DAOAccessControl is
     IDAOAccessControl,
     ERC165,
     Initializable,
-    AccessControl
+    Context
 {
-    mapping(bytes32 => bytes32[]) private _actionsToRoles;
+    struct RoleData {
+        mapping(address => bool) members;
+        string adminRole;
+    }
+    mapping(string => RoleData) private _roles;
+    mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
+    string public constant THE_ONE = "THE_ONE";
 
-    // todo: Can we pass this into grantRolesAndAdmins
-    // todo: pass the executor role in with the factory contract
-    // todo: remove the executors params
-    // todo: Set up actions - execute is just an action
     function initialize(
         address dao,
-        address[] memory executors,
         string[] memory roles,
         string[] memory roleAdmins,
         address[][] memory members
-    ) public initializer {
-        _grantRole(DEFAULT_ADMIN_ROLE, dao);
+    ) public override initializer {
+        _grantRole(THE_ONE, dao);
         _grantRolesAndAdmins(roles, roleAdmins, members);
+    }
+
+    /**
+     * @dev Modifier that checks that an account has a specific role. Reverts
+     * with a standardized message including the required role.
+     *
+     * The format of the revert reason is given by the following regular expression:
+     *
+     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
+     *
+     * _Available since v4.1._
+     */
+    modifier onlyRole(string memory role) {
+        _checkRole(role, _msgSender());
+        _;
+    }
+
+        /**
+     * @dev Returns `true` if `account` has been granted `role`.
+     */
+    function hasRole(string memory role, address account) public view virtual override returns (bool) {
+        return _roles[role].members[account];
+    }
+
+        /**
+     * @dev Revert with a standard message if `account` is missing `role`.
+     *
+     * The format of the revert reason is given by the following regular expression:
+     *
+     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
+     */
+    function _checkRole(string memory role, address account) internal view virtual {
+        if (!hasRole(role, account)) {
+            revert(
+                string(
+                    abi.encodePacked(
+                        "AccessControl: account ",
+                        Strings.toHexString(uint160(account), 20),
+                        " is missing role ",
+                        role
+                    )
+                )
+            );
+        }
+    }
+
+    /**
+     * @dev Returns the admin role that controls `role`. See {grantRole} and
+     * {revokeRole}.
+     *
+     * To change a role's admin, use {_setRoleAdmin}.
+     */
+    function getRoleAdmin(string memory role) public view virtual override returns (string memory) {
+        return _roles[role].adminRole;
+    }
+
+    function actionIsAuthorized(
+        address caller,
+        address target,
+        bytes4 sig
+    ) external view override returns (bool isAuthorized) {
+        string[] memory roles = _actionsToRoles[target][sig];
+        uint256 roleLength = roles.length;
+
+        for (uint256 i = 0; i < roleLength; ) {
+            if (hasRole(roles[i], caller)) {
+                isAuthorized = true;
+                break;
+            }
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    function getActionRoles(        
+            address target,
+            string memory functionDesc
+        )
+        external
+        view
+        override
+        returns (string[] memory roles)
+    {
+        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
+        return _actionsToRoles[target][encodedSig];
+    }
+    //todo: check if caller is authorized as well
+
+    function isRoleAuthorized(            
+            address caller,
+            address target,
+            string memory functionDesc
+        )
+        external
+        view
+        override
+        returns (bool isAuthorized)
+    {
+        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
+        string[] memory roles = _actionsToRoles[target][encodedSig];
+        uint256 rolesLength = roles.length;
+
+        for (uint256 i = 0; i < rolesLength; ) {
+            if (keccak256(abi.encodePacked(roles[i])) == keccak256(abi.encodePacked(roles[i]))) {
+                isAuthorized = true;
+                break;
+            }
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+        /**
+     * @dev Grants `role` to `account`.
+     *
+     * If `account` had not been already granted `role`, emits a {RoleGranted}
+     * event.
+     *
+     * Requirements:
+     *
+     * - the caller must have ``role``'s admin role.
+     */
+    function grantRole(string memory role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+        _grantRole(role, account);
+    }
+
+    /**
+     * @dev Revokes `role` from `account`.
+     *
+     * If `account` had been granted `role`, emits a {RoleRevoked} event.
+     *
+     * Requirements:
+     *
+     * - the caller must have ``role``'s admin role.
+     */
+    function revokeRole(string memory role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+        _revokeRole(role, account);
+    }
+
+        /**
+     * @dev Revokes `role` from the calling account.
+     *
+     * Roles are often managed via {grantRole} and {revokeRole}: this function's
+     * purpose is to provide a mechanism for accounts to lose their privileges
+     * if they are compromised (such as when a trusted device is misplaced).
+     *
+     * If the calling account had been revoked `role`, emits a {RoleRevoked}
+     * event.
+     *
+     * Requirements:
+     *
+     * - the caller must be `account`.
+     */
+    function renounceRole(string memory role, address account) public virtual override {
+        require(account == _msgSender(), "AccessControl: can only renounce roles for self");
+
+        _revokeRole(role, account);
     }
 
     function grantRolesAndAdmins(
         string[] memory roles,
         string[] memory roleAdmins,
         address[][] memory members
-    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    ) public onlyRole(THE_ONE) {
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
-    function _grantRolesAndAdmins(
-        string[] memory roles,
-        string[] memory roleAdmins,
-        address[][] memory members
-    ) private {
-        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
-        if (roles.length != members.length) revert ArraysNotEqual();
-
-        uint256 rolesLength = roles.length;
-        for (uint256 i = 0; i < rolesLength; ) {
-            _setRoleAdmin(
-                keccak256(abi.encodePacked(roles[i])),
-                keccak256(abi.encodePacked(roleAdmins[i]))
-            );
-
-            uint256 membersLength = members[i].length;
-            for (uint256 j = 0; j < membersLength; ) {
-                // provide checks for each user attempting to add members to a role
-                _grantRole(
-                    keccak256(abi.encodePacked(roles[i])),
-                    members[i][j]
-                );
-                unchecked {
-                    j++;
-                }
-            }
-            unchecked {
-                i++;
-            }
-        }
-
-        emit RolesAndAdminsGranted(roles, roleAdmins, members);
-    }
-
     function addActionsRoles(
-        address[] calldata targets,
-        string[] calldata functionDescs,
-        bytes32[][] calldata roles
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
+        address[] memory targets,
+        string[] memory functionDescs,
+        string[][] memory roles
+    ) external override onlyRole(THE_ONE) {
         if (targets.length != functionDescs.length) revert ArraysNotEqual();
         if (targets.length != roles.length) revert ArraysNotEqual();
 
@@ -95,27 +221,18 @@ contract DAOAccessControl is
         }
     }
 
-    // Is funcDesc "afunctionName(uint, address)" enough to read?
-    function _addActionRole(address target, string memory functionDesc, bytes32 role) internal {
-        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
-        bytes32 action = keccak256(abi.encodePacked(target, encodedSig));
-        _actionsToRoles[action].push(role);
-
-        emit ActionRoleAdded(target, functionDesc, action, role);
-    }
-
-    // todo: bytes32 for roles
     function removeActionsRoles(
-        bytes32[] calldata actions,
-        bytes32[][] calldata roles
-    ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
-        if (actions.length != roles.length) revert ArraysNotEqual();
-
-        uint256 actionsLength = actions.length;
+        address[] memory targets,
+        string[] memory functionDescs,
+        string[][] memory roles
+    ) external override onlyRole(THE_ONE) {
+        if (targets.length != functionDescs.length) revert ArraysNotEqual();
+        if (targets.length != roles.length) revert ArraysNotEqual();
+        uint256 actionsLength = targets.length;
         for (uint256 i = 0; i < actionsLength; ) {
             uint256 rolesLength = roles[i].length;
             for (uint256 j = 0; j < rolesLength; ) {
-                _removeActionRole(actions[i], roles[i][j]);
+                _removeActionRole(targets[i], functionDescs[i], roles[i][j]);
                 unchecked {
                     j++;
                 }
@@ -126,18 +243,57 @@ contract DAOAccessControl is
         }
     }
 
-    function _removeActionRole(bytes32 action, bytes32 role) internal {
-        uint256 rolesLength = _actionsToRoles[action].length;
+    function _grantRolesAndAdmins(
+        string[] memory roles,
+        string[] memory roleAdmins,
+        address[][] memory members
+    ) private {
+        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
+        if (roles.length != members.length) revert ArraysNotEqual();
+
+        uint256 rolesLength = roles.length;
+        for (uint256 i = 0; i < rolesLength; ) {
+            _setRoleAdmin(
+                roles[i],
+                roleAdmins[i]
+            );
+
+            uint256 membersLength = members[i].length;
+            for (uint256 j = 0; j < membersLength; ) {
+                _grantRole(
+                    roles[i],
+                    members[i][j]
+                );
+                unchecked {
+                    j++;
+                }
+            }
+            unchecked {
+                i++;
+            }
+        }
+
+        emit RolesAndAdminsGranted(roles, roleAdmins, members);
+    }
+
+    function _addActionRole(address target, string memory functionDesc, string memory role) internal {
+        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
+        _actionsToRoles[target][encodedSig].push(role);
+
+        emit ActionRoleAdded(target, functionDesc, encodedSig, role);
+    }
+
+    function _removeActionRole(address target, string memory functionDesc, string memory role) internal {
+        bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
+        uint256 rolesLength = _actionsToRoles[target][encodedSig].length;
         for (uint256 i = 0; i < rolesLength; ) {
             if (
-                _actionsToRoles[action][i] == role
+                keccak256(abi.encodePacked(_actionsToRoles[target][encodedSig][i])) == keccak256(abi.encodePacked(role))
             ) {
-                _actionsToRoles[action][i] = _actionsToRoles[action][
-                    rolesLength - 1
-                ];
-                _actionsToRoles[action].pop();
+                _actionsToRoles[target][encodedSig][i] = _actionsToRoles[target][encodedSig][rolesLength - 1];
+                _actionsToRoles[target][encodedSig].pop();
 
-                emit ActionRoleRemoved(action, role);
+                emit ActionRoleRemoved(target, functionDesc, encodedSig, role);
 
                 break;
             }
@@ -147,64 +303,50 @@ contract DAOAccessControl is
         }
     }
 
-    function actionIsAuthorized(
-        address caller,
-        address target,
-        bytes4 sig
-    ) external view override returns (bool isAuthorized) {
-        bytes32 action = keccak256(abi.encodePacked(target, sig));
-        bytes32[] memory roles = _actionsToRoles[action];
-        uint256 roleLength = roles.length;
+    /**
+     * @dev Sets `adminRole` as ``role``'s admin role.
+     *
+     * Emits a {RoleAdminChanged} event.
+     */
+    function _setRoleAdmin(string memory role, string memory adminRole) internal virtual {
+        string memory previousAdminRole = getRoleAdmin(role);
+        _roles[role].adminRole = adminRole;
+        emit RoleAdminChanged(role, previousAdminRole, adminRole);
+    }
 
-        for (uint256 i = 0; i < roleLength; ) {
-            if (hasRole(roles[i], caller)) {
-                isAuthorized = true;
-                break;
-            }
-            unchecked {
-                i++;
-            }
+    /**
+     * @dev Grants `role` to `account`.
+     *
+     * Internal function without access restriction.
+     */
+    function _grantRole(string memory role, address account) internal virtual {
+        if (!hasRole(role, account)) {
+            _roles[role].members[account] = true;
+            emit RoleGranted(role, account, _msgSender());
         }
     }
 
-    function getActionRoles(bytes32 action)
-        external
-        view
-        override
-        returns (bytes32[] memory roles)
-    {
-        return _actionsToRoles[action];
-    }
-
-    function isRoleAuthorized(bytes32 action, bytes32 role)
-        external
-        view
-        override
-        returns (bool isTrue)
-    {
-        bytes32[] memory roles = _actionsToRoles[action];
-        uint256 rolesLength = roles.length;
-
-        for (uint256 i = 0; i < rolesLength; ) {
-            if (roles[i] == role) {
-                isTrue = true;
-                break;
-            }
-            unchecked {
-                i++;
-            }
+    /**
+     * @dev Revokes `role` from `account`.
+     *
+     * Internal function without access restriction.
+     */
+    function _revokeRole(string memory role, address account) internal virtual {
+        if (hasRole(role, account)) {
+            _roles[role].members[account] = false;
+            emit RoleRevoked(role, account, _msgSender());
         }
     }
 
-    function supportsInterface(bytes4 interfaceId)
+        function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
-        override(ERC165, AccessControl)
+        override
         returns (bool)
     {
         return
             interfaceId == type(IDAOAccessControl).interfaceId ||
-            super.supportsInterface(interfaceId);
+              supportsInterface(interfaceId);
     }
 }
