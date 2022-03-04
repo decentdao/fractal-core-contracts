@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BytesLike, ContractReceipt, ContractTransaction } from "ethers";
+import { ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import {
   DAO__factory,
@@ -9,7 +9,7 @@ import {
   DAOAccessControl__factory,
 } from "../typechain";
 
-describe.only("DAO", () => {
+describe("DAO", () => {
   let daoAccessControl: DAOAccessControl;
   let dao: DAO;
   // Wallets
@@ -79,6 +79,10 @@ describe.only("DAO", () => {
       await dao.initialize(daoAccessControl.address);
     });
 
+    it("Init Access Control", async () => {
+      expect(await dao.accessControl()).to.eq(daoAccessControl.address);
+    });
+
     it("executor EOA should be able to call `execute`", async () => {
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
         "grantRole",
@@ -89,11 +93,47 @@ describe.only("DAO", () => {
         .connect(executor1)
         .execute([daoAccessControl.address], [0], [transferCallData]);
 
-      const receipt: ContractReceipt = await tx.wait();
+      expect(tx).to.emit(daoAccessControl, "RoleGranted");
 
-      //   expect(newDAOTx).to.emit(daoAccessControl, "RoleGranted");
+      expect(
+        await daoAccessControl.hasRole("EXECUTE_ROLE", executor1.address)
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole("EXECUTE_ROLE", executor2.address)
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole("EXECUTE_ROLE", executor3.address)
+      ).to.eq(true);
+    });
+
+    // unauth dao
+
+    it("UnAuthUser should NOT be able to call `execute`", async () => {
+      const transferCallData = daoAccessControl.interface.encodeFunctionData(
+        "grantRole",
+        ["EXECUTE_ROLE", executor3.address]
+      );
+
+      await expect(
+        dao
+          .connect(executor3)
+          .execute([daoAccessControl.address], [0], [transferCallData])
+      ).to.be.revertedWith("NotAuthorized");
+    });
+
+    it("UnAuthDAO should NOT be able to call `execute`", async () => {
+      const daoUnAuth = await new DAO__factory(deployer).deploy();
+      daoUnAuth.initialize(daoAccessControl.address);
+      const transferCallData = daoAccessControl.interface.encodeFunctionData(
+        "grantRole",
+        ["EXECUTE_ROLE", executor3.address]
+      );
+
+      await expect(
+        daoUnAuth
+          .connect(executor1)
+          .execute([daoAccessControl.address], [0], [transferCallData])
+      ).to.reverted;
     });
   });
-
-  //   it("DAO supports the expected ERC165 interface");
 });
