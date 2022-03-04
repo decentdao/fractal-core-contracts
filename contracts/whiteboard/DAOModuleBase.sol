@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "./IDAOAccessControl.sol";
+import "./IDAOModuleBase.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-abstract contract DAOModuleBase is Initializable {
+abstract contract DAOModuleBase is Initializable, IDAOModuleBase {
     error NotAuthorized();
 
     IDAOAccessControl public accessControl;

@@ -3,11 +3,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "./IDAO.sol";
 import "./DAOModuleBase.sol";
 
-// This should have UUPS standard
-contract DAO is ERC165, DAOModuleBase {
+contract DAO is IDAO, ERC165, DAOModuleBase, UUPSUpgradeable {
     function execute(
         address[] calldata targets,
         uint256[] calldata values,
@@ -27,12 +27,13 @@ contract DAO is ERC165, DAOModuleBase {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        virtual
         override
         returns (bool)
     {
         return
             interfaceId == type(IDAO).interfaceId ||
-            super.supportsInterface(interfaceId);
+            supportsInterface(interfaceId);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override authorized {}
 }
