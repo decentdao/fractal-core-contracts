@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 
 const expect = chai.expect;
 
-describe.only("DAO Access Control Contract", function () {
+describe("DAO Access Control Contract", function () {
   let daoAccessControl: DAOAccessControl;
 
   // Wallets
@@ -59,7 +59,10 @@ describe.only("DAO Access Control Contract", function () {
           [executor1.address, executor2.address],
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
-        ]
+        ],
+        [dao.address],
+        ["execute(address[],uint256[],bytes[])"],
+        [["EXECUTE_ROLE"]]
       );
     });
 
@@ -116,7 +119,7 @@ describe.only("DAO Access Control Contract", function () {
   describe("Roles", function () {
     beforeEach(async function () {
       // Initialize with roleA as the admin of roleB
-      await daoAccessControl.initialize(dao.address, [], [], []);
+      await daoAccessControl.initialize(dao.address, [], [], [], [], [], []);
     });
 
     it("Admin of a role can grant new members", async () => {
@@ -404,7 +407,10 @@ describe.only("DAO Access Control Contract", function () {
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
-        ]
+        ],
+        [dao.address],
+        ["execute(address[],uint256[],bytes[])"],
+        [["EXECUTE_ROLE"]]
       );
     });
     it("Should setup Actions", async () => {

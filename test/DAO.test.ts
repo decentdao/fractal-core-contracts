@@ -1,99 +1,99 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BytesLike } from "ethers";
+import { BytesLike, ContractReceipt, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { DAOFactory, DAO, DAOAccessControl } from "../typechain";
+import {
+  DAO__factory,
+  DAO,
+  DAOAccessControl,
+  DAOAccessControl__factory,
+} from "../typechain";
 
-// describe("DAO", () => {
-//   let daoFactory: DAOFactory;
-//   let daoPrototype: DAO;
-//   let daoAccessControlPrototype: DAOAccessControl;
+describe.only("DAO", () => {
+  let daoAccessControl: DAOAccessControl;
+  let dao: DAO;
+  // Wallets
+  let deployer: SignerWithAddress;
+  let executor1: SignerWithAddress;
+  let executor2: SignerWithAddress;
+  let executor3: SignerWithAddress;
 
-//   beforeEach(async () => {
-//     let DAOFactory = await ethers.getContractFactory("DAOFactory");
-//     daoFactory = await DAOFactory.deploy();
-//     const DAO = await ethers.getContractFactory("DAO");
-//     daoPrototype = await DAO.deploy();
-//     const DAOAccessControl = await ethers.getContractFactory("DAOAccessControl");
-//     daoAccessControlPrototype = await DAOAccessControl.deploy();
-//   });
+  beforeEach(async () => {
+    [deployer, executor1, executor2, executor3] = await ethers.getSigners();
 
-//   describe("an empty DAO", () => {
-//     let dao: DAO;
-//     let accessControl: DAOAccessControl;
+    // Deploy Contracts
+    daoAccessControl = await new DAOAccessControl__factory(deployer).deploy();
+    dao = await new DAO__factory(deployer).deploy();
+  });
 
-//     beforeEach(async () => {
-//       const createParams: [string, string, string[], BytesLike[], BytesLike[], string[][]] = [daoPrototype.address, daoAccessControlPrototype.address, [], [], [], []];
-//       const daoAddress = await daoFactory.callStatic.createDAO(...createParams);
-//       await daoFactory.createDAO(...createParams);
-//       const DAO = await ethers.getContractFactory("DAO");
-//       dao = DAO.attach(daoAddress);
-//       const DAOAccessControl = await ethers.getContractFactory("DAOAccessControl");
-//       accessControl = DAOAccessControl.attach(await dao.accessControl());
-//     });
+  describe("an empty DAO", () => {
+    beforeEach(async () => {
+      // Initilizes Contracts
+      await daoAccessControl.initialize(dao.address, [], [], [], [], [], []);
+      await dao.initialize(daoAccessControl.address);
+    });
 
-//     it("has the DEFAULT_ADMIN_ROLE", async () => {
-//       expect(await accessControl.hasRole(await accessControl.DEFAULT_ADMIN_ROLE(), dao.address)).to.be.true;
-//     });
+    it("has the DAO_ROLE", async () => {
+      expect(
+        await daoAccessControl.hasRole(
+          await daoAccessControl.DAO_ROLE(),
+          dao.address
+        )
+      ).to.eq(true);
+    });
 
-//     it("doesn't allow anyone to add new roles", async () => {
-//       const [account] = await ethers.getSigners();
-//       await expect(
-//         accessControl.grantRole(ethers.utils.keccak256(Buffer.from("new role")), ethers.constants.AddressZero)
-//       ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
-//     });
+    it("doesn't allow anyone to grant the EXECUTE role", async () => {
+      await expect(
+        daoAccessControl.grantRole("EXECUTE_ROLE", deployer.address)
+      ).to.be.revertedWith(
+        `AccessControl: account ${deployer.address.toLowerCase()} is missing role`
+      );
+    });
 
-    // it("doesn't allow anyone to grant the EXECUTE role", async () => {
-    //   const [account] = await ethers.getSigners();
-    //   await expect(
-    //     accessControl.grantRole(await dao.EXECUTE_ROLE(), ethers.constants.AddressZero)
-    //   ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
-    // });
+    it("doesn't allow anyone to revoke existing roles", async () => {
+      await expect(
+        daoAccessControl.revokeRole("EXECUTE_ROLE", executor1.address)
+      ).to.be.revertedWith(
+        `AccessControl: account ${deployer.address.toLowerCase()} is missing role`
+      );
+    });
 
-    // it("doesn't allow anyone to revoke existing roles", async () => {
-    //   const [account] = await ethers.getSigners();
-    //   await expect(
-    //     accessControl.revokeRole(await dao.EXECUTE_ROLE(), dao.address)
-    //   ).to.be.revertedWith(`AccessControl: account ${account.address.toLowerCase()} is missing role ${ethers.constants.HashZero}`)
-    // });
+    it("doesn't allow anyone to call `execute`", async () => {
+      const executeRole = "EXECUTE_ROLE";
+      await expect(dao.connect(executor1).execute([], [], [])).to.reverted;
+    });
+  });
 
-    // it("doesn't allow anyone to call `execute`", async () => {
-    //   const [account] = await ethers.getSigners();
-    //   const executeRole = await dao.EXECUTE_ROLE();
-    //   await expect(dao.execute([], [], [])).to.be.revertedWith(`Unauthorized("${executeRole}", "${account.address}")`)
-    // });
-//   });
+  describe("a dao with `execute` permissions", () => {
+    beforeEach(async () => {
+      // Initilizes Contracts
+      await daoAccessControl.initialize(
+        dao.address,
+        ["EXECUTE_ROLE"],
+        ["DAO_ROLE"],
+        [[executor1.address, executor2.address]],
+        [dao.address],
+        ["execute(address[],uint256[],bytes[])"],
+        [["EXECUTE_ROLE"]]
+      );
+      await dao.initialize(daoAccessControl.address);
+    });
 
-//   describe("a dao with one account that has `execute` permissions", () => {
-//     let dao: DAO;
-//     let executor: SignerWithAddress;
+    it("executor EOA should be able to call `execute`", async () => {
+      const transferCallData = daoAccessControl.interface.encodeFunctionData(
+        "grantRole",
+        ["EXECUTE_ROLE", executor3.address]
+      );
 
-//     beforeEach(async () => {
-//       [executor] = await ethers.getSigners();
-//       const permissions: [string, string, string[], BytesLike[], BytesLike[], string[][]] = [
-//         daoPrototype.address,
-//         daoAccessControlPrototype.address,
-//         [executor.address],
-//         [],
-//         [],
-//         []
-//       ];
-//       const daoAddress = await daoFactory.callStatic.createDAO(...permissions);
-//       await daoFactory.createDAO(...permissions);
-//       const DAO = await ethers.getContractFactory("DAO");
-//       dao = DAO.attach(daoAddress);
-//     });
+      const tx: ContractTransaction = await dao
+        .connect(executor1)
+        .execute([daoAccessControl.address], [0], [transferCallData]);
 
-//     it("executor EOA should be able to call `execute`", async () => {
-//       const newDAOTx = await dao.execute(
-//         [daoFactory.address],
-//         [0],
-//         [daoFactory.interface.encodeFunctionData("createDAO", [daoPrototype.address, daoAccessControlPrototype.address, [], [], [], []])]
-//       );
+      const receipt: ContractReceipt = await tx.wait();
 
-//       expect(newDAOTx).to.emit(daoFactory, "DAOCreated");
-//     });
-//   });
+      //   expect(newDAOTx).to.emit(daoAccessControl, "RoleGranted");
+    });
+  });
 
-//   it("DAO supports the expected ERC165 interface")
-// });
+  //   it("DAO supports the expected ERC165 interface");
+});

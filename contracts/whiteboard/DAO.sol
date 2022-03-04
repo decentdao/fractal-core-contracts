@@ -1,50 +1,18 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import "./IDAOAccessControl.sol";
 import "./IDAO.sol";
+import "./DAOModuleBase.sol";
 
-contract DAO is IDAO, ERC165, Initializable {
-    IDAOAccessControl public accessControl;
-
-    // Are clones upgradeable
-    function initialize(
-        address accessControlImplementation,
-        address[] memory executors,
-        bytes32[] memory roles,
-        bytes32[] memory rolesAdmins,
-        address[][] memory members
-    ) public initializer {
-        accessControl = IDAOAccessControl(
-            address(
-                new ERC1967Proxy(
-                    accessControlImplementation,
-                    abi.encodeWithSelector(
-                        IDAOAccessControl(payable(address(0)))
-                            .initialize
-                            .selector,
-                        address(this),
-                        executors,
-                        roles,
-                        rolesAdmins,
-                        members
-                    )
-                )
-            )
-        );
-    }
-
+// This should have UUPS standard
+contract DAO is ERC165, DAOModuleBase {
     function execute(
         address[] calldata targets,
         uint256[] calldata values,
         bytes[] calldata calldatas
-    ) public {
-        // Todo: Add authorize function modifier
-
+    ) public authorized {
         string memory errorMessage = "DAO: call reverted without message";
         unchecked {
             for (uint256 i = 0; i < targets.length; i++) {

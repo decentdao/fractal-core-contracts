@@ -25,10 +25,14 @@ contract DAOAccessControl is
         address dao,
         string[] memory roles,
         string[] memory roleAdmins,
-        address[][] memory members
+        address[][] memory members,
+        address[] memory targets,
+        string[] memory functionDescs,
+        string[][] memory actionRoles
     ) public override initializer {
         _grantRole(DAO_ROLE, dao);
         _grantRolesAndAdmins(roles, roleAdmins, members);
+        _addActionsRoles(targets, functionDescs, actionRoles);
     }
 
     modifier onlyRole(string memory role) {
@@ -143,6 +147,14 @@ contract DAOAccessControl is
         string[] memory functionDescs,
         string[][] memory roles
     ) external override onlyRole(DAO_ROLE) {
+        _addActionsRoles(targets, functionDescs, roles);
+    }
+
+    function _addActionsRoles(
+        address[] memory targets,
+        string[] memory functionDescs,
+        string[][] memory roles
+    ) internal {
         if (targets.length != functionDescs.length) revert ArraysNotEqual();
         if (targets.length != roles.length) revert ArraysNotEqual();
 

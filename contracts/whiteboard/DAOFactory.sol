@@ -6,43 +6,73 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "./IDAOFactory.sol";
 import "./IDAO.sol";
 
-contract DAOFactory is IDAOFactory, ERC165 {
-    function createDAO(
-        address daoImplementation,
-        address accessControlImplementation,
-        address[] memory executors,
-        bytes32[] memory roles,
-        bytes32[] memory rolesAdmins,
-        address[][] memory members
-    ) external returns (address) {
-        address dao = address(
-            new ERC1967Proxy(
-                daoImplementation,
-                abi.encodeWithSelector(
-                    IDAO(payable(address(0))).initialize.selector,
-                    accessControlImplementation,
-                    executors,
-                    roles,
-                    rolesAdmins,
-                    members
-                )
-            )
-        );
+// contract DAOFactory is IDAOFactory, ERC165 {
+//     // Are clones upgradeable
+//     function initialize(
+//         address accessControlImplementation,
+//         address[] memory executors,
+//         bytes32[] memory roles,
+//         bytes32[] memory rolesAdmins,
+//         address[][] memory members
+//     ) public initializer returns(address accessC){
+//         accessControl = IDAOAccessControl(
+//             address(
+//                 new ERC1967Proxy(
+//                     accessControlImplementation,
+//                     abi.encodeWithSelector(
+//                         IDAOAccessControl(payable(address(0)))
+//                             .initialize
+//                             .selector,
+//                         address(this),
+//                         executors,
+//                         roles,
+//                         rolesAdmins,
+//                         members
+//                     )
+//                 )
+//             )
+//         );
+//     }
 
-        emit DAOCreated(dao);
 
-        return dao;
-    }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        return
-            interfaceId == type(IDAOFactory).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
-}
+
+//     function createDAO(
+//         address daoImplementation,
+//         address accessControlImplementation,
+//         address[] memory executors,
+//         bytes32[] memory roles,
+//         bytes32[] memory rolesAdmins,
+//         address[][] memory members
+//     ) external returns (address) {
+//         address dao = address(
+//             new ERC1967Proxy(
+//                 daoImplementation,
+//                 abi.encodeWithSelector(
+//                     IDAO(payable(address(0))).initialize.selector,
+//                     accessControlImplementation,
+//                     executors,
+//                     roles,
+//                     rolesAdmins,
+//                     members
+//                 )
+//             )
+//         );
+
+//         emit DAOCreated(dao);
+
+//         return dao;
+//     }
+
+//     function supportsInterface(bytes4 interfaceId)
+//         public
+//         view
+//         virtual
+//         override
+//         returns (bool)
+//     {
+//         return
+//             interfaceId == type(IDAOFactory).interfaceId ||
+//             super.supportsInterface(interfaceId);
+//     }
+// }

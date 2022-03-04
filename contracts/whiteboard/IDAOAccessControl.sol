@@ -14,7 +14,10 @@ interface IDAOAccessControl {
         address dao,
         string[] memory roles,
         string[] memory roleAdmins,
-        address[][] memory members
+        address[][] memory members,
+        address[] memory targets,
+        string[] memory functionDescs,
+        string[][] memory actionRoles
     ) external;
     function hasRole(string memory role, address account) external view returns (bool);
     function actionIsAuthorized(

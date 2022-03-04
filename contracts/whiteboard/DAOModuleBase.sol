@@ -1,15 +1,18 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./IDAOAccessControl.sol";
+import "./DAOAccessControl.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-abstract contract DAOModuleBase {
+abstract contract DAOModuleBase is Initializable {
     error NotAuthorized();
 
-    IDAOAccessControl public accessControl;
+    DAOAccessControl public accessControl;
 
-    constructor(address _accessControl) {
-        accessControl = IDAOAccessControl(_accessControl);
+    function initialize(
+        address _accessControl
+    ) public initializer {
+        accessControl = DAOAccessControl(_accessControl);
     }
 
     modifier authorized {
