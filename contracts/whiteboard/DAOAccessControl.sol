@@ -45,7 +45,7 @@ contract DAOAccessControl is
             revert(
                 string(
                     abi.encodePacked(
-                        "AccessControl: account ",
+                        "DAOAccessControl: account ",
                         Strings.toHexString(uint160(account), 20),
                         " is missing role ",
                         role
@@ -90,10 +90,9 @@ contract DAOAccessControl is
         bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
         return _actionsToRoles[target][encodedSig];
     }
-    //todo: check if caller is authorized as well
 
     function isRoleAuthorized(            
-            address caller,
+            string calldata role,
             address target,
             string memory functionDesc
         )
@@ -107,7 +106,7 @@ contract DAOAccessControl is
         uint256 rolesLength = roles.length;
 
         for (uint256 i = 0; i < rolesLength; ) {
-            if (keccak256(abi.encodePacked(roles[i])) == keccak256(abi.encodePacked(roles[i]))) {
+            if (keccak256(abi.encodePacked(role)) == keccak256(abi.encodePacked(roles[i]))) {
                 isAuthorized = true;
                 break;
             }
@@ -126,7 +125,7 @@ contract DAOAccessControl is
     }
 
     function renounceRole(string memory role, address account) public override {
-        require(account == _msgSender(), "AccessControl: can only renounce roles for self");
+        require(account == _msgSender(), "DAOAccessControl: can only renounce roles for self");
 
         _revokeRole(role, account);
     }
@@ -213,8 +212,6 @@ contract DAOAccessControl is
                 i++;
             }
         }
-
-        emit RolesAndAdminsGranted(roles, roleAdmins, members);
     }
 
     function _addActionRole(address target, string memory functionDesc, string memory role) internal {

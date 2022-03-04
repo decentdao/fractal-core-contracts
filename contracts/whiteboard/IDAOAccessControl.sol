@@ -4,11 +4,6 @@ pragma solidity ^0.8.0;
 interface IDAOAccessControl {
     error ArraysNotEqual();
 
-    event RolesAndAdminsGranted(
-        string[] roles,
-        string[] roleAdmins,
-        address[][] members
-    );
     event ActionRoleAdded(address target, string functionDesc, bytes4 encodedSig, string role);
     event ActionRoleRemoved(address target, string functionDesc, bytes4 encodedSig, string role);
     event RoleAdminChanged(string role, string previousAdminRole, string adminRole);
@@ -29,7 +24,7 @@ interface IDAOAccessControl {
     ) external view returns (bool isAuthorized);
     function getRoleAdmin(string memory role) external view returns (string memory);
     function isRoleAuthorized(            
-            address caller,
+            string calldata role,
             address target,
             string memory functionDesc
     )

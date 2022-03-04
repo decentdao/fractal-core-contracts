@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { DAOAccessControl, DAOAccessControl__factory } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
-import { BytesLike } from "ethers";
 
 const expect = chai.expect;
 
@@ -14,11 +13,12 @@ describe.only("DAO Access Control Contract", function () {
   let deployer: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
-  let executor3: SignerWithAddress;
   let roleAMember1: SignerWithAddress;
   let roleAMember2: SignerWithAddress;
   let roleBMember1: SignerWithAddress;
   let roleBMember2: SignerWithAddress;
+  let user1: SignerWithAddress;
+  let user2: SignerWithAddress;
 
   // Roles
   const daoRoleString = "DAO_ROLE";
@@ -40,6 +40,8 @@ describe.only("DAO Access Control Contract", function () {
       roleAMember2,
       roleBMember1,
       roleBMember2,
+      user1,
+      user2,
     ] = await ethers.getSigners();
 
     // DAO Access Control contract deployment
@@ -111,10 +113,202 @@ describe.only("DAO Access Control Contract", function () {
     });
   });
 
-  describe("Create New Roles", function () {
+  describe("Roles", function () {
     beforeEach(async function () {
       // Initialize with roleA as the admin of roleB
       await daoAccessControl.initialize(dao.address, [], [], []);
+    });
+
+    it("Admin of a role can grant new members", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      expect(await daoAccessControl.hasRole(roleAString, user1.address)).to.eq(
+        false
+      );
+
+      expect(await daoAccessControl.hasRole(roleAString, user2.address)).to.eq(
+        false
+      );
+
+      await daoAccessControl
+        .connect(roleAMember1)
+        .grantRole(roleBString, user1.address);
+
+      await daoAccessControl
+        .connect(roleAMember1)
+        .grantRole(roleBString, user2.address);
+
+      expect(await daoAccessControl.hasRole(roleBString, user1.address)).to.eq(
+        true
+      );
+
+      expect(await daoAccessControl.hasRole(roleBString, user2.address)).to.eq(
+        true
+      );
+    });
+
+    it("Non-Admin of a role can not grant new members", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      expect(await daoAccessControl.hasRole(roleAString, user1.address)).to.eq(
+        false
+      );
+
+      expect(await daoAccessControl.hasRole(roleAString, user2.address)).to.eq(
+        false
+      );
+
+      await expect(
+        daoAccessControl.connect(user1).grantRole(roleBString, user1.address)
+      ).to.be.revertedWith(
+        "AccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
+      );
+
+      await expect(
+        daoAccessControl
+          .connect(roleBMember1)
+          .grantRole(roleBString, user1.address)
+      ).to.be.revertedWith(
+        "AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+      );
+    });
+
+    it("Admin of a role can revoke members", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember1.address)
+      ).to.eq(true);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember2.address)
+      ).to.eq(true);
+
+      await daoAccessControl
+        .connect(roleAMember1)
+        .revokeRole(roleBString, roleBMember1.address);
+
+      await daoAccessControl
+        .connect(roleAMember1)
+        .revokeRole(roleBString, roleBMember2.address);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember1.address)
+      ).to.eq(false);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember2.address)
+      ).to.eq(false);
+    });
+
+    it("Non-Admin of a role can not revoke members", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      await expect(
+        daoAccessControl
+          .connect(roleBMember1)
+          .revokeRole(roleBString, roleBMember2.address)
+      ).to.be.revertedWith(
+        "DAOAccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+      );
+
+      await expect(
+        daoAccessControl
+          .connect(user1)
+          .revokeRole(roleBString, roleBMember2.address)
+      ).to.be.revertedWith(
+        "DAOAccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
+      );
+    });
+
+    it("A role member can renounce their role", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember1.address)
+      ).to.eq(true);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember2.address)
+      ).to.eq(true);
+
+      await daoAccessControl
+        .connect(roleBMember1)
+        .renounceRole(roleBString, roleBMember1.address);
+
+      await daoAccessControl
+        .connect(roleBMember2)
+        .renounceRole(roleBString, roleBMember2.address);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember1.address)
+      ).to.eq(false);
+
+      expect(
+        await daoAccessControl.hasRole(roleBString, roleBMember2.address)
+      ).to.eq(false);
+    });
+
+    it("A role member cannot renounce another user's role", async () => {
+      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+        [roleBString, roleAString],
+        [roleAString, daoRoleString],
+        [
+          [roleBMember1.address, roleBMember2.address],
+          [roleAMember1.address, roleAMember2.address],
+        ]
+      );
+
+      await expect(
+        daoAccessControl
+          .connect(roleAMember1)
+          .renounceRole(roleBString, roleBMember1.address)
+      ).to.be.revertedWith(
+        "DAOAccessControl: can only renounce roles for self"
+      );
+
+      await expect(
+        daoAccessControl
+          .connect(roleBMember2)
+          .renounceRole(roleBString, roleBMember1.address)
+      ).to.be.revertedWith(
+        "DAOAccessControl: can only renounce roles for self"
+      );
     });
 
     it("Should batch create Roles", async () => {
@@ -256,6 +450,21 @@ describe.only("DAO Access Control Contract", function () {
           [function1, function2],
           [[roleAString, roleBString], [roleAString]]
         );
+
+      expect(
+        await daoAccessControl.isRoleAuthorized(
+          deployer.address,
+          deployer.address,
+          roleAString
+        )
+      ).to.eq(false);
+      expect(
+        await daoAccessControl.isRoleAuthorized(
+          deployer.address,
+          deployer.address,
+          roleBString
+        )
+      ).to.eq(false);
 
       await daoAccessControl
         .connect(dao)
