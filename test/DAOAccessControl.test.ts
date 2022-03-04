@@ -21,16 +21,14 @@ describe.only("DAO Access Control Contract", function () {
   let roleBMember2: SignerWithAddress;
 
   // Roles
-  const theOneString = "THE_ONE";
+  const daoRoleString = "DAO_ROLE";
   const executorString = "EXECUTE";
   const roleAString = "roleA";
   const roleBString = "roleB";
-  const roleCString = "roleC";
 
   // Actions
-  const action1: BytesLike = ethers.utils.id("action1");
-  const action2: BytesLike = ethers.utils.id("action2");
-  const action3: BytesLike = ethers.utils.id("action3");
+  const function1 = "functionName1(uint)";
+  const function2 = "functionName2(address)";
 
   beforeEach(async function () {
     [
@@ -38,7 +36,6 @@ describe.only("DAO Access Control Contract", function () {
       deployer,
       executor1,
       executor2,
-      executor3,
       roleAMember1,
       roleAMember2,
       roleBMember1,
@@ -55,7 +52,7 @@ describe.only("DAO Access Control Contract", function () {
       await daoAccessControl.initialize(
         dao.address,
         [executorString, roleBString, roleAString],
-        [theOneString, roleAString, theOneString],
+        [daoRoleString, roleAString, daoRoleString],
         [
           [executor1.address, executor2.address],
           [roleBMember1.address, roleBMember2.address],
@@ -75,26 +72,26 @@ describe.only("DAO Access Control Contract", function () {
       ).to.eq(true);
 
       expect(await daoAccessControl.getRoleAdmin(executorString)).to.eq(
-        theOneString
+        daoRoleString
       );
     });
 
     it("Should setup Default Admin Role", async () => {
       // Default Admin
-      expect(await daoAccessControl.hasRole(theOneString, dao.address)).to.eq(
+      expect(await daoAccessControl.hasRole(daoRoleString, dao.address)).to.eq(
         true
       );
 
       expect(
-        await daoAccessControl.hasRole(theOneString, executor1.address)
+        await daoAccessControl.hasRole(daoRoleString, executor1.address)
       ).to.eq(false);
 
       expect(
-        await daoAccessControl.hasRole(theOneString, roleAMember1.address)
+        await daoAccessControl.hasRole(daoRoleString, roleAMember1.address)
       ).to.eq(false);
 
       expect(
-        await daoAccessControl.hasRole(theOneString, roleBMember1.address)
+        await daoAccessControl.hasRole(daoRoleString, roleBMember1.address)
       ).to.eq(false);
     });
 
@@ -123,7 +120,7 @@ describe.only("DAO Access Control Contract", function () {
     it("Should batch create Roles", async () => {
       await daoAccessControl.connect(dao).grantRolesAndAdmins(
         [roleBString, roleAString],
-        [roleAString, theOneString],
+        [roleAString, daoRoleString],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -147,14 +144,14 @@ describe.only("DAO Access Control Contract", function () {
       );
 
       expect(await daoAccessControl.getRoleAdmin(roleAString)).to.eq(
-        theOneString
+        daoRoleString
       );
     });
 
     it("Should override/update Role Admins", async () => {
       await daoAccessControl.connect(dao).grantRolesAndAdmins(
         [roleBString, roleAString],
-        [roleAString, theOneString],
+        [roleAString, daoRoleString],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -165,7 +162,7 @@ describe.only("DAO Access Control Contract", function () {
         .connect(dao)
         .grantRolesAndAdmins(
           [roleAString, roleBString],
-          [roleBString, theOneString],
+          [roleBString, daoRoleString],
           [[], []]
         );
 
@@ -185,7 +182,7 @@ describe.only("DAO Access Control Contract", function () {
         roleBString
       );
       expect(await daoAccessControl.getRoleAdmin(roleBString)).to.eq(
-        theOneString
+        daoRoleString
       );
     });
 
@@ -193,7 +190,7 @@ describe.only("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl.connect(executor1).grantRolesAndAdmins(
           [roleBString, roleAString],
-          [roleAString, theOneString],
+          [roleAString, daoRoleString],
           [
             [roleBMember1.address, roleBMember2.address],
             [roleAMember1.address, roleAMember2.address],
@@ -209,7 +206,7 @@ describe.only("DAO Access Control Contract", function () {
       await daoAccessControl.initialize(
         dao.address,
         [roleBString, roleAString],
-        [roleAString, theOneString],
+        [roleAString, daoRoleString],
         [
           [roleBMember1.address, roleBMember2.address],
           [roleAMember1.address, roleAMember2.address],
@@ -223,21 +220,15 @@ describe.only("DAO Access Control Contract", function () {
         .connect(dao)
         .addActionsRoles(
           [deployer.address, deployer.address],
-          ["functionName1(uint)", "functionName2(address)"],
+          [function1, function2],
           [[roleAString, roleBString], [roleAString]]
         );
       expect(
-        await daoAccessControl.getActionRoles(
-          deployer.address,
-          "functionName1(uint)"
-        )
+        await daoAccessControl.getActionRoles(deployer.address, function1)
       ).to.deep.eq([roleAString, roleBString]);
 
       expect(
-        await daoAccessControl.getActionRoles(
-          deployer.address,
-          "functionName2(address)"
-        )
+        await daoAccessControl.getActionRoles(deployer.address, function2)
       ).to.deep.eq([roleAString]);
     });
 
@@ -249,7 +240,7 @@ describe.only("DAO Access Control Contract", function () {
           .connect(executor1)
           .addActionsRoles(
             [deployer.address, deployer.address],
-            ["functionName1(uint)", "functionName2(address)"],
+            [function1, function2],
             [[roleAString, roleBString], [roleAString]]
           )
       ).to.reverted;
@@ -262,7 +253,7 @@ describe.only("DAO Access Control Contract", function () {
         .connect(dao)
         .addActionsRoles(
           [deployer.address, deployer.address],
-          ["functionName1(uint)", "functionName2(address)"],
+          [function1, function2],
           [[roleAString, roleBString], [roleAString]]
         );
 
@@ -270,15 +261,12 @@ describe.only("DAO Access Control Contract", function () {
         .connect(dao)
         .removeActionsRoles(
           [deployer.address, deployer.address],
-          ["functionName1(uint)", "functionName2(address)"],
+          [function1, function2],
           [[roleAString], [roleAString]]
         );
 
       expect(
-        await daoAccessControl.getActionRoles(
-          deployer.address,
-          "functionName1(uint)"
-        )
+        await daoAccessControl.getActionRoles(deployer.address, function1)
       ).to.deep.eq([roleBString]);
 
       expect(
@@ -304,7 +292,7 @@ describe.only("DAO Access Control Contract", function () {
         .connect(dao)
         .addActionsRoles(
           [deployer.address, deployer.address],
-          ["functionName1(uint)", "functionName2(address)"],
+          [function1, function2],
           [[roleAString, roleBString], [roleAString]]
         );
 
@@ -314,7 +302,7 @@ describe.only("DAO Access Control Contract", function () {
           .connect(executor1)
           .removeActionsRoles(
             [deployer.address, deployer.address],
-            ["functionName1(uint)", "functionName2(address)"],
+            [function1, function2],
             [[roleAString, roleBString], [roleAString]]
           )
       ).to.reverted;

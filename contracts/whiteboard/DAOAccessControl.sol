@@ -19,7 +19,7 @@ contract DAOAccessControl is
     }
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
-    string public constant THE_ONE = "THE_ONE";
+    string public constant DAO_ROLE = "DAO_ROLE";
 
     function initialize(
         address dao,
@@ -27,40 +27,20 @@ contract DAOAccessControl is
         string[] memory roleAdmins,
         address[][] memory members
     ) public override initializer {
-        _grantRole(THE_ONE, dao);
+        _grantRole(DAO_ROLE, dao);
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
-    /**
-     * @dev Modifier that checks that an account has a specific role. Reverts
-     * with a standardized message including the required role.
-     *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
-     *
-     * _Available since v4.1._
-     */
     modifier onlyRole(string memory role) {
         _checkRole(role, _msgSender());
         _;
     }
 
-        /**
-     * @dev Returns `true` if `account` has been granted `role`.
-     */
-    function hasRole(string memory role, address account) public view virtual override returns (bool) {
+    function hasRole(string memory role, address account) public view override returns (bool) {
         return _roles[role].members[account];
     }
 
-        /**
-     * @dev Revert with a standard message if `account` is missing `role`.
-     *
-     * The format of the revert reason is given by the following regular expression:
-     *
-     *  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
-     */
-    function _checkRole(string memory role, address account) internal view virtual {
+    function _checkRole(string memory role, address account) internal view {
         if (!hasRole(role, account)) {
             revert(
                 string(
@@ -75,13 +55,7 @@ contract DAOAccessControl is
         }
     }
 
-    /**
-     * @dev Returns the admin role that controls `role`. See {grantRole} and
-     * {revokeRole}.
-     *
-     * To change a role's admin, use {_setRoleAdmin}.
-     */
-    function getRoleAdmin(string memory role) public view virtual override returns (string memory) {
+    function getRoleAdmin(string memory role) public view override returns (string memory) {
         return _roles[role].adminRole;
     }
 
@@ -143,48 +117,15 @@ contract DAOAccessControl is
         }
     }
 
-        /**
-     * @dev Grants `role` to `account`.
-     *
-     * If `account` had not been already granted `role`, emits a {RoleGranted}
-     * event.
-     *
-     * Requirements:
-     *
-     * - the caller must have ``role``'s admin role.
-     */
-    function grantRole(string memory role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+    function grantRole(string memory role, address account) public override onlyRole(getRoleAdmin(role)) {
         _grantRole(role, account);
     }
 
-    /**
-     * @dev Revokes `role` from `account`.
-     *
-     * If `account` had been granted `role`, emits a {RoleRevoked} event.
-     *
-     * Requirements:
-     *
-     * - the caller must have ``role``'s admin role.
-     */
-    function revokeRole(string memory role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+    function revokeRole(string memory role, address account) public override onlyRole(getRoleAdmin(role)) {
         _revokeRole(role, account);
     }
 
-        /**
-     * @dev Revokes `role` from the calling account.
-     *
-     * Roles are often managed via {grantRole} and {revokeRole}: this function's
-     * purpose is to provide a mechanism for accounts to lose their privileges
-     * if they are compromised (such as when a trusted device is misplaced).
-     *
-     * If the calling account had been revoked `role`, emits a {RoleRevoked}
-     * event.
-     *
-     * Requirements:
-     *
-     * - the caller must be `account`.
-     */
-    function renounceRole(string memory role, address account) public virtual override {
+    function renounceRole(string memory role, address account) public override {
         require(account == _msgSender(), "AccessControl: can only renounce roles for self");
 
         _revokeRole(role, account);
@@ -194,7 +135,7 @@ contract DAOAccessControl is
         string[] memory roles,
         string[] memory roleAdmins,
         address[][] memory members
-    ) public onlyRole(THE_ONE) {
+    ) public onlyRole(DAO_ROLE) {
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
@@ -202,7 +143,7 @@ contract DAOAccessControl is
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
-    ) external override onlyRole(THE_ONE) {
+    ) external override onlyRole(DAO_ROLE) {
         if (targets.length != functionDescs.length) revert ArraysNotEqual();
         if (targets.length != roles.length) revert ArraysNotEqual();
 
@@ -225,7 +166,7 @@ contract DAOAccessControl is
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
-    ) external override onlyRole(THE_ONE) {
+    ) external override onlyRole(DAO_ROLE) {
         if (targets.length != functionDescs.length) revert ArraysNotEqual();
         if (targets.length != roles.length) revert ArraysNotEqual();
         uint256 actionsLength = targets.length;
@@ -303,42 +244,27 @@ contract DAOAccessControl is
         }
     }
 
-    /**
-     * @dev Sets `adminRole` as ``role``'s admin role.
-     *
-     * Emits a {RoleAdminChanged} event.
-     */
-    function _setRoleAdmin(string memory role, string memory adminRole) internal virtual {
+    function _setRoleAdmin(string memory role, string memory adminRole) internal {
         string memory previousAdminRole = getRoleAdmin(role);
         _roles[role].adminRole = adminRole;
         emit RoleAdminChanged(role, previousAdminRole, adminRole);
     }
 
-    /**
-     * @dev Grants `role` to `account`.
-     *
-     * Internal function without access restriction.
-     */
-    function _grantRole(string memory role, address account) internal virtual {
+    function _grantRole(string memory role, address account) internal {
         if (!hasRole(role, account)) {
             _roles[role].members[account] = true;
             emit RoleGranted(role, account, _msgSender());
         }
     }
 
-    /**
-     * @dev Revokes `role` from `account`.
-     *
-     * Internal function without access restriction.
-     */
-    function _revokeRole(string memory role, address account) internal virtual {
+    function _revokeRole(string memory role, address account) internal {
         if (hasRole(role, account)) {
             _roles[role].members[account] = false;
             emit RoleRevoked(role, account, _msgSender());
         }
     }
 
-        function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
