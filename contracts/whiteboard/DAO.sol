@@ -2,11 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./IDAO.sol";
 import "./DAOModuleBase.sol";
 
-contract DAO is IDAO, ERC165, DAOModuleBase {
+contract DAO is IDAO, DAOModuleBase {
     function execute(
         address[] calldata targets,
         uint256[] calldata values,

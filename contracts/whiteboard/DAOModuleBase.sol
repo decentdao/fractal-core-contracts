@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 import "./IDAOAccessControl.sol";
 import "./IDAOModuleBase.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-abstract contract DAOModuleBase is IDAOModuleBase, UUPSUpgradeable {
+abstract contract DAOModuleBase is IDAOModuleBase, UUPSUpgradeable, ERC165 {
     IDAOAccessControl public accessControl;
 
     function initialize(address _accessControl) public initializer {
