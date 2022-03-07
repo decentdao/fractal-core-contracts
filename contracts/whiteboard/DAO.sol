@@ -12,6 +12,7 @@ contract DAO is IDAO, ERC165, DAOModuleBase {
         uint256[] calldata values,
         bytes[] calldata calldatas
     ) public authorized {
+        if(targets.length != values.length || targets.length != calldatas.length) revert UnequalArrayLengths();
         string memory errorMessage = "DAO: call reverted without message";
         uint256 targetlength = targets.length;
         for (uint256 i = 0; i < targetlength; ) {
