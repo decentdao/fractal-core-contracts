@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IDAOFactory {
-  event DAOCreated(address indexed DAOAddress);
+  event DAOCreated(address indexed DAOAddress, address indexed accessControl);
 
   function createDAO(
     address daoImplementation,
@@ -13,5 +13,5 @@ interface IDAOFactory {
     address[] memory targets,
     string[] memory functionDescs,
     string[][] memory actionRoles
-  ) external returns (address);
+  ) external returns (address, address);
 }

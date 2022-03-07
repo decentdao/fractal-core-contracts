@@ -89,6 +89,10 @@ describe("DAO", () => {
         ["EXECUTE_ROLE", executor3.address]
       );
 
+      expect(
+        await daoAccessControl.hasRole("EXECUTE_ROLE", executor3.address)
+      ).to.eq(false);
+
       const tx: ContractTransaction = await dao
         .connect(executor1)
         .execute([daoAccessControl.address], [0], [transferCallData]);
@@ -105,8 +109,6 @@ describe("DAO", () => {
         await daoAccessControl.hasRole("EXECUTE_ROLE", executor3.address)
       ).to.eq(true);
     });
-
-    // unauth dao
 
     it("UnAuthUser should NOT be able to call `execute`", async () => {
       const transferCallData = daoAccessControl.interface.encodeFunctionData(

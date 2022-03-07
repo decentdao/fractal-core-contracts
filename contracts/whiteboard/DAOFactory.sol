@@ -17,10 +17,10 @@ contract DAOFactory is IDAOFactory, ERC165 {
     address[] memory targets,
     string[] memory functionDescs,
     string[][] memory actionRoles
-  ) external returns (address) {
-    address dao = address(new ERC1967Proxy(daoImplementation, ""));
+  ) external returns (address dao, address accessControl) {
+    dao = address(new ERC1967Proxy(daoImplementation, ""));
 
-    address accessControl = address(
+    accessControl = address(
       new ERC1967Proxy(
         accessControlImplementation,
         abi.encodeWithSelector(
@@ -38,9 +38,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
 
     IDAOModuleBase(dao).initialize(accessControl);
 
-    emit DAOCreated(dao);
-
-    return dao;
+    emit DAOCreated(dao, accessControl);
   }
 
   function supportsInterface(bytes4 interfaceId)
