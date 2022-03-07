@@ -12,7 +12,7 @@ import { expect } from "chai";
 import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-describe("DAOFactory", () => {
+describe.only("DAOFactory", () => {
   let deployer: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
@@ -49,6 +49,7 @@ describe("DAOFactory", () => {
       moduleFunctionDescs: [],
       moduleActionRoles: [],
     });
+
     createDAOTx = await daoFactory.createDAO({
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
@@ -64,8 +65,10 @@ describe("DAOFactory", () => {
       moduleFunctionDescs: [],
       moduleActionRoles: [],
     });
+
     // eslint-disable-next-line camelcase
     daoCreated = DAO__factory.connect(daoAddress, deployer);
+
     // eslint-disable-next-line camelcase
     accessControlCreated = DAOAccessControl__factory.connect(
       accessControlAddress,
@@ -200,5 +203,14 @@ describe("DAOFactory", () => {
       "NotAuthorized()"
     );
   });
-  it.skip("DAOFactory supports the expected ERC165 interface");
+
+  it("Supports the expected ERC165 interface", async () => {
+    // Supports DAO Factory interface
+    expect(await daoFactory.supportsInterface("0x0ccb6c70")).to.eq(true);
+
+    // Supports ERC-165 interface
+    expect(await daoFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
+
+    // Todo: Add checks for arbitrary interfaces returning false
+  });
 });
