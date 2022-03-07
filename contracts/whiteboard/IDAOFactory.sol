@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 interface IDAOFactory {
-  error InputsNotEqual();
   event DAOCreated(address indexed DAOAddress, address indexed accessControl);
+
   struct CreateDAOParams {
     address daoImplementation;
     address accessControlImplementation;

@@ -8,23 +8,26 @@ import "./IDAOAccessControl.sol";
 import "./IDAOModuleBase.sol";
 
 contract DAOFactory is IDAOFactory, ERC165 {
-  function createDAO(
-    CreateDAOParams calldata createDaoParams
-  ) external returns (address dao, address accessControl) {
-    if(createDaoParams.daoFunctionDescs.length != createDaoParams.daoActionRoles.length) revert InputsNotEqual();
-    dao = address(new ERC1967Proxy(createDaoParams.daoImplementation, ""));  
-    uint256 arraryLength = createDaoParams.moduleTargets.length + createDaoParams.daoFunctionDescs.length;
+  function createDAO(CreateDAOParams calldata createDaoParams)
+    external
+    returns (address dao, address accessControl)
+  {
+    dao = address(new ERC1967Proxy(createDaoParams.daoImplementation, ""));
+
+    uint256 arraryLength = createDaoParams.moduleTargets.length +
+      createDaoParams.daoFunctionDescs.length;
+      
     address[] memory targets = new address[](arraryLength);
     string[] memory functionDescs = new string[](arraryLength);
     string[][] memory actionRoles = new string[][](arraryLength);
 
-    for(uint i; i < createDaoParams.daoFunctionDescs.length; i++) {
+    for (uint256 i; i < createDaoParams.daoFunctionDescs.length; i++) {
       targets[i] = dao;
       functionDescs[i] = createDaoParams.daoFunctionDescs[i];
       actionRoles[i] = createDaoParams.daoActionRoles[i];
     }
-    for(uint i; i < createDaoParams.moduleTargets.length; i++) {
-      uint256 currentIndex = i+createDaoParams.daoFunctionDescs.length;
+    for (uint256 i; i < createDaoParams.moduleTargets.length; i++) {
+      uint256 currentIndex = i + createDaoParams.daoFunctionDescs.length;
       targets[currentIndex] = createDaoParams.moduleTargets[i];
       functionDescs[currentIndex] = createDaoParams.moduleFunctionDescs[i];
       actionRoles[currentIndex] = createDaoParams.moduleActionRoles[i];

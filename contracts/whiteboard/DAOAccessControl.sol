@@ -30,6 +30,17 @@ contract DAOAccessControl is
         string[] memory functionDescs,
         string[][] memory actionRoles
     ) public override initializer {
+    if (
+      roles.length !=
+      roleAdmins.length ||
+      roles.length !=
+      members.length ||
+      targets.length !=
+      functionDescs.length ||
+      targets.length !=
+      functionDescs.length
+    ) revert UnequalArrayLengths();
+
         _grantRole(DAO_ROLE, dao);
         _grantRolesAndAdmins(roles, roleAdmins, members);
         _addActionsRoles(targets, functionDescs, actionRoles);
@@ -155,8 +166,8 @@ contract DAOAccessControl is
         string[] memory functionDescs,
         string[][] memory roles
     ) internal {
-        if (targets.length != functionDescs.length) revert ArraysNotEqual();
-        if (targets.length != roles.length) revert ArraysNotEqual();
+        if (targets.length != functionDescs.length) revert UnequalArrayLengths();
+        if (targets.length != roles.length) revert UnequalArrayLengths();
 
         uint256 targetsLength = targets.length;
         for (uint256 i = 0; i < targetsLength; ) {
@@ -178,8 +189,8 @@ contract DAOAccessControl is
         string[] memory functionDescs,
         string[][] memory roles
     ) external override onlyRole(DAO_ROLE) {
-        if (targets.length != functionDescs.length) revert ArraysNotEqual();
-        if (targets.length != roles.length) revert ArraysNotEqual();
+        if (targets.length != functionDescs.length) revert UnequalArrayLengths();
+        if (targets.length != roles.length) revert UnequalArrayLengths();
         uint256 actionsLength = targets.length;
         for (uint256 i = 0; i < actionsLength; ) {
             uint256 rolesLength = roles[i].length;
@@ -200,8 +211,8 @@ contract DAOAccessControl is
         string[] memory roleAdmins,
         address[][] memory members
     ) private {
-        if (roles.length != roleAdmins.length) revert ArraysNotEqual();
-        if (roles.length != members.length) revert ArraysNotEqual();
+        if (roles.length != roleAdmins.length) revert UnequalArrayLengths();
+        if (roles.length != members.length) revert UnequalArrayLengths();
 
         uint256 rolesLength = roles.length;
         for (uint256 i = 0; i < rolesLength; ) {
