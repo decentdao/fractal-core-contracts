@@ -19,19 +19,21 @@ contract DAOFactory is IDAOFactory, ERC165 {
     string[][] memory actionRoles
   ) external returns (address) {
     address dao = address(new ERC1967Proxy(daoImplementation, ""));
-    address accessControl = address(
-      new ERC1967Proxy(accessControlImplementation, "")
-    );
 
-    // This initialize was moved outside of the proxy creation because an error was being thrown
-    IDAOAccessControl(accessControl).initialize(
-      dao,
-      roles,
-      rolesAdmins,
-      members,
-      targets,
-      functionDescs,
-      actionRoles
+    address accessControl = address(
+      new ERC1967Proxy(
+        accessControlImplementation,
+        abi.encodeWithSelector(
+          IDAOAccessControl(payable(address(0))).initialize.selector,
+          dao,
+          roles,
+          rolesAdmins,
+          members,
+          targets,
+          functionDescs,
+          actionRoles
+        )
+      )
     );
 
     IDAOModuleBase(dao).initialize(accessControl);
