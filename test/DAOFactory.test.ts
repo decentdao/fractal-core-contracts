@@ -1,6 +1,5 @@
 import { ethers } from "hardhat";
 import {
-  AccessControl__factory,
   DAO,
   DAOAccessControl,
   DAOAccessControl__factory,
