@@ -14,12 +14,12 @@ contract DAOFactory is IDAOFactory, ERC165 {
   {
     dao = address(new ERC1967Proxy(createDaoParams.daoImplementation, ""));
 
-    uint256 arraryLength = createDaoParams.moduleTargets.length +
+    uint256 arrayLength = createDaoParams.moduleTargets.length +
       createDaoParams.daoFunctionDescs.length;
       
-    address[] memory targets = new address[](arraryLength);
-    string[] memory functionDescs = new string[](arraryLength);
-    string[][] memory actionRoles = new string[][](arraryLength);
+    address[] memory targets = new address[](arrayLength);
+    string[] memory functionDescs = new string[](arrayLength);
+    string[][] memory actionRoles = new string[][](arrayLength);
 
     for (uint256 i; i < createDaoParams.daoFunctionDescs.length; i++) {
       targets[i] = dao;

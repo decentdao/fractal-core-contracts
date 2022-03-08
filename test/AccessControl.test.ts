@@ -2,11 +2,10 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   AccessControl,
   AccessControl__factory,
-  IAccessControl,
+  IAccessControl__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
-import { utils, BigNumber } from "ethers";
 import InterfaceSelector from "./helpers/InterfaceSelector";
 
 const expect = chai.expect;
@@ -72,15 +71,12 @@ describe("DAO Access Control Contract", function () {
       );
     });
 
-    it.only("Supports the expected ERC165 interface", async () => {
-      // eslint-disable-next-line camelcase
-      console.log(AccessControl__factory.createInterface());
-      // eslint-disable-next-line camelcase
-      console.log(InterfaceSelector(AccessControl__factory.createInterface()));
+    it("Supports the expected ERC165 interface", async () => {
+      // Supports Access Control interface
       expect(
         await daoAccessControl.supportsInterface(
           // eslint-disable-next-line camelcase
-          InterfaceSelector(AccessControl__factory.createInterface())
+          InterfaceSelector(IAccessControl__factory.createInterface())
         )
       ).to.eq(true);
 

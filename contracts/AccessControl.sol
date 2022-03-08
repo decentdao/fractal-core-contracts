@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IAccessControl.sol";
-import "hardhat/console.sol";
 
 contract AccessControl is IAccessControl, ERC165, Initializable {
     string public constant DAO_ROLE = "DAO_ROLE";
@@ -89,7 +88,6 @@ contract AccessControl is IAccessControl, ERC165, Initializable {
         override
         returns (bool)
     {
-      console.logBytes4(type(IAccessControl).interfaceId);
         return
             interfaceId == type(IAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);

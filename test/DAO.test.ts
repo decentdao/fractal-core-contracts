@@ -5,9 +5,11 @@ import { ethers } from "hardhat";
 import {
   DAO__factory,
   DAO,
+  IDAO__factory,
   AccessControl,
   AccessControl__factory,
 } from "../typechain";
+import InterfaceSelector from "./helpers/InterfaceSelector";
 
 describe("DAO", () => {
   let daoAccessControl: AccessControl;
@@ -35,7 +37,12 @@ describe("DAO", () => {
 
     it("Supports the expected ERC165 interface", async () => {
       // Supports DAO interface
-      expect(await dao.supportsInterface("0xa516a5bf")).to.eq(true);
+      expect(
+        await dao.supportsInterface(
+          // eslint-disable-next-line camelcase
+          InterfaceSelector(IDAO__factory.createInterface())
+        )
+      ).to.eq(true);
 
       // Supports ERC-165 interface
       expect(await dao.supportsInterface("0x01ffc9a7")).to.eq(true);
@@ -69,7 +76,6 @@ describe("DAO", () => {
     });
 
     it("doesn't allow anyone to call `execute`", async () => {
-      const executeRole = "EXECUTE_ROLE";
       await expect(dao.connect(executor1).execute([], [], [])).to.reverted;
     });
   });
