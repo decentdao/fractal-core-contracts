@@ -33,6 +33,16 @@ describe("DAO", () => {
       await dao.initialize(daoAccessControl.address);
     });
 
+    it("Supports the expected ERC165 interface", async () => {
+      // Supports DAO interface
+      expect(await dao.supportsInterface("0xa516a5bf")).to.eq(true);
+
+      // Supports ERC-165 interface
+      expect(await dao.supportsInterface("0x01ffc9a7")).to.eq(true);
+
+      // Todo: Add checks for arbitrary interfaces returning false
+    });
+
     it("has the DAO_ROLE", async () => {
       expect(
         await daoAccessControl.hasRole(

@@ -34,6 +34,6 @@ contract DAO is IDAO, ModuleBase {
     {
         return
             interfaceId == type(IDAO).interfaceId ||
-            supportsInterface(interfaceId);
+            super.supportsInterface(interfaceId);
     }
 }

@@ -8,9 +8,11 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IAccessControl.sol";
 
 contract AccessControl is IAccessControl, ERC165, Initializable, Context {
+    string public constant DAO_ROLE = "DAO_ROLE";
+
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
-    string public constant DAO_ROLE = "DAO_ROLE";
+
     modifier onlyRole(string memory role) {
         _checkRole(role, _msgSender());
         _;
@@ -89,7 +91,7 @@ contract AccessControl is IAccessControl, ERC165, Initializable, Context {
     {
         return
             interfaceId == type(IAccessControl).interfaceId ||
-            supportsInterface(interfaceId);
+            super.supportsInterface(interfaceId);
     }
 
     function grantRolesAndAdmins(

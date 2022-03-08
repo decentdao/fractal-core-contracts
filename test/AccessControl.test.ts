@@ -66,6 +66,20 @@ describe("DAO Access Control Contract", function () {
       );
     });
 
+    it("Supports the expected ERC165 interface", async () => {
+      // Supports Access Control interface
+      expect(await daoAccessControl.supportsInterface("0x784fe4d9")).to.eq(
+        true
+      );
+
+      // Supports ERC-165 interface
+      expect(await daoAccessControl.supportsInterface("0x01ffc9a7")).to.eq(
+        true
+      );
+
+      // Todo: Add checks for arbitrary interfaces returning false
+    });
+
     it("Should setup Executor Role", async () => {
       // Assign Executor Role
       expect(
