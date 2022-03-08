@@ -5,12 +5,12 @@ import { ethers } from "hardhat";
 import {
   DAO__factory,
   DAO,
-  DAOAccessControl,
-  DAOAccessControl__factory,
+  AccessControl,
+  AccessControl__factory,
 } from "../typechain";
 
 describe("DAO", () => {
-  let daoAccessControl: DAOAccessControl;
+  let daoAccessControl: AccessControl;
   let dao: DAO;
   // Wallets
   let deployer: SignerWithAddress;
@@ -22,7 +22,7 @@ describe("DAO", () => {
     [deployer, executor1, executor2, executor3] = await ethers.getSigners();
 
     // Deploy Contracts
-    daoAccessControl = await new DAOAccessControl__factory(deployer).deploy();
+    daoAccessControl = await new AccessControl__factory(deployer).deploy();
     dao = await new DAO__factory(deployer).deploy();
   });
 

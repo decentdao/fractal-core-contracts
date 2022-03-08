@@ -1,12 +1,12 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { DAOAccessControl, DAOAccessControl__factory } from "../typechain";
+import { AccessControl, AccessControl__factory } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
 
 const expect = chai.expect;
 
 describe("DAO Access Control Contract", function () {
-  let daoAccessControl: DAOAccessControl;
+  let daoAccessControl: AccessControl;
 
   // Wallets
   let dao: SignerWithAddress;
@@ -45,7 +45,7 @@ describe("DAO Access Control Contract", function () {
     ] = await ethers.getSigners();
 
     // DAO Access Control contract deployment
-    daoAccessControl = await new DAOAccessControl__factory(deployer).deploy();
+    daoAccessControl = await new AccessControl__factory(deployer).deploy();
   });
 
   describe("Initilize Access Control", function () {

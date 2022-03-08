@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 import {
   DAO,
-  DAOAccessControl,
-  DAOAccessControl__factory,
+  AccessControl,
+  AccessControl__factory,
   DAOFactory,
   DAOFactory__factory,
   DAO__factory,
@@ -11,7 +11,7 @@ import { expect } from "chai";
 import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-describe.only("DAOFactory", () => {
+describe("DAOFactory", () => {
   let deployer: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
@@ -19,19 +19,19 @@ describe.only("DAOFactory", () => {
   let upgrader1: SignerWithAddress;
   let daoFactory: DAOFactory;
   let daoImpl: DAO;
-  let accessControlImpl: DAOAccessControl;
+  let accessControlImpl: AccessControl;
   let daoAddress: string;
   let accessControlAddress: string;
   let createDAOTx: ContractTransaction;
   let daoCreated: DAO;
-  let accessControlCreated: DAOAccessControl;
+  let accessControlCreated: AccessControl;
 
   beforeEach(async () => {
     [deployer, executor1, executor2, executor3, upgrader1] =
       await ethers.getSigners();
     daoFactory = await new DAOFactory__factory(deployer).deploy();
     daoImpl = await new DAO__factory(deployer).deploy();
-    accessControlImpl = await new DAOAccessControl__factory(deployer).deploy();
+    accessControlImpl = await new AccessControl__factory(deployer).deploy();
 
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
       daoImplementation: daoImpl.address,
@@ -69,7 +69,7 @@ describe.only("DAOFactory", () => {
     daoCreated = DAO__factory.connect(daoAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    accessControlCreated = DAOAccessControl__factory.connect(
+    accessControlCreated = AccessControl__factory.connect(
       accessControlAddress,
       deployer
     );

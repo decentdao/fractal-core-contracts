@@ -5,9 +5,9 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./IDAOAccessControl.sol";
+import "./interfaces/IAccessControl.sol";
 
-contract DAOAccessControl is IDAOAccessControl, ERC165, Initializable, Context {
+contract AccessControl is IAccessControl, ERC165, Initializable, Context {
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
     string public constant DAO_ROLE = "DAO_ROLE";
@@ -88,7 +88,7 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, Initializable, Context {
         returns (bool)
     {
         return
-            interfaceId == type(IDAOAccessControl).interfaceId ||
+            interfaceId == type(IAccessControl).interfaceId ||
             supportsInterface(interfaceId);
     }
 

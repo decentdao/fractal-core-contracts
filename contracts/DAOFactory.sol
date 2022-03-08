@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import "./IDAOFactory.sol";
-import "./IDAOAccessControl.sol";
-import "./IDAOModuleBase.sol";
+import "./interfaces/IDAOFactory.sol";
+import "./interfaces/IAccessControl.sol";
+import "./interfaces/IModuleBase.sol";
 
 contract DAOFactory is IDAOFactory, ERC165 {
   function createDAO(CreateDAOParams calldata createDaoParams)
@@ -37,7 +37,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
       new ERC1967Proxy(
         createDaoParams.accessControlImplementation,
         abi.encodeWithSelector(
-          IDAOAccessControl(payable(address(0))).initialize.selector,
+          IAccessControl(payable(address(0))).initialize.selector,
           dao,
           createDaoParams.roles,
           createDaoParams.rolesAdmins,
@@ -49,7 +49,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
       )
     );
 
-    IDAOModuleBase(dao).initialize(accessControl);
+    IModuleBase(dao).initialize(accessControl);
 
     emit DAOCreated(dao, accessControl);
   }

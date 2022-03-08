@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-interface IDAOAccessControl {
+interface IAccessControl {
     struct RoleData {
         mapping(address => bool) members;
         string adminRole;
