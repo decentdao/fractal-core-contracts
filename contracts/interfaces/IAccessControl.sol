@@ -88,4 +88,6 @@ interface IAccessControl {
         external
         view
         returns (string[] memory roles);
+
+    function DAO_ROLE() external view returns (string memory);
 }

@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./interfaces/IAccessControl.sol";
 import "./interfaces/IModuleBase.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -32,4 +31,16 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         override
         authorized
     {}
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override
+        returns (bool)
+    {
+        return
+            interfaceId == type(IModuleBase).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 }

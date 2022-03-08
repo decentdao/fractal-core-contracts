@@ -3,18 +3,17 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IAccessControl.sol";
 
-contract AccessControl is IAccessControl, ERC165, Initializable, Context {
+contract AccessControl is IAccessControl, ERC165, Initializable {
     string public constant DAO_ROLE = "DAO_ROLE";
 
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
 
     modifier onlyRole(string memory role) {
-        _checkRole(role, _msgSender());
+        _checkRole(role, msg.sender);
         _;
     }
 
@@ -57,7 +56,7 @@ contract AccessControl is IAccessControl, ERC165, Initializable, Context {
 
     function renounceRole(string memory role, address account) public override {
         require(
-            account == _msgSender(),
+            account == msg.sender,
             "DAOAccessControl: can only renounce roles for self"
         );
 
@@ -196,14 +195,14 @@ contract AccessControl is IAccessControl, ERC165, Initializable, Context {
     function _grantRole(string memory role, address account) internal {
         if (!hasRole(role, account)) {
             _roles[role].members[account] = true;
-            emit RoleGranted(role, account, _msgSender());
+            emit RoleGranted(role, account,msg.sender);
         }
     }
 
     function _revokeRole(string memory role, address account) internal {
         if (hasRole(role, account)) {
             _roles[role].members[account] = false;
-            emit RoleRevoked(role, account, _msgSender());
+            emit RoleRevoked(role, account, msg.sender);
         }
     }
 
