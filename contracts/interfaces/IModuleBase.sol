@@ -7,5 +7,6 @@ interface IModuleBase {
     error NotAuthorized();
 
     function initialize(address _accessControl) external;
+
     function accessControl() external returns (IAccessControl);
 }
