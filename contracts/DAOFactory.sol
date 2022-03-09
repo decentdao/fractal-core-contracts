@@ -21,7 +21,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
 
     uint256 arrayLength = createDaoParams.moduleTargets.length +
       createDaoParams.daoFunctionDescs.length;
-      
+
     address[] memory targets = new address[](arrayLength);
     string[] memory functionDescs = new string[](arrayLength);
     string[][] memory actionRoles = new string[][](arrayLength);
