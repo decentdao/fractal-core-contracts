@@ -9,7 +9,7 @@ import {
   AccessControl,
   AccessControl__factory,
 } from "../typechain";
-import InterfaceSelector from "./helpers/InterfaceSelector";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAO", () => {
   let daoAccessControl: AccessControl;
@@ -40,7 +40,7 @@ describe("DAO", () => {
       expect(
         await dao.supportsInterface(
           // eslint-disable-next-line camelcase
-          InterfaceSelector(IDAO__factory.createInterface())
+          getInterfaceSelector(IDAO__factory.createInterface())
         )
       ).to.eq(true);
 

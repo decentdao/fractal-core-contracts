@@ -6,7 +6,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
-import InterfaceSelector from "./helpers/InterfaceSelector";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 const expect = chai.expect;
 
@@ -76,7 +76,7 @@ describe("DAO Access Control Contract", function () {
       expect(
         await daoAccessControl.supportsInterface(
           // eslint-disable-next-line camelcase
-          InterfaceSelector(IAccessControl__factory.createInterface())
+          getInterfaceSelector(IAccessControl__factory.createInterface())
         )
       ).to.eq(true);
 
