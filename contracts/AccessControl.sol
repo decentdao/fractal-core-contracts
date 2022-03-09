@@ -1,12 +1,13 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IAccessControl.sol";
 
-contract AccessControl is IAccessControl, ERC165, Initializable {
+//todo: upgradeability
+contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
 
     mapping(string => RoleData) private _roles;
@@ -293,6 +294,12 @@ contract AccessControl is IAccessControl, ERC165, Initializable {
             }
         }
     }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyRole(DAO_ROLE)
+    {}
 
     function _checkRole(string memory role, address account) internal view {
         if (!hasRole(role, account)) {
