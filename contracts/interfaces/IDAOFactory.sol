@@ -15,9 +15,9 @@ interface IDAOFactory {
         string[][] moduleActionRoles;
     }
 
-    event DAOCreated(address indexed DAOAddress, address indexed accessControl);
+    event DAOCreated(address indexed daoAddress, address indexed accessControl);
 
-    function createDAO(CreateDAOParams calldata createDaoParams)
+    function createDAO(CreateDAOParams calldata createDAOParams)
         external
         returns (address, address);
 }
