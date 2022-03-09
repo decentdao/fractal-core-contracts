@@ -5,11 +5,13 @@ import {
   AccessControl__factory,
   DAOFactory,
   DAOFactory__factory,
+  IDAOFactory__factory,
   DAO__factory,
 } from "../typechain";
 import { expect } from "chai";
 import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import InterfaceSelector from "./helpers/InterfaceSelector";
 
 describe("DAOFactory", () => {
   let deployer: SignerWithAddress;
@@ -205,7 +207,12 @@ describe("DAOFactory", () => {
 
   it("Supports the expected ERC165 interface", async () => {
     // Supports DAO Factory interface
-    expect(await daoFactory.supportsInterface("0x0ccb6c70")).to.eq(true);
+    expect(
+      await daoFactory.supportsInterface(
+        // eslint-disable-next-line camelcase
+        InterfaceSelector(IDAOFactory__factory.createInterface())
+      )
+    ).to.eq(true);
 
     // Supports ERC-165 interface
     expect(await daoFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
