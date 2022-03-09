@@ -50,6 +50,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         _grantRole(DAO_ROLE, dao);
         _grantRolesAndAdmins(roles, roleAdmins, members);
         _addActionsRoles(targets, functionDescs, actionRoles);
+        __UUPSUpgradeable_init();
     }
 
     /// @dev Grants `role` to `account`.
