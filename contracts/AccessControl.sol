@@ -387,7 +387,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
             revert(
                 string(
                     abi.encodePacked(
-                        "DAOAccessControl: account ",
+                        "AccessControl: account ",
                         Strings.toHexString(uint160(account), 20),
                         " is missing role ",
                         role

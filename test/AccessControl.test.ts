@@ -262,7 +262,7 @@ describe("DAO Access Control Contract", function () {
           .connect(roleBMember1)
           .revokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(
-        "DAOAccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+        "AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
       );
 
       await expect(
