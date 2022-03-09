@@ -6,6 +6,7 @@ interface IAccessControl {
         mapping(address => bool) members;
         string adminRole;
     }
+
     error UnequalArrayLengths();
 
     event ActionRoleAdded(
