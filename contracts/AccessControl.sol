@@ -8,7 +8,7 @@ import "./interfaces/IAccessControl.sol";
 
 /// @title Access Control
 /// @notice Use this contract for role based permissions
-/// @dev OpenZepplin apprach using strings instead of bytes
+/// @dev OpenZeppelin access control using strings instead of bytes
 contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
 
