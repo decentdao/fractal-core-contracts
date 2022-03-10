@@ -7,8 +7,6 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCounti
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
 import "../ModuleBase.sol";
 
@@ -24,24 +22,17 @@ import "../ModuleBase.sol";
 /// todo: votes module is missing the ability to change token - create from scratch
 /// @dev correction - Cannot hot-switch because if a switch occurs during a vote - a person will lose voting power
 /// todo: ability to deprecate system - Access Control Only
-/// 
-/// @dev todo: change ownableupgrade to access control structure
-/// @dev todo: update modulebase to have an internal function initilize and a onlyInitilizer method
-/// @dev todo: Pass in required Params for modbase
-
 
 /// @dev todo: update TimelockController to call into dao contract
 
 contract OpenZGovernor is
-    Initializable,
     GovernorUpgradeable,
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
     GovernorVotesUpgradeable,
     GovernorVotesQuorumFractionUpgradeable,
     GovernorTimelockControlUpgradeable,
-    ModuleBase
-    UUPSUpgradeable,
+    ModuleBase,
     GovernorPreventLateQuorumUpgradeable
 {
     /**
@@ -65,7 +56,8 @@ contract OpenZGovernor is
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,
         uint256 _initialProposalThreshold,
-        uint256 _initialQuorumNumeratorValue
+        uint256 _initialQuorumNumeratorValue,
+        address _accessControl
     ) public initializer {
         __Governor_init(_name);
         __GovernorSettings_init(
@@ -77,8 +69,7 @@ contract OpenZGovernor is
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(_initialQuorumNumeratorValue);
         __GovernorTimelockControl_init(_timelock);
-        __Ownable_init();
-        __UUPSUpgradeable_init();
+        __initBase(_accessControl);
         __GovernorPreventLateQuorum_init(_initialVoteExtension);
     }
 
@@ -217,7 +208,7 @@ contract OpenZGovernor is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable, ModuleBase)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
