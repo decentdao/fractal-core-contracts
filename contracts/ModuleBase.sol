@@ -24,6 +24,13 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         _;
     }
 
+    /// @notice Function for initializing the contract that can only be called once
+    /// @param _accessControl The address of the access control contract
+    function initialize(address _accessControl) external initializer {
+        accessControl = IAccessControl(_accessControl);
+        __UUPSUpgradeable_init();
+    }
+
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
     /// @return bool Indicates whether the interface is supported
@@ -37,13 +44,6 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         return
             interfaceId == type(IModuleBase).interfaceId ||
             super.supportsInterface(interfaceId);
-    }
-
-    /// @notice Function for initializing the contract that can only be called once
-    /// @param _accessControl The address of the access control contract
-    function initialize(address _accessControl) public initializer {
-        accessControl = IAccessControl(_accessControl);
-        __UUPSUpgradeable_init();
     }
 
     /// @notice Applies authorized modifier so that an upgrade require the caller to have the correct role
