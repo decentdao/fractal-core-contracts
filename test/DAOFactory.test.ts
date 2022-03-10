@@ -11,7 +11,7 @@ import {
 import { expect } from "chai";
 import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import InterfaceSelector from "./helpers/InterfaceSelector";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAOFactory", () => {
   let deployer: SignerWithAddress;
@@ -210,7 +210,7 @@ describe("DAOFactory", () => {
     expect(
       await daoFactory.supportsInterface(
         // eslint-disable-next-line camelcase
-        InterfaceSelector(IDAOFactory__factory.createInterface())
+        getInterfaceSelector(IDAOFactory__factory.createInterface())
       )
     ).to.eq(true);
 

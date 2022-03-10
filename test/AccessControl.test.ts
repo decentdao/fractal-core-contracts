@@ -6,7 +6,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
-import InterfaceSelector from "./helpers/InterfaceSelector";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 const expect = chai.expect;
 
@@ -76,7 +76,7 @@ describe("DAO Access Control Contract", function () {
       expect(
         await daoAccessControl.supportsInterface(
           // eslint-disable-next-line camelcase
-          InterfaceSelector(IAccessControl__factory.createInterface())
+          getInterfaceSelector(IAccessControl__factory.createInterface())
         )
       ).to.eq(true);
 
@@ -199,16 +199,14 @@ describe("DAO Access Control Contract", function () {
 
       await expect(
         daoAccessControl.connect(user1).grantRole(roleBString, user1.address)
-      ).to.be.revertedWith(
-        "AccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
-      );
+      ).to.be.revertedWith(`MissingRole("${user1.address}", "${roleAString}")`);
 
       await expect(
         daoAccessControl
           .connect(roleBMember1)
           .grantRole(roleBString, user1.address)
       ).to.be.revertedWith(
-        "AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+        `MissingRole("${roleBMember1.address}", "${roleAString}")`
       );
     });
 
@@ -262,16 +260,14 @@ describe("DAO Access Control Contract", function () {
           .connect(roleBMember1)
           .revokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(
-        "DAOAccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+        `MissingRole("${roleBMember1.address}", "${roleAString}")`
       );
 
       await expect(
         daoAccessControl
           .connect(user1)
           .revokeRole(roleBString, roleBMember2.address)
-      ).to.be.revertedWith(
-        "DAOAccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
-      );
+      ).to.be.revertedWith(`MissingRole("${user1.address}", "${roleAString}")`);
     });
 
     it("A role member can renounce their role", async () => {
@@ -323,17 +319,13 @@ describe("DAO Access Control Contract", function () {
         daoAccessControl
           .connect(roleAMember1)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith(
-        "DAOAccessControl: can only renounce roles for self"
-      );
+      ).to.be.revertedWith("OnlySelfRenounce()");
 
       await expect(
         daoAccessControl
           .connect(roleBMember2)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith(
-        "DAOAccessControl: can only renounce roles for self"
-      );
+      ).to.be.revertedWith("OnlySelfRenounce()");
     });
 
     it("Should batch create Roles", async () => {
