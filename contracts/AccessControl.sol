@@ -89,10 +89,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// Requirements:
     /// - the caller must be `account`.
     function renounceRole(string memory role, address account) public override {
-        require(
-            account == msg.sender,
-            "DAOAccessControl: can only renounce roles for self"
-        );
+        if (account != msg.sender) {
+            revert OnlySelfRenounce();
+        }
 
         _revokeRole(role, account);
     }
@@ -372,7 +371,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract. Called by
     /// {upgradeTo} and {upgradeToAndCall}.
     /// @dev Only DAO_ROLE has the permission to call
-
     function _authorizeUpgrade(address newImplementation)
         internal
         override
@@ -380,20 +378,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     {}
 
     /// @dev Revert with a standard message if `account` is missing `role`.
-    /// The format of the revert reason is given by the following regular expression:
-    ///  /^AccessControl: account (0x[0-9a-f]{40}) is missing role (0x[0-9a-f]{64})$/
     function _checkRole(string memory role, address account) internal view {
         if (!hasRole(role, account)) {
-            revert(
-                string(
-                    abi.encodePacked(
-                        "AccessControl: account ",
-                        Strings.toHexString(uint160(account), 20),
-                        " is missing role ",
-                        role
-                    )
-                )
-            );
+            revert MissingRole(account, role);
         }
     }
 }

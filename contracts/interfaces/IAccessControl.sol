@@ -8,6 +8,8 @@ interface IAccessControl {
     }
 
     error UnequalArrayLengths();
+    error MissingRole(address account, string role);
+    error OnlySelfRenounce();
 
     event ActionRoleAdded(
         address target,
