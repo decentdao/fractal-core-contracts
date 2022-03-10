@@ -9,7 +9,7 @@ import {
   AccessControl,
   AccessControl__factory,
 } from "../typechain";
-import InterfaceSelector from "./helpers/InterfaceSelector";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAO", () => {
   let daoAccessControl: AccessControl;
@@ -40,7 +40,7 @@ describe("DAO", () => {
       expect(
         await dao.supportsInterface(
           // eslint-disable-next-line camelcase
-          InterfaceSelector(IDAO__factory.createInterface())
+          getInterfaceSelector(IDAO__factory.createInterface())
         )
       ).to.eq(true);
 
@@ -62,17 +62,13 @@ describe("DAO", () => {
     it("doesn't allow anyone to grant the EXECUTE role", async () => {
       await expect(
         daoAccessControl.grantRole("EXECUTE_ROLE", deployer.address)
-      ).to.be.revertedWith(
-        `AccessControl: account ${deployer.address.toLowerCase()} is missing role`
-      );
+      ).to.be.revertedWith(`MissingRole("${deployer.address}", "")`);
     });
 
     it("doesn't allow anyone to revoke existing roles", async () => {
       await expect(
         daoAccessControl.revokeRole("EXECUTE_ROLE", executor1.address)
-      ).to.be.revertedWith(
-        `AccessControl: account ${deployer.address.toLowerCase()} is missing role`
-      );
+      ).to.be.revertedWith(`MissingRole("${deployer.address}", "")`);
     });
 
     it("doesn't allow anyone to call `execute`", async () => {

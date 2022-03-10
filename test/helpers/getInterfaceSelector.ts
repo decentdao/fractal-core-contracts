@@ -1,6 +1,6 @@
 import { utils, BigNumber } from "ethers";
 
-const getInterfaceSelector = (iface: utils.Interface) => {
+const getInterfaceSelector = (iface: utils.Interface): string => {
   return Object.keys(iface.functions)
     .reduce(
       (p, c) => p.xor(BigNumber.from(iface.getSighash(iface.functions[c]))),

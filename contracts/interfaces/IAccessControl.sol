@@ -6,7 +6,10 @@ interface IAccessControl {
         mapping(address => bool) members;
         string adminRole;
     }
+
     error UnequalArrayLengths();
+    error MissingRole(address account, string role);
+    error OnlySelfRenounce();
 
     event ActionRoleAdded(
         address target,
