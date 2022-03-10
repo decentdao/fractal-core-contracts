@@ -17,7 +17,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
 
     /// @dev Modifier that checks that an account has a specific role. Reverts
     /// with a standardized message including the required role.
-    /// The format of the revert reason is given by the following regular expression:
     modifier onlyRole(string memory role) {
         _checkRole(role, msg.sender);
         _;
@@ -54,8 +53,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     }
 
     /// @dev Grants `role` to `account`.
-    /// If `account` had not been already granted `role`, emits a {RoleGranted}
-    /// event.
+    /// If `account` had not been already granted `role`, emits a {RoleGranted} event.
     /// Requirements:
     /// - the caller must have ``role``'s admin role.
     function grantRole(string memory role, address account)
@@ -106,8 +104,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         return _roles[role].members[account];
     }
 
-    /// @dev Returns the admin role that controls `role`. See {grantRole} and
-    /// {revokeRole}.
+    /// @dev Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.
     /// To change a role's admin, use {_setRoleAdmin}.
     function getRoleAdmin(string memory role)
         public
@@ -368,8 +365,8 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract. Called by
-    /// {upgradeTo} and {upgradeToAndCall}.
+    /// @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract.
+    /// Called by {upgradeTo} and {upgradeToAndCall}.
     /// @dev Only DAO_ROLE has the permission to call
     function _authorizeUpgrade(address newImplementation)
         internal
