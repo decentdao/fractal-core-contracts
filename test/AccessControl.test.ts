@@ -200,7 +200,7 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl.connect(user1).grantRole(roleBString, user1.address)
       ).to.be.revertedWith(
-        "AccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
+        `AccessControl: account ${user1.address.toLowerCase()} is missing role roleA`
       );
 
       await expect(
@@ -208,7 +208,7 @@ describe("DAO Access Control Contract", function () {
           .connect(roleBMember1)
           .grantRole(roleBString, user1.address)
       ).to.be.revertedWith(
-        "AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+        `AccessControl: account ${roleBMember1.address.toLowerCase()} is missing role roleA`
       );
     });
 
@@ -262,7 +262,7 @@ describe("DAO Access Control Contract", function () {
           .connect(roleBMember1)
           .revokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(
-        "AccessControl: account 0x976ea74026e726554db657fa54763abd0c3a0aa9 is missing role roleA"
+        `AccessControl: account ${roleBMember1.address.toLowerCase()} is missing role roleA`
       );
 
       await expect(
@@ -270,7 +270,7 @@ describe("DAO Access Control Contract", function () {
           .connect(user1)
           .revokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(
-        "DAOAccessControl: account 0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8f is missing role roleA"
+        `AccessControl: account ${user1.address.toLowerCase()} is missing role roleA`
       );
     });
 
@@ -323,17 +323,13 @@ describe("DAO Access Control Contract", function () {
         daoAccessControl
           .connect(roleAMember1)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith(
-        "DAOAccessControl: can only renounce roles for self"
-      );
+      ).to.be.revertedWith("AccessControl: can only renounce roles for self");
 
       await expect(
         daoAccessControl
           .connect(roleBMember2)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith(
-        "DAOAccessControl: can only renounce roles for self"
-      );
+      ).to.be.revertedWith("AccessControl: can only renounce roles for self");
     });
 
     it("Should batch create Roles", async () => {
