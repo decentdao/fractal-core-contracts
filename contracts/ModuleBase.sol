@@ -1,9 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./interfaces/IModuleBase.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
+import "./interfaces/IModuleBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {

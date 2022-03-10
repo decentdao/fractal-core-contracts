@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IAccessControl.sol";
 import "./interfaces/IModuleBase.sol";

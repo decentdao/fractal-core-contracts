@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+
 import "./interfaces/IDAO.sol";
 import "./ModuleBase.sol";
 
