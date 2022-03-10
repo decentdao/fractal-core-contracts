@@ -38,7 +38,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory actionRoles
-    ) external override initializer {
+    ) external initializer {
         if (
             roles.length != roleAdmins.length ||
             roles.length != members.length ||
@@ -69,7 +69,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @param account The address being granted the specified role
     function grantRole(string memory role, address account)
         external
-        override
         onlyRole(getRoleAdmin(role))
     {
         _grantRole(role, account);
@@ -80,7 +79,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @param account The address the role is being revoked from
     function revokeRole(string memory role, address account)
         external
-        override
         onlyRole(getRoleAdmin(role))
     {
         _revokeRole(role, account);
@@ -89,7 +87,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @notice Enables an address to remove one of its own roles
     /// @param role The role being renounced
     /// @param account The address renouncing the role
-    function renounceRole(string memory role, address account) external override {
+    function renounceRole(string memory role, address account) external {
         if(account != msg.sender) {
           revert OnlySelfRenounce();
         }
@@ -105,7 +103,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
-    ) external override onlyRole(DAO_ROLE) {
+    ) external onlyRole(DAO_ROLE) {
         _addActionsRoles(targets, functionDescs, roles);
     }
 
@@ -117,7 +115,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
-    ) external override onlyRole(DAO_ROLE) {
+    ) external onlyRole(DAO_ROLE) {
         if (targets.length != functionDescs.length)
             revert UnequalArrayLengths();
         if (targets.length != roles.length) revert UnequalArrayLengths();
@@ -144,7 +142,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         address caller,
         address target,
         bytes4 sig
-    ) external view override returns (bool isAuthorized) {
+    ) external view returns (bool isAuthorized) {
         string[] memory roles = _actionsToRoles[target][sig];
         uint256 roleLength = roles.length;
 
@@ -165,7 +163,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     function getActionRoles(address target, string memory functionDesc)
         external
         view
-        override
         returns (string[] memory roles)
     {
         bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
@@ -181,7 +178,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         string calldata role,
         address target,
         string memory functionDesc
-    ) external view override returns (bool isAuthorized) {
+    ) external view returns (bool isAuthorized) {
         bytes4 encodedSig = bytes4(keccak256(abi.encodePacked(functionDesc)));
         string[] memory roles = _actionsToRoles[target][encodedSig];
         uint256 rolesLength = roles.length;
@@ -207,7 +204,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     function hasRole(string memory role, address account)
         public
         view
-        override
         returns (bool)
     {
         return _roles[role].members[account];
@@ -219,7 +215,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     function getRoleAdmin(string memory role)
         public
         view
-        override
         returns (string memory)
     {
         return _roles[role].adminRole;
@@ -231,7 +226,6 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        virtual
         override
         returns (bool)
     {
