@@ -8,9 +8,10 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesU
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
+import "../ModuleBase.sol";
+
 
 /// @dev GovernorUpgradeable - System Core: needs votesucceded/ _countvote/ quorumReached/ Qurom 
 /// - votingModule (GetVotes)
@@ -25,8 +26,12 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreven
 /// todo: ability to deprecate system - Access Control Only
 /// 
 /// @dev todo: change ownableupgrade to access control structure
+/// @dev todo: update modulebase to have an internal function initilize and a onlyInitilizer method
+/// @dev todo: Pass in required Params for modbase
+
+
 /// @dev todo: update TimelockController to call into dao contract
-/// Keep
+
 contract OpenZGovernor is
     Initializable,
     GovernorUpgradeable,
@@ -35,7 +40,7 @@ contract OpenZGovernor is
     GovernorVotesUpgradeable,
     GovernorVotesQuorumFractionUpgradeable,
     GovernorTimelockControlUpgradeable,
-    OwnableUpgradeable,
+    ModuleBase
     UUPSUpgradeable,
     GovernorPreventLateQuorumUpgradeable
 {
@@ -76,12 +81,6 @@ contract OpenZGovernor is
         __UUPSUpgradeable_init();
         __GovernorPreventLateQuorum_init(_initialVoteExtension);
     }
-
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyOwner
-    {}
 
     // The following functions are overrides required by Solidity.
 
