@@ -69,7 +69,6 @@ contract DAOFactory is IDAOFactory, ERC165 {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        virtual
         override
         returns (bool)
     {

@@ -30,7 +30,6 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        virtual
         override
         returns (bool)
     {
