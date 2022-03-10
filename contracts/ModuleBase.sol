@@ -46,7 +46,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         __UUPSUpgradeable_init();
     }
 
-    /// @dev Applies authorized modifier so that an upgrade require the caller to have the correct role
+    /// @notice Applies authorized modifier so that an upgrade require the caller to have the correct role
     /// @param newImplementation The address of the new implementation contract being upgraded to
     function _authorizeUpgrade(address newImplementation)
         internal

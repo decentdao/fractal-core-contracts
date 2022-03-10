@@ -16,7 +16,7 @@ contract DAO is IDAO, ModuleBase {
         address[] calldata targets,
         uint256[] calldata values,
         bytes[] calldata calldatas
-    ) public authorized {
+    ) external authorized {
         if (
             targets.length != values.length ||
             targets.length != calldatas.length
