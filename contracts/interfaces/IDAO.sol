@@ -7,6 +7,10 @@ interface IDAO {
 
     event Executed(address[] targets, uint256[] values, bytes[] calldatas);
 
+    function initialize(
+        address _accessControl
+    ) external;
+
     function execute(
         address[] calldata targets,
         uint256[] calldata values,

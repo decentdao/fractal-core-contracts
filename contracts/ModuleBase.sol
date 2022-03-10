@@ -41,7 +41,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
 
     /// @notice Function for initializing the contract that can only be called once
     /// @param _accessControl The address of the access control contract
-    function initialize(address _accessControl) public initializer {
+    function __initBase(address _accessControl) public onlyInitializing {
         accessControl = IAccessControl(_accessControl);
         __UUPSUpgradeable_init();
     }
