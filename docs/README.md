@@ -1,3 +1,0 @@
-# Introduction
-
-The first impression
