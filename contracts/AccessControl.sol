@@ -8,29 +8,28 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/IAccessControl.sol";
 
 /// @title Access Control
-/// @notice Use this contract for role based permissions
-/// @dev OpenZeppelin access control using strings instead of bytes
+/// @notice Use this contract for managing DAO role based permissions
 contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
 
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
 
-    /// @dev Modifier that checks that an account has a specific role. Reverts
+    /// @notice Modifier that checks that an account has a specific role. Reverts
     /// with a standardized message including the required role.
     modifier onlyRole(string memory role) {
         _checkRole(role, msg.sender);
         _;
     }
 
-    /// @dev Initilize permissions and DAO role
+    /// @notice Initialize DAO action and role permissions
     /// @param dao Address to receive DAO role
     /// @param roles What permissions are assigned to
     /// @param roleAdmins Roles which have the ability to remove or add members
-    /// @param members Users which have the permission to interact with various features
-    /// @param targets Module addresses
-    /// @param functionDescs Function Descs used to generate function sigs
-    /// @param actionRoles Roles that indicate a specific feature or action on a module
+    /// @param members Addresses to be granted the specified roles
+    /// @param targets Contract addresses for actions to be defined on
+    /// @param functionDescs Function descriptions used to define actions
+    /// @param actionRoles Roles being granted permission for an action
     function initialize(
         address dao,
         string[] memory roles,
@@ -53,10 +52,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         __UUPSUpgradeable_init();
     }
 
-    /// @dev grantRolesAndAdmins allows the DAO_ROLE to create/grant roles and create/update admins
-    /// @param roles What permissions are assigned to
-    /// @param roleAdmins Roles which have the ability to remove or add members
-    /// @param members Users which have the permission to interact with various features
+    /// @notice Grants roles to the specified addresses and defines admin roles
+    /// @param roles The roles being granted
+    /// @param roleAdmins The roles being granted as admins of the specified of roles
+    /// @param members Addresses being granted each specified role
     function grantRolesAndAdmins(
         string[] memory roles,
         string[] memory roleAdmins,
@@ -65,10 +64,43 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
-    /// @dev Creates permissioned actions used by the DAO and Modules
-    /// @param targets Module addresses
-    /// @param functionDescs Function Descs used to generate function sigs
-    /// @param roles Roles that indicate a specific feature or action on a module
+    /// @notice Grants a role to the specified address
+    /// @param role The role being granted
+    /// @param account The address being granted the specified role
+    function grantRole(string memory role, address account)
+        external
+        override
+        onlyRole(getRoleAdmin(role))
+    {
+        _grantRole(role, account);
+    }
+
+    /// @notice Revokes a role from the specified address
+    /// @param role The role being revoked
+    /// @param account The address the role is being revoked from
+    function revokeRole(string memory role, address account)
+        external
+        override
+        onlyRole(getRoleAdmin(role))
+    {
+        _revokeRole(role, account);
+    }
+
+    /// @notice Enables an address to remove one of its own roles
+    /// @param role The role being renounced
+    /// @param account The address renouncing the role
+    function renounceRole(string memory role, address account) external override {
+        if(account != msg.sender) {
+          revert OnlySelfRenounce();
+        }
+
+        _revokeRole(role, account);
+    }
+
+    /// @notice Authorizes roles to execute the specified actions
+    /// @param targets The contract addresses that the action functions are implemented on
+    /// @param functionDescs The function descriptions used to define the actions
+    /// @param roles Roles being granted permission for an action
     function addActionsRoles(
         address[] memory targets,
         string[] memory functionDescs,
@@ -77,10 +109,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         _addActionsRoles(targets, functionDescs, roles);
     }
 
-    /// @dev removes permissioned actions used by the DAO and Modules
-    /// @param targets Module addresses
-    /// @param functionDescs Function Descs used to generate function sigs
-    /// @param roles Roles that indicate a specific feature or action on a module
+    /// @notice Removes autorization for roles to execute the specified actions
+    /// @param targets The contract addresses that the action functions are implemented on
+    /// @param functionDescs The function description used to define the actions
+    /// @param roles Roles that action permissions are being removed on
     function removeActionsRoles(
         address[] memory targets,
         string[] memory functionDescs,
@@ -102,12 +134,12 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
                 i++;
             }
         }
-    }
+    }  
 
-    /// @dev Checks if a caller has the permissions to call the specific action
-    /// @param caller User attempting to utilize the action
-    /// @param target Address corresponding to the action
-    /// @param sig function sig
+    /// @notice Checks if a caller has the permissions to execute the specific action
+    /// @param caller Address attempting to execute the action
+    /// @param target Contract address corresponding to the action
+    /// @param sig The function signature used to define the action
     function actionIsAuthorized(
         address caller,
         address target,
@@ -127,9 +159,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Roles assigned to a specific action
-    /// @param target Address corresponding to the action
-    /// @param functionDesc function Definition
+    /// @notice Returns the roles autorized to execute the specified action
+    /// @param target Contract address corresponding to the action
+    /// @param functionDesc The function description used to define the action
     function getActionRoles(address target, string memory functionDesc)
         external
         view
@@ -140,10 +172,11 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         return _actionsToRoles[target][encodedSig];
     }
 
-    /// @dev Checks if a specific role is permissioned for an action
-    /// @param role Role that indicate a specific feature or action on a module
-    /// @param target Module address
-    /// @param functionDesc Function Desc used to generate function sigs
+    /// @notice Checks if a specific role is authorized for an action
+    /// @param role Role that authorization is being checked on
+    /// @param target Contract address corresponding to the action
+    /// @param functionDesc Function description used to define the action
+    /// @return isAuthorized Indicates whether the role is authorized to execute the action
     function isRoleAuthorized(
         string calldata role,
         address target,
@@ -167,51 +200,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Grants `role` to `account`.
-    /// If `account` had not been already granted `role`, emits a {RoleGranted}
-    /// event.
-    /// Requirements:
-    /// - the caller must have ``role``'s admin role.
-    function grantRole(string memory role, address account)
-        public
-        override
-        onlyRole(getRoleAdmin(role))
-    {
-        _grantRole(role, account);
-    }
-
-    /// @dev Revokes `role` from `account`.
-    /// If `account` had been granted `role`, emits a {RoleRevoked} event.
-    /// Requirements:
-    /// - the caller must have ``role``'s admin role.
-    function revokeRole(string memory role, address account)
-        public
-        override
-        onlyRole(getRoleAdmin(role))
-    {
-        _revokeRole(role, account);
-    }
-
-    /// @dev Revokes `role` from the calling account.
-    /// Roles are often managed via {grantRole} and {revokeRole}: this function's
-    /// purpose is to provide a mechanism for accounts to lose their privileges
-    /// if they are compromised (such as when a trusted device is misplaced).
-    ///
-    /// If the calling account had been revoked `role`, emits a {RoleRevoked}
-    /// event.
-    ///
-    /// Requirements:
-    /// - the caller must be `account`.
-    function renounceRole(string memory role, address account) public override {
-        require(
-            account == msg.sender,
-            "AccessControl: can only renounce roles for self"
-        );
-
-        _revokeRole(role, account);
-    }
-
-    /// @dev Returns `true` if `account` has been granted `role`.
+    /// @notice Returns whether the account has been granted the role
+    /// @param role Role that authorization is being checked on
+    /// @param account Address that the role authorization is being check on
+    /// @return boolean Indicates whether the address has been granted the role 
     function hasRole(string memory role, address account)
         public
         view
@@ -221,9 +213,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         return _roles[role].members[account];
     }
 
-    /// @dev Returns the admin role that controls `role`. See {grantRole} and
-    /// {revokeRole}.
-    /// To change a role's admin, use {_setRoleAdmin}.
+    /// @notice Returns the role that is the admin of the specified role
+    /// @param role Role that the admin role is being returned for
+    /// @return string The admin role of the specified role
     function getRoleAdmin(string memory role)
         public
         view
@@ -233,6 +225,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         return _roles[role].adminRole;
     }
 
+    /// @notice Returns whether a given interface ID is supported
+    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
+    /// @return bool Indicates whether the interface is supported
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -245,8 +240,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
             super.supportsInterface(interfaceId);
     }  
 
-    /// @dev Sets `adminRole` as ``role``'s admin role.
-    /// Emits a {RoleAdminChanged} event.
+    /// @notice Sets a role as the admin of another role
+    /// @param role The role the admin is being set for
+    /// @param adminRole The role that is being assigned as an admin
     function _setRoleAdmin(string memory role, string memory adminRole)
         internal
     {
@@ -255,8 +251,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         emit RoleAdminChanged(role, previousAdminRole, adminRole);
     }
 
-    /// @dev Grants `role` to `account`.
-    /// Internal function without access restriction.
+    /// @notice Grants a role to the specified address
+    /// @param role The role being granted
+    /// @param account The address being granted the specified role
     function _grantRole(string memory role, address account) internal {
         if (!hasRole(role, account)) {
             _roles[role].members[account] = true;
@@ -264,8 +261,9 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Revokes `role` from `account`.
-    /// Internal function without access restriction.
+    /// @notice Revokes a role from the specified address
+    /// @param role The role being revoked
+    /// @param account The address the role is being revoked from
     function _revokeRole(string memory role, address account) internal {
         if (hasRole(role, account)) {
             _roles[role].members[account] = false;
@@ -273,8 +271,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Grants `roles` to `accounts` w/ Admins.
-    /// Internal function without access restriction.
+    /// @notice Grants roles to the specified addresses and defines admin roles
+    /// @param roles The roles being granted
+    /// @param roleAdmins The roles being granted as admins of the specified of roles
+    /// @param members Addresses being granted each specified role
     function _grantRolesAndAdmins(
         string[] memory roles,
         string[] memory roleAdmins,
@@ -300,8 +300,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Adds `roles` to `actions`.
-    /// Internal function without access restriction.
+    /// @notice Authorizes roles to execute the specified actions
+    /// @param targets The contract addresses that the action functions are implemented on
+    /// @param functionDescs The function descriptions used to define the actions
+    /// @param roles Roles being granted permission for an action
     function _addActionsRoles(
         address[] memory targets,
         string[] memory functionDescs,
@@ -326,8 +328,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Adds a `role` to an `action`.
-    /// Internal function without access restriction.
+    /// @notice Authorizes a role to execute the specified action
+    /// @param target The contract address that the action function is implemented on
+    /// @param functionDesc The function description used to define the action
+    /// @param role Role being granted permission for an action
     function _addActionRole(
         address target,
         string memory functionDesc,
@@ -339,8 +343,10 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         emit ActionRoleAdded(target, functionDesc, encodedSig, role);
     }
 
-    /// @dev removes a `role` from an `action`.
-    /// Internal function without access restriction.
+    /// @notice Removes authorization of a role to execute the specified action
+    /// @param target The contract address that the action function is implemented on
+    /// @param functionDesc The function description used to define the action
+    /// @param role Role that the action authorization is being removed on
     function _removeActionRole(
         address target,
         string memory functionDesc,
@@ -369,16 +375,19 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         }
     }
 
-    /// @dev Function that should revert when `msg.sender` is not authorized to upgrade the contract.
-    /// Called by {upgradeTo} and {upgradeToAndCall}.
-    /// @dev Only DAO_ROLE has the permission to call
+    /// @notice Reverts when msg.sender is not authorized to upgrade the contract
+    /// @notice Only addresses that have the DAO_ROLE role are authorized
+    /// @notice Called by upgradeTo and upgradeToAndCall
+    /// @param newImplementation New implementation contract address being upgraded to
     function _authorizeUpgrade(address newImplementation)
         internal
         override
         onlyRole(DAO_ROLE)
     {}
 
-    /// @dev Revert with a standard message if `account` is missing `role`.
+    /// @notice Reverts with a standard message if account is missing role
+    /// @param role Role being checked
+    /// @param account Address that role is being checked on
     function _checkRole(string memory role, address account) internal view {
         if (!hasRole(role, account)) {
             revert MissingRole(account, role);
