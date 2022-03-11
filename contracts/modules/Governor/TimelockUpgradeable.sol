@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.0;
 
-import "../ModuleBase.sol";
-import "../interfaces/ITimelockController.sol";
-import "../interfaces/IDAO.sol";
+import "../../ModuleBase.sol";
+import "../../interfaces/ITimelockUpgradeable.sol";
+import "../../interfaces/IDAO.sol";
 
 /**
  * @dev Contract module which acts as a timelocked controller. When set as the
@@ -22,7 +22,8 @@ import "../interfaces/IDAO.sol";
  *
  * _Available since v3.3._
  */
-contract TimelockControllerUpgradeable is ModuleBase, ITimelockController {
+ // todo: change Contract Name or file Name
+contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     uint256 internal constant _DONE_TIMESTAMP = uint256(1);
 
     mapping(bytes32 => uint256) private _timestamps;
@@ -115,7 +116,7 @@ contract TimelockControllerUpgradeable is ModuleBase, ITimelockController {
      *
      * - the caller must have the 'executor' role.
      */
-    function execute(
+    function executeBatch(
         address[] calldata targets,
         uint256[] calldata values,
         bytes[] calldata datas,

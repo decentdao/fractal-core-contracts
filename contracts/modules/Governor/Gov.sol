@@ -6,24 +6,9 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettin
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
-import "../ModuleBase.sol";
-
-
-/// @dev GovernorUpgradeable - System Core: needs votesucceded/ _countvote/ quorumReached/ Qurom 
-/// - votingModule (GetVotes)
-/// - voting period
-/// @dev GovernorCountingSimpleUpgradeable -  Defines votesucceded/ _countvote/ quorumReached
-/// @dev GovernorVotesQuorumFraction - Defines Qurom created by fraction (4)
-/// @dev GovernorPreventLateQuorumUpgradeable Acts as a safe guard for late qurom attacks
-///
-/// @dev GovernorVotesUpgradeable - defines getVotes 
-/// todo: votes module is missing the ability to change token - create from scratch
-/// @dev correction - Cannot hot-switch because if a switch occurs during a vote - a person will lose voting power
-/// todo: ability to deprecate system - Access Control Only
-
-/// @dev todo: update TimelockController to call into dao contract
+import "./GovTimelockUpgradeable.sol";
+import "../../ModuleBase.sol";
 
 contract OpenZGovernor is
     GovernorUpgradeable,
@@ -31,7 +16,7 @@ contract OpenZGovernor is
     GovernorCountingSimpleUpgradeable,
     GovernorVotesUpgradeable,
     GovernorVotesQuorumFractionUpgradeable,
-    GovernorTimelockControlUpgradeable,
+    GovTimelockUpgradeable,
     ModuleBase,
     GovernorPreventLateQuorumUpgradeable
 {
@@ -51,7 +36,7 @@ contract OpenZGovernor is
     function initialize(
         string memory _name,
         IVotesUpgradeable _token,
-        TimelockControllerUpgradeable _timelock,
+        TimelockUpgradeable _timelock,
         uint64 _initialVoteExtension,
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,
@@ -68,7 +53,7 @@ contract OpenZGovernor is
         __GovernorCountingSimple_init();
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(_initialQuorumNumeratorValue);
-        __GovernorTimelockControl_init(_timelock);
+        __GovTimelock_init(_timelock);
         __initBase(_accessControl);
         __GovernorPreventLateQuorum_init(_initialVoteExtension);
     }
@@ -114,7 +99,7 @@ contract OpenZGovernor is
     function state(uint256 proposalId)
         public
         view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        override(GovernorUpgradeable, GovTimelockUpgradeable)
         returns (ProposalState)
     {
         return super.state(proposalId);
@@ -178,7 +163,7 @@ contract OpenZGovernor is
         bytes32 descriptionHash
     )
         internal
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        override(GovernorUpgradeable, GovTimelockUpgradeable)
     {
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
@@ -190,7 +175,7 @@ contract OpenZGovernor is
         bytes32 descriptionHash
     )
         internal
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        override(GovernorUpgradeable, GovTimelockUpgradeable)
         returns (uint256)
     {
         return super._cancel(targets, values, calldatas, descriptionHash);
@@ -199,7 +184,7 @@ contract OpenZGovernor is
     function _executor()
         internal
         view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        override(GovernorUpgradeable, GovTimelockUpgradeable)
         returns (address)
     {
         return super._executor();
@@ -208,7 +193,7 @@ contract OpenZGovernor is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable, ModuleBase)
+        override(GovernorUpgradeable, GovTimelockUpgradeable, ModuleBase)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
