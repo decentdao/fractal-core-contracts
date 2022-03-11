@@ -24,6 +24,10 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         _;
     }
 
+    /// @notice Each contract inheriting from ModuleBase should implement an initilize function
+    /// Should call __initBase within the overriding initilize function
+    function initialize() external virtual;
+
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
     /// @return bool Indicates whether the interface is supported
