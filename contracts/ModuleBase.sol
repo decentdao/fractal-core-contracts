@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-
 import "./interfaces/IModuleBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
@@ -22,11 +21,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
             revert NotAuthorized();
         }
         _;
-    }
-
-    /// @notice Each contract inheriting from ModuleBase should implement an initilize function
-    /// Should call __initBase within the overriding initilize function
-    function initialize() external virtual;
+    } 
 
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165

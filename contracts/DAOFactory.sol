@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IAccessControl.sol";
-import "./interfaces/IModuleBase.sol";
+import "./interfaces/IDAO.sol";
 
 /// @notice A factory contract for deploying DAOs with an access control contract
 contract DAOFactory is IDAOFactory, ERC165 {
@@ -58,7 +58,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
             )
         );
 
-        IModuleBase(dao).initialize(accessControl);
+        IDAO(dao).initialize(accessControl);
 
         emit DAOCreated(dao, accessControl);
     }
