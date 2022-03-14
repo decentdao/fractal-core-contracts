@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreven
 import "./GovTimelockUpgradeable.sol";
 import "../../ModuleBase.sol";
 
-contract OpenZGovernor is
+contract GovernorModule is
     GovernorUpgradeable,
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
