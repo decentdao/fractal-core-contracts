@@ -14,6 +14,7 @@ import {
   TestToken__factory,
   VotesTokenWrapped,
   VotesTokenWrapped__factory,
+  AccessControl,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -34,40 +35,20 @@ import {
 const expect = chai.expect;
 
 describe("OpenZ DAO", function () {
-//   let daoFactory: OpenZFactory;
-//   let governanceToken: VotesTokenWithSupply;
-//   let dao: OpenZGovernor;
-//   let testToken: TestToken;
-//   let wrappedGovernanceToken: VotesTokenWrapped;
-//   let governorImpl: OpenZGovernor;
-//   let timelockController: TimelockController;
-//   let tokenFactory: TokenFactory;
-//   let deployer: SignerWithAddress;
-//   let proposerExecutor: SignerWithAddress;
-//   let voterA: SignerWithAddress;
-//   let voterB: SignerWithAddress;
-//   let voterC: SignerWithAddress;
-//   let daoInfo: {
-//     votingToken: string;
-//     timelockController: string;
-//     daoProxy: string;
-//   };
-
     let deployer: SignerWithAddress;
     let proposerExecutor: SignerWithAddress;
     let voterA: SignerWithAddress;
     let voterB: SignerWithAddress;
     let voterC: SignerWithAddress;
+    let accessControl: AccessControl;
+    let dao: OpenZGovernor;
+    let governanceToken: VotesTokenWithSupply;
+    let timelockController: TimelockController;
 
-  describe("Bring Token", function () {
+  describe("Init DAO / Access Control", function () {
     beforeEach(async function () {
       [deployer, proposerExecutor, voterA, voterB, voterC] =
         await ethers.getSigners();
-      tokenFactory = await new TokenFactory__factory(deployer).deploy();
-      governorImpl = await new OpenZGovernor__factory(deployer).deploy();
-
-      // Deploy an instance of the DAO Factory
-      daoFactory = await new OpenZFactory__factory(deployer).deploy();
 
       // Create a new ERC20Votes token to bring as the DAO governance token
       governanceToken = await new VotesTokenWithSupply__factory(
@@ -85,25 +66,9 @@ describe("OpenZ DAO", function () {
         ethers.constants.AddressZero
       );
 
-      // Create a new DAO using the DAO Factory and the existing test token
-
-      daoInfo = await openZCreateDAOBringToken(
-        daoFactory,
-        governorImpl.address,
-        [proposerExecutor.address],
-        [proposerExecutor.address],
-        "Test DAO",
-        BigNumber.from("0"),
-        BigNumber.from("0"),
-        BigNumber.from("1"),
-        BigNumber.from("5"),
-        BigNumber.from("0"),
-        BigNumber.from("4"),
-        governanceToken.address
-      );
-
-      // eslint-disable-next-line camelcase
-      dao = OpenZGovernor__factory.connect(daoInfo.daoProxy, deployer);
+      // Create a new DAO
+      // Create an access Control contract
+      // Create a timelock contract
 
       // eslint-disable-next-line camelcase
       timelockController = TimelockController__factory.connect(
