@@ -12,7 +12,7 @@ import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("DAOFactory", () => {
+describe("DAOFactory", () => {
   let deployer: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
