@@ -4,6 +4,7 @@ import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
 import "@nomiclabs/hardhat-waffle";
+import "hardhat-deploy";
 import "@typechain/hardhat";
 import "hardhat-tracer";
 import "solidity-coverage";
@@ -33,6 +34,11 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+    },
+  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
@@ -42,6 +48,9 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  paths: {
+    deploy: "deploy/core",
   },
 };
 

@@ -7,7 +7,7 @@
     "test": "hardhat test"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.4",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.5.0",
@@ -30,8 +30,10 @@
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-promise": "^5.2.0",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.5.3",
+    "ethers": "^5.6.0",
     "hardhat": "^2.8.2",
+    "hardhat-deploy": "^0.10.6",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-tracer": "^1.0.0-alpha.6",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
