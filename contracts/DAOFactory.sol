@@ -27,19 +27,25 @@ contract DAOFactory is IDAOFactory, ERC165 {
         string[] memory functionDescs = new string[](arrayLength);
         string[][] memory actionRoles = new string[][](arrayLength);
 
-        for (uint256 i; i < createDAOParams.daoFunctionDescs.length; i++) {
+        uint256 daoFunctionDescsLength = createDAOParams.daoFunctionDescs.length;
+        for (uint256 i; i < daoFunctionDescsLength; ) {
             targets[i] = dao;
             functionDescs[i] = createDAOParams.daoFunctionDescs[i];
             actionRoles[i] = createDAOParams.daoActionRoles[i];
+            unchecked {
+              i++;
+            }
         }
 
-        for (uint256 i; i < createDAOParams.moduleTargets.length; i++) {
+        uint256 moduleTargetsLength = createDAOParams.moduleTargets.length;
+        for (uint256 i; i < moduleTargetsLength; ) {
             uint256 currentIndex = i + createDAOParams.daoFunctionDescs.length;
             targets[currentIndex] = createDAOParams.moduleTargets[i];
-            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[
-                i
-            ];
+            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[i];
             actionRoles[currentIndex] = createDAOParams.moduleActionRoles[i];
+            unchecked {
+              i++;
+            }
         }
 
         accessControl = address(
