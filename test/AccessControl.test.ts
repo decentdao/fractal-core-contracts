@@ -319,13 +319,13 @@ describe("DAO Access Control Contract", function () {
         daoAccessControl
           .connect(roleAMember1)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith("OnlySelfRenounce()");
+      ).to.be.revertedWith("AccessControl: can only renounce roles for self");
 
       await expect(
         daoAccessControl
           .connect(roleBMember2)
           .renounceRole(roleBString, roleBMember1.address)
-      ).to.be.revertedWith("OnlySelfRenounce()");
+      ).to.be.revertedWith("AccessControl: can only renounce roles for self");
     });
 
     it("Should batch create Roles", async () => {
