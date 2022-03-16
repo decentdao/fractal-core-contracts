@@ -48,6 +48,7 @@ To deploy the base contracts, which includes the DAOFactory, DAO implementation 
 ```shell
 npx hardhat node
 ```
+This will log the addresses the DAOFactory, DAO implementation contract, and AccessControl implementation contracts have been deployed to, which will need to be used in the next step.
 
 A hardhat task has been created for deploying a DAO which accepts all the necessary arguments.
 The DAOFactory address and DAOImplementation address deployed in the previous step should be passed as parameters when using this task. 
