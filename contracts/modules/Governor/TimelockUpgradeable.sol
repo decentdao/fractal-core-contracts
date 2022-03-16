@@ -38,7 +38,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         uint256 _minDelay
     ) external initializer {
         __initBase(_accessControl);
-        dao = IDAO(_dao); 
+        dao = IDAO(_dao);
         minDelay = _minDelay;
         emit MinDelayChange(0, minDelay);
     }
@@ -53,7 +53,10 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      * - the caller must be authorized.
      */
     function updateDelay(uint256 newDelay) external virtual authorized {
-        require(msg.sender == address(this), "TimelockController: caller must be timelock");
+        require(
+            msg.sender == address(this),
+            "TimelockController: caller must be timelock"
+        );
         emit MinDelayChange(minDelay, newDelay);
         minDelay = newDelay;
     }
@@ -75,17 +78,37 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         bytes32 salt,
         uint256 delay
     ) external virtual authorized {
-        require(targets.length == values.length, "TimelockController: length mismatch");
-        require(targets.length == datas.length, "TimelockController: length mismatch");
+        require(
+            targets.length == values.length,
+            "TimelockController: length mismatch"
+        );
+        require(
+            targets.length == datas.length,
+            "TimelockController: length mismatch"
+        );
 
-        bytes32 id = hashOperationBatch(targets, values, datas, predecessor, salt);
+        bytes32 id = hashOperationBatch(
+            targets,
+            values,
+            datas,
+            predecessor,
+            salt
+        );
         _schedule(id, delay);
         for (uint256 i = 0; i < targets.length; ++i) {
-            emit CallScheduled(id, i, targets[i], values[i], datas[i], predecessor, delay);
+            emit CallScheduled(
+                id,
+                i,
+                targets[i],
+                values[i],
+                datas[i],
+                predecessor,
+                delay
+            );
         }
     }
 
-       /**
+    /**
      * @dev Cancel an operation.
      *
      * Requirements:
@@ -93,7 +116,10 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      * - the caller must be authorized.
      */
     function cancel(bytes32 id) external virtual authorized {
-        require(isOperationPending(id), "TimelockController: operation cannot be cancelled");
+        require(
+            isOperationPending(id),
+            "TimelockController: operation cannot be cancelled"
+        );
         delete _timestamps[id];
 
         emit Cancelled(id);
@@ -115,34 +141,61 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         bytes32 predecessor,
         bytes32 salt
     ) external payable virtual authorized {
-        require(targets.length == values.length, "TimelockController: length mismatch");
-        require(targets.length == datas.length, "TimelockController: length mismatch");
+        require(
+            targets.length == values.length,
+            "TimelockController: length mismatch"
+        );
+        require(
+            targets.length == datas.length,
+            "TimelockController: length mismatch"
+        );
 
-        bytes32 id = hashOperationBatch(targets, values, datas, predecessor, salt);
+        bytes32 id = hashOperationBatch(
+            targets,
+            values,
+            datas,
+            predecessor,
+            salt
+        );
         _beforeCall(id, predecessor);
         dao.execute(targets, values, datas);
         _afterCall(id);
     }
 
-        /**
+    /**
      * @dev Returns whether an id correspond to a registered operation. This
      * includes both Pending, Ready and Done operations.
      */
-    function isOperation(bytes32 id) public view virtual returns (bool pending) {
+    function isOperation(bytes32 id)
+        public
+        view
+        virtual
+        returns (bool pending)
+    {
         return getTimestamp(id) > 0;
     }
 
     /**
      * @dev Returns whether an operation is pending or not.
      */
-    function isOperationPending(bytes32 id) public view virtual returns (bool pending) {
+    function isOperationPending(bytes32 id)
+        public
+        view
+        virtual
+        returns (bool pending)
+    {
         return getTimestamp(id) > _DONE_TIMESTAMP;
     }
 
     /**
      * @dev Returns whether an operation is ready or not.
      */
-    function isOperationReady(bytes32 id) public view virtual returns (bool ready) {
+    function isOperationReady(bytes32 id)
+        public
+        view
+        virtual
+        returns (bool ready)
+    {
         uint256 timestamp = getTimestamp(id);
         return timestamp > _DONE_TIMESTAMP && timestamp <= block.timestamp;
     }
@@ -150,7 +203,12 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     /**
      * @dev Returns whether an operation is done or not.
      */
-    function isOperationDone(bytes32 id) public view virtual returns (bool done) {
+    function isOperationDone(bytes32 id)
+        public
+        view
+        virtual
+        returns (bool done)
+    {
         return getTimestamp(id) == _DONE_TIMESTAMP;
     }
 
@@ -158,7 +216,12 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      * @dev Returns the timestamp at with an operation becomes ready (0 for
      * unset operations, 1 for done operations).
      */
-    function getTimestamp(bytes32 id) public view virtual returns (uint256 timestamp) {
+    function getTimestamp(bytes32 id)
+        public
+        view
+        virtual
+        returns (uint256 timestamp)
+    {
         return _timestamps[id];
     }
 
@@ -189,8 +252,14 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      * @dev Schedule an operation that is to becomes valid after a given delay.
      */
     function _schedule(bytes32 id, uint256 delay) private {
-        require(!isOperation(id), "TimelockController: operation already scheduled");
-        require(delay >= getMinDelay(), "TimelockController: insufficient delay");
+        require(
+            !isOperation(id),
+            "TimelockController: operation already scheduled"
+        );
+        require(
+            delay >= getMinDelay(),
+            "TimelockController: insufficient delay"
+        );
         _timestamps[id] = block.timestamp + delay;
     }
 
@@ -198,15 +267,24 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      * @dev Checks before execution of an operation's calls.
      */
     function _beforeCall(bytes32 id, bytes32 predecessor) private view {
-        require(isOperationReady(id), "TimelockController: operation is not ready");
-        require(predecessor == bytes32(0) || isOperationDone(predecessor), "TimelockController: missing dependency");
+        require(
+            isOperationReady(id),
+            "TimelockController: operation is not ready"
+        );
+        require(
+            predecessor == bytes32(0) || isOperationDone(predecessor),
+            "TimelockController: missing dependency"
+        );
     }
 
     /**
      * @dev Checks after execution of an operation's calls.
      */
     function _afterCall(bytes32 id) private {
-        require(isOperationReady(id), "TimelockController: operation is not ready");
+        require(
+            isOperationReady(id),
+            "TimelockController: operation is not ready"
+        );
         _timestamps[id] = _DONE_TIMESTAMP;
     }
 

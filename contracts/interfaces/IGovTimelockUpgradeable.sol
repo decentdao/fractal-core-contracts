@@ -11,17 +11,23 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  *
  * _Available since v4.3._
  */
-abstract contract IGovTimelockUpgradeable is Initializable, IGovernorUpgradeable {
-    function __IGovTimelock_init() internal onlyInitializing {
-    }
+abstract contract IGovTimelockUpgradeable is
+    Initializable,
+    IGovernorUpgradeable
+{
+    function __IGovTimelock_init() internal onlyInitializing {}
 
-    function __IGovTimelock_init_unchained() internal onlyInitializing {
-    }
+    function __IGovTimelock_init_unchained() internal onlyInitializing {}
+
     event ProposalQueued(uint256 proposalId, uint256 eta);
 
     function timelock() public view virtual returns (address);
 
-    function proposalEta(uint256 proposalId) public view virtual returns (uint256);
+    function proposalEta(uint256 proposalId)
+        public
+        view
+        virtual
+        returns (uint256);
 
     function queue(
         address[] memory targets,

@@ -21,7 +21,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
             revert NotAuthorized();
         }
         _;
-    } 
+    }
 
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
@@ -46,7 +46,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
     }
 
     /// @dev Applies authorized modifier so that an upgrade require the caller to have the correct role
-    
+
     /// @param newImplementation The address of the new implementation contract being upgraded to
     function _authorizeUpgrade(address newImplementation)
         internal

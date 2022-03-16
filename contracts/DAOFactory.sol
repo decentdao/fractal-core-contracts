@@ -27,13 +27,15 @@ contract DAOFactory is IDAOFactory, ERC165 {
         string[] memory functionDescs = new string[](arrayLength);
         string[][] memory actionRoles = new string[][](arrayLength);
 
-        uint256 daoFunctionDescsLength = createDAOParams.daoFunctionDescs.length;
+        uint256 daoFunctionDescsLength = createDAOParams
+            .daoFunctionDescs
+            .length;
         for (uint256 i; i < daoFunctionDescsLength; ) {
             targets[i] = dao;
             functionDescs[i] = createDAOParams.daoFunctionDescs[i];
             actionRoles[i] = createDAOParams.daoActionRoles[i];
             unchecked {
-              i++;
+                i++;
             }
         }
 
@@ -41,10 +43,12 @@ contract DAOFactory is IDAOFactory, ERC165 {
         for (uint256 i; i < moduleTargetsLength; ) {
             uint256 currentIndex = i + createDAOParams.daoFunctionDescs.length;
             targets[currentIndex] = createDAOParams.moduleTargets[i];
-            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[i];
+            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[
+                i
+            ];
             actionRoles[currentIndex] = createDAOParams.moduleActionRoles[i];
             unchecked {
-              i++;
+                i++;
             }
         }
 

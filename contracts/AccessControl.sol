@@ -88,8 +88,8 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @param role The role being renounced
     /// @param account The address renouncing the role
     function renounceRole(string memory role, address account) external {
-        if(account != msg.sender) {
-          revert OnlySelfRenounce();
+        if (account != msg.sender) {
+            revert OnlySelfRenounce();
         }
 
         _revokeRole(role, account);
@@ -132,7 +132,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
                 i++;
             }
         }
-    }  
+    }
 
     /// @notice Checks if a caller has the permissions to execute the specific action
     /// @param caller Address attempting to execute the action
@@ -200,7 +200,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
     /// @notice Returns whether the account has been granted the role
     /// @param role Role that authorization is being checked on
     /// @param account Address that the role authorization is being check on
-    /// @return boolean Indicates whether the address has been granted the role 
+    /// @return boolean Indicates whether the address has been granted the role
     function hasRole(string memory role, address account)
         public
         view
@@ -232,7 +232,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         return
             interfaceId == type(IAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);
-    }  
+    }
 
     /// @notice Sets a role as the admin of another role
     /// @param role The role the admin is being set for

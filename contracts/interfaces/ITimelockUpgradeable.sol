@@ -18,7 +18,13 @@ interface ITimelockUpgradeable {
     /**
      * @dev Emitted when a call is performed as part of operation `id`.
      */
-    event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data);
+    event CallExecuted(
+        bytes32 indexed id,
+        uint256 indexed index,
+        address target,
+        uint256 value,
+        bytes data
+    );
 
     /**
      * @dev Emitted when operation `id` is cancelled.
@@ -75,7 +81,7 @@ interface ITimelockUpgradeable {
         uint256 delay
     ) external;
 
-       /**
+    /**
      * @dev Cancel an operation.
      *
      * Requirements:
@@ -110,7 +116,10 @@ interface ITimelockUpgradeable {
     /**
      * @dev Returns whether an operation is pending or not.
      */
-    function isOperationPending(bytes32 id) external view returns (bool pending);
+    function isOperationPending(bytes32 id)
+        external
+        view
+        returns (bool pending);
 
     /**
      * @dev Returns whether an operation is ready or not.

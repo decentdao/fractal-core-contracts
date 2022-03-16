@@ -7,9 +7,9 @@ interface IDAO {
 
     event Executed(address[] targets, uint256[] values, bytes[] calldatas);
 
-    function initialize(
-        address _accessControl
-    ) external;
+    /// @notice Function for initializing the Dao
+    /// @param _accessControl The address of the access control contract
+    function initialize(address _accessControl) external;
 
     /// @notice A function for executing function calls from the DAO
     /// @param targets An array of addresses to target for the function calls

@@ -10,9 +10,7 @@ import "./ModuleBase.sol";
 contract DAO is IDAO, ModuleBase {
     /// @notice Function for initializing the contract that can only be called once
     /// @param _accessControl The address of the access control contract
-    function initialize(
-        address _accessControl
-    ) external override initializer {
+    function initialize(address _accessControl) external override initializer {
         __initBase(_accessControl);
     }
 

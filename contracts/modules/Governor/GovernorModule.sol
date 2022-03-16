@@ -108,7 +108,7 @@ contract GovernorModule is
         return super.state(proposalId);
     }
 
-        function proposalDeadline(uint256 proposalId)
+    function proposalDeadline(uint256 proposalId)
         public
         view
         virtual
@@ -164,10 +164,7 @@ contract GovernorModule is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    )
-        internal
-        override(GovernorUpgradeable, GovTimelockUpgradeable)
-    {
+    ) internal override(GovernorUpgradeable, GovTimelockUpgradeable) {
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 

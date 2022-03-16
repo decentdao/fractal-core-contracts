@@ -203,10 +203,15 @@ describe("Gov Module", function () {
     });
 
     it("Contracts are deployed", async () => {
+      // eslint-disable-next-line no-unused-expressions
       expect(governanceToken.address).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
       expect(accessControl.address).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
       expect(timelock.address).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
       expect(dao.address).to.be.properAddress;
+      // eslint-disable-next-line no-unused-expressions
       expect(govModule.address).to.be.properAddress;
     });
 
