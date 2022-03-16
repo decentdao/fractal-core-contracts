@@ -11,6 +11,10 @@ interface IDAO {
         address _accessControl
     ) external;
 
+    /// @notice A function for executing function calls from the DAO
+    /// @param targets An array of addresses to target for the function calls
+    /// @param values An array of ether values to send with the function calls
+    /// @param calldatas An array of bytes defining the function calls
     function execute(
         address[] calldata targets,
         uint256[] calldata values,

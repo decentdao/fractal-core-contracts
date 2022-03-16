@@ -5,5 +5,7 @@ import "./IAccessControl.sol";
 
 interface IModuleBase {
     error NotAuthorized();
-    function accessControl() external returns (IAccessControl);
+
+    /// @return IAccessControl The Access control interface
+    function accessControl() external view returns (IAccessControl);
 }
