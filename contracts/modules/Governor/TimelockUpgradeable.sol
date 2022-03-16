@@ -9,20 +9,13 @@ import "../../interfaces/IDAO.sol";
 
 /**
  * @dev Contract module which acts as a timelocked controller. When set as the
- * owner of an `Ownable` smart contract, it enforces a timelock on all
- * `onlyOwner` maintenance operations. This gives time for users of the
+ * executor for the DAO execute action, it enforces a timelock on all
+ * DAO executions initiated by the governor contract. This gives time for users of the
  * controlled contract to exit before a potentially dangerous maintenance
  * operation is applied.
  *
- * By default, this contract is self administered, meaning administration tasks
- * have to go through the timelock process. The proposer (resp executor) role
- * is in charge of proposing (resp executing) operations. A common use case is
- * to position this {TimelockController} as the owner of a smart contract, with
- * a multisig or a DAO as the sole proposer.
- *
  * _Available since v3.3._
  */
- // todo: change Contract Name or file Name
 contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     uint256 internal constant _DONE_TIMESTAMP = uint256(1);
 
@@ -57,8 +50,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      *
      * Requirements:
      *
-     * - the caller must be the timelock itself. This can only be achieved by scheduling and later executing
-     * an operation where the timelock is the target and the data is the ABI-encoded call to this function.
+     * - the caller must be authorized.
      */
     function updateDelay(uint256 newDelay) external virtual authorized {
         require(msg.sender == address(this), "TimelockController: caller must be timelock");
@@ -73,7 +65,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      *
      * Requirements:
      *
-     * - the caller must have the 'proposer' role.
+     * - the caller must be authorized.
      */
     function scheduleBatch(
         address[] calldata targets,
@@ -98,7 +90,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      *
      * Requirements:
      *
-     * - the caller must have the 'proposer' role.
+     * - the caller must be authorized.
      */
     function cancel(bytes32 id) external virtual authorized {
         require(isOperationPending(id), "TimelockController: operation cannot be cancelled");
@@ -114,7 +106,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
      *
      * Requirements:
      *
-     * - the caller must have the 'executor' role.
+     * - the caller must be authorized
      */
     function executeBatch(
         address[] calldata targets,

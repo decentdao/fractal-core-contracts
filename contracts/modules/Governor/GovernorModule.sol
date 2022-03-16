@@ -10,6 +10,9 @@ import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreven
 import "./GovTimelockUpgradeable.sol";
 import "../../ModuleBase.sol";
 
+/// @dev Governor Module used to implement 1 token 1 vote.
+/// This acts as an extension of the MVD and permissions are controlled by access control.
+/// @dev Gov Module is extended by the timelock contract which creates a lockup period before execution.
 contract GovernorModule is
     GovernorUpgradeable,
     GovernorSettingsUpgradeable,
@@ -21,7 +24,7 @@ contract GovernorModule is
     GovernorPreventLateQuorumUpgradeable
 {
     /**
-     * @dev Configures DAO implementation
+     * @dev Configures Gov Module implementation
      * @dev Called once during deployment atomically
      * @param _name Name of the DAO
      * @param _token Voting token uses snapshot feature
@@ -36,7 +39,7 @@ contract GovernorModule is
     function initialize(
         string memory _name,
         IVotesUpgradeable _token,
-        TimelockUpgradeable _timelock,
+        ITimelockUpgradeable _timelock,
         uint64 _initialVoteExtension,
         uint256 _initialVotingDelay,
         uint256 _initialVotingPeriod,

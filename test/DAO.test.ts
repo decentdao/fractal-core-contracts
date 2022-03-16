@@ -46,8 +46,6 @@ describe("DAO", () => {
 
       // Supports ERC-165 interface
       expect(await dao.supportsInterface("0x01ffc9a7")).to.eq(true);
-
-      // Todo: Add checks for arbitrary interfaces returning false
     });
 
     it("has the DAO_ROLE", async () => {

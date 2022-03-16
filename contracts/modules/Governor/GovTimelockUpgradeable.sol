@@ -3,30 +3,20 @@
 
 pragma solidity ^0.8.0;
 
-import "../../interfaces/IGovTimelockUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
-import "./TimelockUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+import "../../interfaces/IGovTimelockUpgradeable.sol";
+import "../../interfaces/ITimelockUpgradeable.sol";
 
 /**
  * @dev Extension of {Governor} that binds the execution process to an instance of {TimelockController}. This adds a
  * delay, enforced by the {TimelockController} to all successful proposal (in addition to the voting duration). The
- * {Governor} needs the proposer (and ideally the executor) roles for the {Governor} to work properly.
+ * {Governor} needs to be authorized within the Access Control Contract in order to execute transactions on the TimelockController.
  *
- * Using this model means the proposal will be operated by the {TimelockController} and not by the {Governor}. Thus,
- * the assets and permissions must be attached to the {TimelockController}. Any asset sent to the {Governor} will be
- * inaccessible.
- *
- * WARNING: Setting up the TimelockController to have additional proposers besides the governor is very risky, as it
- * grants them powers that they must be trusted or known not to use: 1) {onlyGovernance} functions like {relay} are
- * available to them through the timelock, and 2) approved governance proposals can be blocked by them, effectively
- * executing a Denial of Service attack. This risk will be mitigated in a future release.
- *
- * _Available since v4.3._
+ * Using this model means the proposal will be operated by the MVD.
  */
- //todo: should work just fine  - But it is misleading - copy and update
 abstract contract GovTimelockUpgradeable is Initializable, IGovTimelockUpgradeable, GovernorUpgradeable {
-    TimelockUpgradeable private _timelock;
+    ITimelockUpgradeable private _timelock;
     mapping(uint256 => bytes32) private _timelockIds;
 
     /**
@@ -37,11 +27,11 @@ abstract contract GovTimelockUpgradeable is Initializable, IGovTimelockUpgradeab
     /**
      * @dev Set the timelock.
      */
-    function __GovTimelock_init(TimelockUpgradeable timelockAddress) internal onlyInitializing {
+    function __GovTimelock_init(ITimelockUpgradeable timelockAddress) internal onlyInitializing {
         __GovTimelock_init_unchained(timelockAddress);
     }
 
-    function __GovTimelock_init_unchained(TimelockUpgradeable timelockAddress) internal onlyInitializing {
+    function __GovTimelock_init_unchained(ITimelockUpgradeable timelockAddress) internal onlyInitializing {
         _updateTimelock(timelockAddress);
     }
 
@@ -158,11 +148,11 @@ abstract contract GovTimelockUpgradeable is Initializable, IGovTimelockUpgradeab
      *
      * CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
      */
-    function updateTimelock(TimelockUpgradeable newTimelock) external virtual onlyGovernance {
+    function updateTimelock(ITimelockUpgradeable newTimelock) external virtual onlyGovernance {
         _updateTimelock(newTimelock);
     }
 
-    function _updateTimelock(TimelockUpgradeable newTimelock) private {
+    function _updateTimelock(ITimelockUpgradeable newTimelock) private {
         emit TimelockChange(address(_timelock), address(newTimelock));
         _timelock = newTimelock;
     }
