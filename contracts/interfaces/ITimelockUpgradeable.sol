@@ -45,11 +45,18 @@ interface ITimelockUpgradeable {
     /// Emits a {MinDelayChange} event.
     /// Requirements:
     /// - the caller must be authorized.
+    /// @param newDelay Update the delay between queue and execute
     function updateDelay(uint256 newDelay) external;
 
     /// @dev Schedule an operation containing a batch of transactions.
     /// Emits one {CallScheduled} event per transaction in the batch.
     /// - the caller must be authorized.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
+    /// @param delay current delay set in contract
     function scheduleBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -61,11 +68,17 @@ interface ITimelockUpgradeable {
 
     /// @dev Cancel an operation.
     /// - the caller must be authorized.
+    /// @param id keccak256 hash of proposal params
     function cancel(bytes32 id) external;
 
     /// @dev Execute an (ready) operation containing a batch of transactions.
     /// Emits one {CallExecuted} event per transaction in the batch.
     /// - the caller must be authorized
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
     function executeBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -76,22 +89,27 @@ interface ITimelockUpgradeable {
 
     /// @dev Returns whether an id correspond to a registered operation. This
     /// includes both Pending, Ready and Done operations.
+    /// @param id keccak256 hash of proposal params
     function isOperation(bytes32 id) external view returns (bool pending);
 
     /// @dev Returns whether an operation is pending or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationPending(bytes32 id)
         external
         view
         returns (bool pending);
 
     /// @dev Returns whether an operation is ready or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationReady(bytes32 id) external view returns (bool ready);
 
     /// @dev Returns whether an operation is done or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationDone(bytes32 id) external view returns (bool done);
 
     /// @dev Returns the timestamp at with an operation becomes ready (0 for
     /// unset operations, 1 for done operations).
+    /// @param id keccak256 hash of proposal params
     function getTimestamp(bytes32 id) external view returns (uint256 timestamp);
 
     /// @dev Returns the minimum delay for an operation to become valid.
@@ -100,6 +118,11 @@ interface ITimelockUpgradeable {
 
     /// @dev Returns the identifier of an operation containing a batch of
     /// transactions.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
     function hashOperationBatch(
         address[] calldata targets,
         uint256[] calldata values,

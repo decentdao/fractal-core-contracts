@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.1 (governance/extensions/IGovernorTimelock.sol)
+//SPDX-License-Identifier: Unlicense
 
 pragma solidity ^0.8.0;
 
@@ -19,6 +18,7 @@ abstract contract IGovTimelockUpgradeable is
     function timelock() public view virtual returns (address);
 
     /// @dev Public accessor to check the eta of a queued proposal
+    /// @param proposalId keccak256 hash of proposal params
     function proposalEta(uint256 proposalId)
         public
         view
@@ -26,6 +26,10 @@ abstract contract IGovTimelockUpgradeable is
         returns (uint256);
 
     /// @dev Function to queue a proposal to the timelock.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function queue(
         address[] memory targets,
         uint256[] memory values,

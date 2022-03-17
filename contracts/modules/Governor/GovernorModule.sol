@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: Unlicense
 // OpenZeppelin Contracts v4.4.1 (governance/TimelockController.sol)
 
 pragma solidity ^0.8.0;
@@ -41,6 +41,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     /// Emits a {MinDelayChange} event.
     /// Requirements:
     /// - the caller must be authorized.
+    /// @param newDelay Update the delay between queue and execute
     function updateDelay(uint256 newDelay) external virtual authorized {
         require(
             msg.sender == address(this),
@@ -53,6 +54,12 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     /// @dev Schedule an operation containing a batch of transactions.
     /// Emits one {CallScheduled} event per transaction in the batch.
     /// - the caller must be authorized.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
+    /// @param delay current delay set in contract
     function scheduleBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -93,6 +100,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
 
     /// @dev Cancel an operation.
     /// - the caller must be authorized.
+    /// @param id keccak256 hash of proposal params
     function cancel(bytes32 id) external virtual authorized {
         require(
             isOperationPending(id),
@@ -106,6 +114,11 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     /// @dev Execute an (ready) operation containing a batch of transactions.
     /// Emits one {CallExecuted} event per transaction in the batch.
     /// - the caller must be authorized
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
     function executeBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -136,6 +149,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
 
     /// @dev Returns whether an id correspond to a registered operation. This
     /// includes both Pending, Ready and Done operations.
+    /// @param id keccak256 hash of proposal params
     function isOperation(bytes32 id)
         public
         view
@@ -146,6 +160,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Returns whether an operation is pending or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationPending(bytes32 id)
         public
         view
@@ -156,6 +171,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Returns whether an operation is ready or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationReady(bytes32 id)
         public
         view
@@ -167,6 +183,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Returns whether an operation is done or not.
+    /// @param id keccak256 hash of proposal params
     function isOperationDone(bytes32 id)
         public
         view
@@ -178,6 +195,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
 
     /// @dev Returns the timestamp at with an operation becomes ready (0 for
     /// unset operations, 1 for done operations).
+    /// @param id keccak256 hash of proposal params
     function getTimestamp(bytes32 id)
         public
         view
@@ -195,6 +213,11 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
 
     /// @dev Returns the identifier of an operation containing a batch of
     /// transactions.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param datas Function Sigs w/ Params 
+    /// @param predecessor GovTimelock passes this as 0
+    /// @param salt Description Hash
     function hashOperationBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -206,6 +229,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Schedule an operation that is to becomes valid after a given delay.
+    /// @param id keccak256 hash of proposal params
+    /// @param delay current delay set in contract
     function _schedule(bytes32 id, uint256 delay) private {
         require(
             !isOperation(id),
@@ -219,6 +244,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Checks before execution of an operation's calls.
+    /// @param id keccak256 hash of proposal params
+    /// @param predecessor GovTimelock passes this as 0
     function _beforeCall(bytes32 id, bytes32 predecessor) private view {
         require(
             isOperationReady(id),
@@ -231,6 +258,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     }
 
     /// @dev Checks after execution of an operation's calls.
+    /// @param id keccak256 hash of proposal params
     function _afterCall(bytes32 id) private {
         require(
             isOperationReady(id),
@@ -241,6 +269,11 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
 
     /// @dev Execute an operation's call.
     /// Emits a {CallExecuted} event.
+    /// @param id keccak256 hash of proposal params
+    /// @param index current index of call
+    /// @param target Contract address the DAO will call
+    /// @param value Ether value to be sent to the target address
+    /// @param data Function Sig w/ Params 
     function _call(
         bytes32 id,
         uint256 index,

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+//SPDX-License-Identifier: Unlicense
 // OpenZeppelin Contracts (last updated v4.5.0) (governance/extensions/GovernorTimelockControl.sol)
 
 pragma solidity ^0.8.0;
@@ -24,6 +24,7 @@ abstract contract GovTimelockUpgradeable is
     event TimelockChange(address oldTimelock, address newTimelock);
 
     /// @dev Set the timelock.
+    /// @param timelockAddress Address of the Timelock contract.
     function __GovTimelock_init(ITimelockUpgradeable timelockAddress)
         internal
         onlyInitializing
@@ -40,6 +41,8 @@ abstract contract GovTimelockUpgradeable is
 
 
     /// @dev See {IERC165-supportsInterface}.
+    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
+    /// @return bool Indicates whether the interface is supported
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -53,6 +56,7 @@ abstract contract GovTimelockUpgradeable is
     }
 
     /// @dev Overriden version of the {Governor-state} function with added support for the `Queued` status.
+    /// @param proposalId keccak256 hash of proposal params
     function state(uint256 proposalId)
         public
         view
@@ -85,6 +89,7 @@ abstract contract GovTimelockUpgradeable is
     }
 
     /// @dev Public accessor to check the eta of a queued proposal
+    /// @param proposalId keccak256 hash of proposal params
     function proposalEta(uint256 proposalId)
         public
         view
@@ -97,6 +102,10 @@ abstract contract GovTimelockUpgradeable is
     }
 
     /// @dev Function to queue a proposal to the timelock.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function queue(
         address[] memory targets,
         uint256[] memory values,
@@ -138,6 +147,10 @@ abstract contract GovTimelockUpgradeable is
     }
 
     /// @dev Overriden execute function that run the already queued proposal through the timelock.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function _execute(
         uint256, /* proposalId */
         address[] memory targets,
@@ -156,6 +169,10 @@ abstract contract GovTimelockUpgradeable is
 
     /// @dev Overriden version of the {Governor-_cancel} function to cancel the timelocked proposal if it as already
     /// been queued.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
@@ -185,6 +202,7 @@ abstract contract GovTimelockUpgradeable is
     /// @dev Public endpoint to update the underlying timelock instance. Restricted to the timelock itself, so updates
     /// must be proposed, scheduled, and executed through governance proposals.
     /// CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
+    /// @param newTimelock Address of new Timelock Address
     function updateTimelock(ITimelockUpgradeable newTimelock)
         external
         virtual
