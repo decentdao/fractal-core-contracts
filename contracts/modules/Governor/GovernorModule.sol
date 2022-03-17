@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
@@ -14,7 +13,6 @@ import "../../ModuleBase.sol";
 /// This acts as an extension of the MVD and permissions are controlled by access control.
 /// @dev Gov Module is extended by the timelock contract which creates a lockup period before execution.
 contract GovernorModule is
-    GovernorUpgradeable,
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
     GovernorVotesUpgradeable,
