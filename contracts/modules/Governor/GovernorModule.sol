@@ -3,11 +3,10 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
-import "./GovTimelockUpgradeable.sol";
 import "../../ModuleBase.sol";
+import "../../interfaces/IGovernorModule.sol";
 
 /// @dev Governor Module used to implement 1 token 1 vote.
 /// This acts as an extension of the MVD and permissions are controlled by access control.
@@ -59,6 +58,9 @@ contract GovernorModule is
 
     // The following functions are overrides required by Solidity.
 
+    /// @notice module:user-config
+    /// @dev Delay, in number of block, between the proposal is created and the vote starts. This can be increassed to
+    /// leave time for users to buy voting power, of delegate it, before the voting of a proposal starts.
     function votingDelay()
         public
         view
@@ -68,6 +70,10 @@ contract GovernorModule is
         return super.votingDelay();
     }
 
+    /// @notice module:user-config
+    /// @dev Delay, in number of blocks, between the vote start and vote ends.
+    /// NOTE: The {votingDelay} can delay the start of the vote. This must be considered when setting the voting
+    /// duration compared to the voting delay.
     function votingPeriod()
         public
         view
@@ -77,6 +83,11 @@ contract GovernorModule is
         return super.votingPeriod();
     }
 
+    /// @notice module:user-config
+    /// @dev Minimum number of cast voted required for a proposal to be successful.
+    /// Note: The `blockNumber` parameter corresponds to the snaphot used for counting vote. This allows to scale the
+    /// quroum depending on values such as the totalSupply of a token at this block (see {ERC20Votes}).
+    /// @param blockNumber Checkpoint at this blockNumber
     function quorum(uint256 blockNumber)
         public
         view
@@ -86,6 +97,12 @@ contract GovernorModule is
         return super.quorum(blockNumber);
     }
 
+    /// @notice module:reputation
+    /// @dev Voting power of an `account` at a specific `blockNumber`.
+    /// Note: this can be implemented in a number of ways, for example by reading the delegated balance from one (or
+    /// multiple), {ERC20Votes} tokens.
+    /// @param account Voting weight of this Address
+    /// @param blockNumber Checkpoint at this blockNumber
     function getVotes(address account, uint256 blockNumber)
         public
         view
@@ -95,6 +112,8 @@ contract GovernorModule is
         return super.getVotes(account, blockNumber);
     }
 
+    /// @dev Overriden version of the {Governor-state} function with added support for the `Queued` status.
+    /// @param proposalId keccak256 hash of proposal params
     function state(uint256 proposalId)
         public
         view
@@ -104,6 +123,10 @@ contract GovernorModule is
         return super.state(proposalId);
     }
 
+    /// @notice module:core
+    /// @dev Block number at which votes close. Votes close at the end of this block, so it is possible to cast a vote
+    /// during this block.
+    /// @param proposalId keccak256 hash of proposal params
     function proposalDeadline(uint256 proposalId)
         public
         view
@@ -118,6 +141,10 @@ contract GovernorModule is
         return super.proposalDeadline(proposalId);
     }
 
+    /// @dev Function to cast vote for a proposal
+    /// @param proposalId keccak256 hash of proposal params
+    /// @param account Voting weight of this Address
+    /// @param support For, Against, Abstain
     function _castVote(
         uint256 proposalId,
         address account,
@@ -132,6 +159,13 @@ contract GovernorModule is
         return super._castVote(proposalId, account, support, reason);
     }
 
+    /// @dev Create a new proposal. Vote start {IGovernor-votingDelay} blocks after the proposal is created and ends
+    /// {IGovernor-votingPeriod} blocks after the voting starts.
+    /// Emits a {ProposalCreated} event.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params
+    /// @param description Description of proposal
     function propose(
         address[] memory targets,
         uint256[] memory values,
@@ -145,6 +179,7 @@ contract GovernorModule is
         return super.propose(targets, values, calldatas, description);
     }
 
+    /// @dev Total vote weight required to create a proposal
     function proposalThreshold()
         public
         view
@@ -154,6 +189,12 @@ contract GovernorModule is
         return super.proposalThreshold();
     }
 
+    /// @dev Overriden execute function that run the already queued proposal through the timelock.
+    /// @param proposalId keccak256 hash of proposal params
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function _execute(
         uint256 proposalId,
         address[] memory targets,
@@ -164,6 +205,12 @@ contract GovernorModule is
         super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
+    /// @dev Overriden version of the {Governor-_cancel} function to cancel the timelocked proposal if it as already
+    /// been queued.
+    /// @param targets Contract addresses the DAO will call
+    /// @param values Ether values to be sent to the target address
+    /// @param calldatas Function Sigs w/ Params 
+    /// @param descriptionHash Description of proposal
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
@@ -177,6 +224,7 @@ contract GovernorModule is
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
+    /// @dev Address through which the governor executes action. In this case, the timelock.
     function _executor()
         internal
         view
@@ -186,6 +234,9 @@ contract GovernorModule is
         return super._executor();
     }
 
+    /// @dev See {IERC165-supportsInterface}.
+    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
+    /// @return bool Indicates whether the interface is supported
     function supportsInterface(bytes4 interfaceId)
         public
         view
