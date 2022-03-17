@@ -8,13 +8,10 @@ import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
 import "../../interfaces/IGovTimelockUpgradeable.sol";
 import "../../interfaces/ITimelockUpgradeable.sol";
 
-/**
- * @dev Extension of {Governor} that binds the execution process to an instance of {TimelockController}. This adds a
- * delay, enforced by the {TimelockController} to all successful proposal (in addition to the voting duration). The
- * {Governor} needs to be authorized within the Access Control Contract in order to execute transactions on the TimelockController.
- *
- * Using this model means the proposal will be operated by the MVD.
- */
+/// @dev Extension of {Governor} that binds the execution process to an instance of {TimelockController}. This adds a
+/// delay, enforced by the {TimelockController} to all successful proposal (in addition to the voting duration). The
+/// {Governor} needs to be authorized within the Access Control Contract in order to execute transactions on the TimelockController.
+/// Using this model means the proposal will be operated by the MVD.
 abstract contract GovTimelockUpgradeable is
     Initializable,
     IGovTimelockUpgradeable,
@@ -23,14 +20,10 @@ abstract contract GovTimelockUpgradeable is
     ITimelockUpgradeable private _timelock;
     mapping(uint256 => bytes32) private _timelockIds;
 
-    /**
-     * @dev Emitted when the timelock controller used for proposal execution is modified.
-     */
+    /// @dev Emitted when the timelock controller used for proposal execution is modified.
     event TimelockChange(address oldTimelock, address newTimelock);
 
-    /**
-     * @dev Set the timelock.
-     */
+    /// @dev Set the timelock.
     function __GovTimelock_init(ITimelockUpgradeable timelockAddress)
         internal
         onlyInitializing
@@ -45,9 +38,8 @@ abstract contract GovTimelockUpgradeable is
         _updateTimelock(timelockAddress);
     }
 
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
+
+    /// @dev See {IERC165-supportsInterface}.
     function supportsInterface(bytes4 interfaceId)
         public
         view
@@ -60,9 +52,7 @@ abstract contract GovTimelockUpgradeable is
             super.supportsInterface(interfaceId);
     }
 
-    /**
-     * @dev Overriden version of the {Governor-state} function with added support for the `Queued` status.
-     */
+    /// @dev Overriden version of the {Governor-state} function with added support for the `Queued` status.
     function state(uint256 proposalId)
         public
         view
@@ -89,16 +79,12 @@ abstract contract GovTimelockUpgradeable is
         }
     }
 
-    /**
-     * @dev Public accessor to check the address of the timelock
-     */
+    /// @dev Public accessor to check the address of the timelock
     function timelock() public view virtual override returns (address) {
         return address(_timelock);
     }
 
-    /**
-     * @dev Public accessor to check the eta of a queued proposal
-     */
+    /// @dev Public accessor to check the eta of a queued proposal
     function proposalEta(uint256 proposalId)
         public
         view
@@ -110,9 +96,7 @@ abstract contract GovTimelockUpgradeable is
         return eta == 1 ? 0 : eta; // _DONE_TIMESTAMP (1) should be replaced with a 0 value
     }
 
-    /**
-     * @dev Function to queue a proposal to the timelock.
-     */
+    /// @dev Function to queue a proposal to the timelock.
     function queue(
         address[] memory targets,
         uint256[] memory values,
@@ -153,9 +137,7 @@ abstract contract GovTimelockUpgradeable is
         return proposalId;
     }
 
-    /**
-     * @dev Overriden execute function that run the already queued proposal through the timelock.
-     */
+    /// @dev Overriden execute function that run the already queued proposal through the timelock.
     function _execute(
         uint256, /* proposalId */
         address[] memory targets,
@@ -172,10 +154,8 @@ abstract contract GovTimelockUpgradeable is
         );
     }
 
-    /**
-     * @dev Overriden version of the {Governor-_cancel} function to cancel the timelocked proposal if it as already
-     * been queued.
-     */
+    /// @dev Overriden version of the {Governor-_cancel} function to cancel the timelocked proposal if it as already
+    /// been queued.
     function _cancel(
         address[] memory targets,
         uint256[] memory values,
@@ -197,19 +177,14 @@ abstract contract GovTimelockUpgradeable is
         return proposalId;
     }
 
-    /**
-     * @dev Address through which the governor executes action. In this case, the timelock.
-     */
+    /// @dev Address through which the governor executes action. In this case, the timelock.
     function _executor() internal view virtual override returns (address) {
         return address(_timelock);
     }
 
-    /**
-     * @dev Public endpoint to update the underlying timelock instance. Restricted to the timelock itself, so updates
-     * must be proposed, scheduled, and executed through governance proposals.
-     *
-     * CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
-     */
+    /// @dev Public endpoint to update the underlying timelock instance. Restricted to the timelock itself, so updates
+    /// must be proposed, scheduled, and executed through governance proposals.
+    /// CAUTION: It is not recommended to change the timelock while there are other queued governance proposals.
     function updateTimelock(ITimelockUpgradeable newTimelock)
         external
         virtual
@@ -223,10 +198,8 @@ abstract contract GovTimelockUpgradeable is
         _timelock = newTimelock;
     }
 
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
+    /// @dev This empty reserved space is put in place to allow future versions to add new
+    /// variables without shifting down storage in the inheritance chain.
+    /// See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
     uint256[48] private __gap;
 }

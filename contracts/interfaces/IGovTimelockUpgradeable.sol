@@ -6,29 +6,26 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/governance/IGovernorUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-/**
- * @dev Extension of the {IGovernor} for timelock supporting modules.
- *
- * _Available since v4.3._
- */
+/// @dev Extension of {Governor} that binds the execution process to an instance of {TimelockController}. This adds a
+/// delay, enforced by the {TimelockController} to all successful proposal (in addition to the voting duration). The
+/// {Governor} needs to be authorized within the Access Control Contract in order to execute transactions on the TimelockController.
+/// Using this model means the proposal will be operated by the MVD.
 abstract contract IGovTimelockUpgradeable is
     Initializable,
     IGovernorUpgradeable
 {
-    function __IGovTimelock_init() internal onlyInitializing {}
-
-    function __IGovTimelock_init_unchained() internal onlyInitializing {}
-
     event ProposalQueued(uint256 proposalId, uint256 eta);
-
+    /// @dev Public accessor to check the address of the timelock
     function timelock() public view virtual returns (address);
 
+    /// @dev Public accessor to check the eta of a queued proposal
     function proposalEta(uint256 proposalId)
         public
         view
         virtual
         returns (uint256);
 
+    /// @dev Function to queue a proposal to the timelock.
     function queue(
         address[] memory targets,
         uint256[] memory values,

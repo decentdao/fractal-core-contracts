@@ -7,15 +7,11 @@ import "../../ModuleBase.sol";
 import "../../interfaces/ITimelockUpgradeable.sol";
 import "../../interfaces/IDAO.sol";
 
-/**
- * @dev Contract module which acts as a timelocked controller. When set as the
- * executor for the DAO execute action, it enforces a timelock on all
- * DAO executions initiated by the governor contract. This gives time for users of the
- * controlled contract to exit before a potentially dangerous maintenance
- * operation is applied.
- *
- * _Available since v3.3._
- */
+/// @dev Contract module which acts as a timelocked controller. When set as the
+/// executor for the DAO execute action, it enforces a timelock on all
+/// DAO executions initiated by the governor contract. This gives time for users of the
+/// controlled contract to exit before a potentially dangerous maintenance
+/// operation is applied.
 contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     uint256 internal constant _DONE_TIMESTAMP = uint256(1);
 
@@ -23,9 +19,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
     uint256 public minDelay;
     IDAO public dao;
 
-    /**
-     * @dev Contract might receive/hold ETH as part of the maintenance process.
-     */
+    /// @dev Contract might receive/hold ETH as part of the maintenance process.
     receive() external payable {}
 
     /// @notice Function for initializing the contract that can only be called once
@@ -43,15 +37,10 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         emit MinDelayChange(0, minDelay);
     }
 
-    /**
-     * @dev Changes the minimum timelock duration for future operations.
-     *
-     * Emits a {MinDelayChange} event.
-     *
-     * Requirements:
-     *
-     * - the caller must be authorized.
-     */
+    /// @dev Changes the minimum timelock duration for future operations.
+    /// Emits a {MinDelayChange} event.
+    /// Requirements:
+    /// - the caller must be authorized.
     function updateDelay(uint256 newDelay) external virtual authorized {
         require(
             msg.sender == address(this),
@@ -61,15 +50,9 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         minDelay = newDelay;
     }
 
-    /**
-     * @dev Schedule an operation containing a batch of transactions.
-     *
-     * Emits one {CallScheduled} event per transaction in the batch.
-     *
-     * Requirements:
-     *
-     * - the caller must be authorized.
-     */
+    /// @dev Schedule an operation containing a batch of transactions.
+    /// Emits one {CallScheduled} event per transaction in the batch.
+    /// - the caller must be authorized.
     function scheduleBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -108,13 +91,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         }
     }
 
-    /**
-     * @dev Cancel an operation.
-     *
-     * Requirements:
-     *
-     * - the caller must be authorized.
-     */
+    /// @dev Cancel an operation.
+    /// - the caller must be authorized.
     function cancel(bytes32 id) external virtual authorized {
         require(
             isOperationPending(id),
@@ -125,15 +103,9 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         emit Cancelled(id);
     }
 
-    /**
-     * @dev Execute an (ready) operation containing a batch of transactions.
-     *
-     * Emits one {CallExecuted} event per transaction in the batch.
-     *
-     * Requirements:
-     *
-     * - the caller must be authorized
-     */
+    /// @dev Execute an (ready) operation containing a batch of transactions.
+    /// Emits one {CallExecuted} event per transaction in the batch.
+    /// - the caller must be authorized
     function executeBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -162,10 +134,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         _afterCall(id);
     }
 
-    /**
-     * @dev Returns whether an id correspond to a registered operation. This
-     * includes both Pending, Ready and Done operations.
-     */
+    /// @dev Returns whether an id correspond to a registered operation. This
+    /// includes both Pending, Ready and Done operations.
     function isOperation(bytes32 id)
         public
         view
@@ -175,9 +145,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return getTimestamp(id) > 0;
     }
 
-    /**
-     * @dev Returns whether an operation is pending or not.
-     */
+    /// @dev Returns whether an operation is pending or not.
     function isOperationPending(bytes32 id)
         public
         view
@@ -187,9 +155,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return getTimestamp(id) > _DONE_TIMESTAMP;
     }
 
-    /**
-     * @dev Returns whether an operation is ready or not.
-     */
+    /// @dev Returns whether an operation is ready or not.
     function isOperationReady(bytes32 id)
         public
         view
@@ -200,9 +166,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return timestamp > _DONE_TIMESTAMP && timestamp <= block.timestamp;
     }
 
-    /**
-     * @dev Returns whether an operation is done or not.
-     */
+    /// @dev Returns whether an operation is done or not.
     function isOperationDone(bytes32 id)
         public
         view
@@ -212,10 +176,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return getTimestamp(id) == _DONE_TIMESTAMP;
     }
 
-    /**
-     * @dev Returns the timestamp at with an operation becomes ready (0 for
-     * unset operations, 1 for done operations).
-     */
+    /// @dev Returns the timestamp at with an operation becomes ready (0 for
+    /// unset operations, 1 for done operations).
     function getTimestamp(bytes32 id)
         public
         view
@@ -225,19 +187,14 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return _timestamps[id];
     }
 
-    /**
-     * @dev Returns the minimum delay for an operation to become valid.
-     *
-     * This value can be changed by executing an operation that calls `updateDelay`.
-     */
+    /// @dev Returns the minimum delay for an operation to become valid.
+    /// This value can be changed by executing an operation that calls `updateDelay`.
     function getMinDelay() public view virtual returns (uint256 duration) {
         return minDelay;
     }
 
-    /**
-     * @dev Returns the identifier of an operation containing a batch of
-     * transactions.
-     */
+    /// @dev Returns the identifier of an operation containing a batch of
+    /// transactions.
     function hashOperationBatch(
         address[] calldata targets,
         uint256[] calldata values,
@@ -248,9 +205,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         return keccak256(abi.encode(targets, values, datas, predecessor, salt));
     }
 
-    /**
-     * @dev Schedule an operation that is to becomes valid after a given delay.
-     */
+    /// @dev Schedule an operation that is to becomes valid after a given delay.
     function _schedule(bytes32 id, uint256 delay) private {
         require(
             !isOperation(id),
@@ -263,9 +218,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         _timestamps[id] = block.timestamp + delay;
     }
 
-    /**
-     * @dev Checks before execution of an operation's calls.
-     */
+    /// @dev Checks before execution of an operation's calls.
     function _beforeCall(bytes32 id, bytes32 predecessor) private view {
         require(
             isOperationReady(id),
@@ -277,9 +230,7 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         );
     }
 
-    /**
-     * @dev Checks after execution of an operation's calls.
-     */
+    /// @dev Checks after execution of an operation's calls.
     function _afterCall(bytes32 id) private {
         require(
             isOperationReady(id),
@@ -288,11 +239,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         _timestamps[id] = _DONE_TIMESTAMP;
     }
 
-    /**
-     * @dev Execute an operation's call.
-     *
-     * Emits a {CallExecuted} event.
-     */
+    /// @dev Execute an operation's call.
+    /// Emits a {CallExecuted} event.
     function _call(
         bytes32 id,
         uint256 index,
@@ -306,10 +254,8 @@ contract TimelockUpgradeable is ModuleBase, ITimelockUpgradeable {
         emit CallExecuted(id, index, target, value, data);
     }
 
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
+    /// @dev This empty reserved space is put in place to allow future versions to add new
+    /// variables without shifting down storage in the inheritance chain.
+    /// See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
     uint256[48] private __gap;
 }

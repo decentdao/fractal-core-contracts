@@ -23,18 +23,16 @@ contract GovernorModule is
     ModuleBase,
     GovernorPreventLateQuorumUpgradeable
 {
-    /**
-     * @dev Configures Gov Module implementation
-     * @dev Called once during deployment atomically
-     * @param _name Name of the DAO
-     * @param _token Voting token uses snapshot feature
-     * @param _timelock Timelock vest proposals to allow detractors to exit system
-     * @param _initialVoteExtension Allow users to vote if quorum attack is preformed
-     * @param _initialVotingDelay Allow users to research proposals before voting period
-     * @param _initialVotingPeriod Length of voting period (blocks)
-     * @param _initialProposalThreshold Total tokens required to submit a proposal
-     * @param _initialQuorumNumeratorValue Total votes needed to reach quorum
-     */
+    /// @dev Configures Gov Module implementation
+    /// @dev Called once during deployment atomically
+    /// @param _name Name of the DAO
+    /// @param _token Voting token uses snapshot feature
+    /// @param _timelock Timelock vest proposals to allow detractors to exit system
+    /// @param _initialVoteExtension Allow users to vote if quorum attack is preformed
+    /// @param _initialVotingDelay Allow users to research proposals before voting period
+    /// @param _initialVotingPeriod Length of voting period (blocks)
+    /// @param _initialProposalThreshold Total tokens required to submit a proposal
+    /// @param _initialQuorumNumeratorValue Total votes needed to reach quorum
 
     function initialize(
         string memory _name,
@@ -46,7 +44,7 @@ contract GovernorModule is
         uint256 _initialProposalThreshold,
         uint256 _initialQuorumNumeratorValue,
         address _accessControl
-    ) public initializer {
+    ) external initializer {
         __Governor_init(_name);
         __GovernorSettings_init(
             _initialVotingDelay,
