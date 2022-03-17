@@ -1,23 +1,18 @@
 # Fractal
 
-## Governance
+## Architecture
 
-The DAO factory contract supports deploying new DAO instances via three external functions:
-  1) `createDAOAndToken` - Creates both a DAO and a new ERC-20 governance token that supports voting
-  2) `createDAOWrapToken` - Creates a DAO and wraps an existing ERC-20 token with a new ERC-20 token which supports voting
-  3) `createDAOBringToken` - Creates a DAO with an existing ERC-20 token that already supports voting
+The DAO factory contract enables deploying new Fractal DAOs, which at their core consist of two contracts:
 
-Governance is handled via the MyGovernor contract which is extended by OpenZepplin governance modules.
 
-Currently the DAO contract supports:
-- ERC-20 token weighted voting
-- Fractionalized quorum - percentage of token total supply required for a successful proposal
-- Voting delay - The number of blocks between when a proposal is created and voting begins
-- Voting periods - The number of blocks between when voting starts and ends
-- Proposal threshold - The number of votes required for a voter to become a proposer
-- Timelock Controller - Adds a delay in blocks between when a successful proposal is queued and when it can be executed
+### DAO.sol
 
-Note: When using a timelock, it is the timelock that will execute proposals and thus the timelock that should hold any funds, ownership, and access control roles. Funds in the Governor contract are not currently retrievable when using a timelock! (As of version 4.3 there is a caveat when using the Compound Timelock: ETH in the timelock is not easily usable, so it is recommended to manage ERC20 funds only in this combination until a future version resolves the issue.)
+The DAO contract contains the minimum viable core functionality required for a DAO. Primarily, this consists of the execute function, which can be passed any arbitrary function call to be made from the DAO's behalf, assuming the caller has the correct permissions.
+
+
+### AccessControl.sol
+
+The Access Control contract contains functionality for handling all access permissions within the DAO contract, and any associated modules. Roles and admins of the roles can be assigned to addresses. These roles can then be given permissions to execute actions, which are defined by function signatures within the DAO contract, and any modules assocaited with the DAO.
 
 ## Local Setup & Testing
 
@@ -47,13 +42,20 @@ Run the tests
 npm run test
 ```
 
-## Deployment
+## Local Hardhat deployment
 
-Local Hardhat DAO Factory Deployment Process 
-Deploy DAO Factory:
+To deploy the base contracts, which includes the DAOFactory, DAO implementation contract, and AccessControl implementation contract, open a terminal and run:
 ```shell
-npx hardhat run scripts/deploy.ts
+npx hardhat node
+```
+This will log the addresses the DAOFactory, DAO implementation contract, and AccessControl implementation contracts have been deployed to, which will need to be used in the next step.
+
+A hardhat task has been created for deploying a DAO which accepts all the necessary arguments.
+The DAOFactory address and DAOImplementation address deployed in the previous step should be passed as parameters when using this task. 
+It is important to note that only single quotes should be used when using this task, as double quotes are removed by the Hardhat argument parser. An example DAO deployment using this task is shown below.
+
+```shell
+npx hardhat createDAO --dao-factory 0x5FbDB2315678afecb367f032d93F642f64180aa3 --dao-implementation 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 --access-control-implementation 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0 --roles ['EXECUTE_ROLE','UPGRADE_ROLE'] --roles-admins ['DAO_ROLE','DAO_ROLE'] --members [['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266','0x70997970c51812dc3a010c7d01b50e0d17dc79c8'],['0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266']] --dao-function-descs ['execute(address[],uint256[],bytes[])','upgradeTo(address)'] --dao-action-roles [['EXECUTE_ROLE'],['EXECUTE_ROLE','UPGRADE_ROLE']] --module-targets [] --module-function-descs [] --module-action-roles [] --network localhost
 ```
 
-## References
-- https://docs.openzeppelin.com/contracts/4.x/api/governance
+If the transaction succeeds, the task console logs the address of the deployed DAO and Access Control contracts.

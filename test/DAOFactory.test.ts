@@ -1,10 +1,9 @@
-import { ethers } from "hardhat";
+import { ethers, deployments } from "hardhat";
 import {
   DAO,
   AccessControl,
   AccessControl__factory,
   DAOFactory,
-  DAOFactory__factory,
   IDAOFactory__factory,
   DAO__factory,
 } from "../typechain";
@@ -31,9 +30,13 @@ describe("DAOFactory", () => {
   beforeEach(async () => {
     [deployer, executor1, executor2, executor3, upgrader1] =
       await ethers.getSigners();
-    daoFactory = await new DAOFactory__factory(deployer).deploy();
-    daoImpl = await new DAO__factory(deployer).deploy();
-    accessControlImpl = await new AccessControl__factory(deployer).deploy();
+
+    // Use DAOFactory, DAO (implementation contract), AccessControl (implementation contract)
+    // As deployed from the deploy scripts in the deploy/core folder
+    await deployments.fixture();
+    daoFactory = await ethers.getContract("DAOFactory");
+    daoImpl = await ethers.getContract("DAO");
+    accessControlImpl = await ethers.getContract("AccessControl");
 
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
       daoImplementation: daoImpl.address,
