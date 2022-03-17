@@ -99,7 +99,6 @@ describe("Gov Module", function () {
   let voterC: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
-  let executor3: SignerWithAddress;
   let upgrader: SignerWithAddress;
   let accessControl: AccessControl;
   let dao: DAO;
@@ -108,16 +107,8 @@ describe("Gov Module", function () {
   let govModule: GovernorModule;
 
   beforeEach(async function () {
-    [
-      deployer,
-      voterA,
-      voterB,
-      voterC,
-      executor1,
-      executor2,
-      executor3,
-      upgrader,
-    ] = await ethers.getSigners();
+    [deployer, voterA, voterB, voterC, executor1, executor2, upgrader] =
+      await ethers.getSigners();
 
     // Create an access Control contract
     accessControl = await new AccessControl__factory(deployer).deploy();
