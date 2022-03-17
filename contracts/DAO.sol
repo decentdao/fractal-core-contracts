@@ -8,6 +8,12 @@ import "./ModuleBase.sol";
 
 /// @notice A minimum viable DAO contract
 contract DAO is IDAO, ModuleBase {
+    /// @notice Function for initializing the contract that can only be called once
+    /// @param _accessControl The address of the access control contract
+    function initialize(address _accessControl) external initializer {
+        __initBase(_accessControl);
+    }
+
     /// @notice A function for executing function calls from the DAO
     /// @param targets An array of addresses to target for the function calls
     /// @param values An array of ether values to send with the function calls

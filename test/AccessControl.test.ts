@@ -84,8 +84,6 @@ describe("DAO Access Control Contract", function () {
       expect(await daoAccessControl.supportsInterface("0x01ffc9a7")).to.eq(
         true
       );
-
-      // Todo: Add checks for arbitrary interfaces returning false
     });
 
     it("Should setup Executor Role", async () => {

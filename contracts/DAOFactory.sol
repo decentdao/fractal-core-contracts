@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IAccessControl.sol";
-import "./interfaces/IModuleBase.sol";
+import "./interfaces/IDAO.sol";
 
 /// @notice A factory contract for deploying DAOs with an access control contract
 contract DAOFactory is IDAOFactory, ERC165 {
@@ -27,13 +27,15 @@ contract DAOFactory is IDAOFactory, ERC165 {
         string[] memory functionDescs = new string[](arrayLength);
         string[][] memory actionRoles = new string[][](arrayLength);
 
-        uint256 daoFunctionDescsLength = createDAOParams.daoFunctionDescs.length;
+        uint256 daoFunctionDescsLength = createDAOParams
+            .daoFunctionDescs
+            .length;
         for (uint256 i; i < daoFunctionDescsLength; ) {
             targets[i] = dao;
             functionDescs[i] = createDAOParams.daoFunctionDescs[i];
             actionRoles[i] = createDAOParams.daoActionRoles[i];
             unchecked {
-              i++;
+                i++;
             }
         }
 
@@ -41,10 +43,12 @@ contract DAOFactory is IDAOFactory, ERC165 {
         for (uint256 i; i < moduleTargetsLength; ) {
             uint256 currentIndex = i + createDAOParams.daoFunctionDescs.length;
             targets[currentIndex] = createDAOParams.moduleTargets[i];
-            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[i];
+            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[
+                i
+            ];
             actionRoles[currentIndex] = createDAOParams.moduleActionRoles[i];
             unchecked {
-              i++;
+                i++;
             }
         }
 
@@ -64,7 +68,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
             )
         );
 
-        IModuleBase(dao).initialize(accessControl);
+        IDAO(dao).initialize(accessControl);
 
         emit DAOCreated(dao, accessControl);
     }
