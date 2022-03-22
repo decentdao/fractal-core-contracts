@@ -30,6 +30,7 @@ contract GovernorModule is
     /// @param _initialVotingPeriod Length of voting period (blocks)
     /// @param _initialProposalThreshold Total tokens required to submit a proposal
     /// @param _initialQuorumNumeratorValue Total votes needed to reach quorum
+    /// @param _accessControl Address of Access Control
 
     function initialize(
         string memory _name,
@@ -243,6 +244,7 @@ contract GovernorModule is
         override(GovernorUpgradeable, GovTimelockUpgradeable, ModuleBase)
         returns (bool)
     {
-        return super.supportsInterface(interfaceId);
+        return interfaceId == type(IGovernorModule).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
