@@ -5,7 +5,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "../../interfaces/IGovernorFactory.sol";
 
-contract GovernorFactory is  IGovernorFactory, ERC165{
+/// @dev Governor Factory used to deploy Gov Modules
+/// @dev Deploys Timelock dependecies
+contract GovernorFactory is IGovernorFactory, ERC165 {
     /// @dev Configures Gov Module implementation
     /// @param _govImpl Address of Gov implmentation
     /// @param _name Name of the DAO
@@ -32,12 +34,14 @@ contract GovernorFactory is  IGovernorFactory, ERC165{
         uint256 _minDelay,
         address _accessControl,
         address _dao
-    ) external returns(address timelock, address governorModule) {
+    ) external returns (address timelock, address governorModule) {
         timelock = address(
             new ERC1967Proxy(
                 address(_timelockImpl),
                 abi.encodeWithSelector(
-                    ITimelockUpgradeable(payable(address(0))).initialize.selector,
+                    ITimelockUpgradeable(payable(address(0)))
+                        .initialize
+                        .selector,
                     _accessControl,
                     _dao,
                     _minDelay

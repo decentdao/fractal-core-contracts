@@ -4,9 +4,8 @@ pragma solidity ^0.8.0;
 import "./IGovernorModule.sol";
 import "./ITimelockUpgradeable.sol";
 
-/// @dev Governor Module used to implement 1 token 1 vote.
-/// This acts as an extension of the MVD and permissions are controlled by access control.
-/// @dev Gov Module is extended by the timelock contract which creates a lockup period before execution.
+/// @dev Governor Factory used to deploy Gov Modules
+/// @dev Deploys Timelock dependecies
 interface IGovernorFactory {
     event GovernorCreated(address timelock, address governorModule);
 
@@ -36,5 +35,5 @@ interface IGovernorFactory {
         uint256 _minDelay,
         address _accessControl,
         address _dao
-    ) external returns(address timelock, address governorModule);
+    ) external returns (address timelock, address governorModule);
 }
