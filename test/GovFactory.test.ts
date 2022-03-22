@@ -121,6 +121,8 @@ describe.only("Gov Module", function () {
 
   let govModule: GovernorModule;
   let timelock: TimelockUpgradeable;
+  let accessControl: AccessControl;
+  let dao: DAO;
 
   beforeEach(async function () {
     [deployer, voterA, voterB, voterC, executor1, executor2, upgrader] =
@@ -173,6 +175,13 @@ describe.only("Gov Module", function () {
       ethers.utils.parseUnits("1600", 18),
       daoAddress
     );
+    // eslint-disable-next-line camelcase
+    accessControl = AccessControl__factory.connect(
+      accessControlAddress,
+      deployer
+    );
+    // eslint-disable-next-line camelcase
+    dao = DAO__factory.connect(daoAddress, deployer);
   });
 
   describe("Init Gov + timelock", function () {
@@ -263,256 +272,421 @@ describe.only("Gov Module", function () {
     });
   });
 
-  //   describe("Execution", function () {
-  //     beforeEach(async function () {
-  //       await dao.initialize(accessControl.address);
-  //       await govModule.initialize(
-  //         "TestGov",
-  //         governanceToken.address,
-  //         timelock.address,
-  //         BigNumber.from("0"),
-  //         BigNumber.from("1"),
-  //         BigNumber.from("5"),
-  //         BigNumber.from("0"),
-  //         BigNumber.from("4"),
-  //         accessControl.address
-  //       );
+  describe("Execution", function () {
+    beforeEach(async function () {
+      // Gov Module
+      govModuleImpl = await new GovernorModule__factory(deployer).deploy();
+      // Create a timelock contract
+      timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
+      govFactory = await new GovernorFactory__factory(deployer).deploy();
 
-  //       await timelock.initialize(
-  //         accessControl.address,
-  //         dao.address,
-  //         BigNumber.from("0")
-  //       );
-  //       await accessControl.initialize(
-  //         dao.address,
-  //         ["EXECUTE_ROLE", "UPGRADE_ROLE", "GOV_ROLE"],
-  //         ["DAO_ROLE", "DAO_ROLE", "DAO_ROLE"],
-  //         [
-  //           [executor1.address, executor2.address, timelock.address],
-  //           [dao.address],
-  //           [govModule.address],
-  //         ],
-  //         [
-  //           dao.address,
-  //           govModule.address,
-  //           timelock.address,
-  //           timelock.address,
-  //           timelock.address,
-  //           timelock.address,
-  //         ],
-  //         [
-  //           "execute(address[],uint256[],bytes[])",
-  //           "upgradeTo(address)",
-  //           "updateDelay(uint256)",
-  //           "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
-  //           "cancel(bytes32)",
-  //           "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
-  //         ],
-  //         [
-  //           ["EXECUTE_ROLE"],
-  //           ["UPGRADE_ROLE"],
-  //           ["GOV_ROLE"],
-  //           ["GOV_ROLE"],
-  //           ["GOV_ROLE"],
-  //           ["GOV_ROLE"],
-  //         ]
-  //       );
-  //       await delegateTokens(governanceToken, [voterA, voterB]);
-  //     });
+      [timelockAddress, governorModuleAddress] =
+        await govFactory.callStatic.createGovernor(
+          govModuleImpl.address,
+          "TestGov",
+          governanceToken.address,
+          timelockImpl.address,
+          BigNumber.from("0"),
+          BigNumber.from("1"),
+          BigNumber.from("5"),
+          BigNumber.from("0"),
+          BigNumber.from("4"),
+          BigNumber.from("1"),
+          accessControlAddress,
+          daoAddress
+        );
+      createGovTx = await govFactory.createGovernor(
+        govModuleImpl.address,
+        "TestGov",
+        governanceToken.address,
+        timelockImpl.address,
+        BigNumber.from("0"),
+        BigNumber.from("1"),
+        BigNumber.from("5"),
+        BigNumber.from("0"),
+        BigNumber.from("4"),
+        BigNumber.from("1"),
+        accessControlAddress,
+        daoAddress
+      );
+      // eslint-disable-next-line camelcase
+      govModule = GovernorModule__factory.connect(
+        governorModuleAddress,
+        deployer
+      );
 
-  //     it("Should execute a passing proposal", async () => {
-  //       const transferCallData = governanceToken.interface.encodeFunctionData(
-  //         "transfer",
-  //         [voterB.address, ethers.utils.parseUnits("100", 18)]
-  //       );
+      // eslint-disable-next-line camelcase
+      timelock = TimelockUpgradeable__factory.connect(
+        timelockAddress,
+        deployer
+      );
 
-  //       const proposalCreatedEvent = await govModPropose(
-  //         [governanceToken.address],
-  //         [BigNumber.from("0")],
-  //         govModule,
-  //         voterA,
-  //         [transferCallData],
-  //         "Proposal #1: transfer 100 tokens to Voter B"
-  //       );
+      const transferCallDataRoles = accessControl.interface.encodeFunctionData(
+        "grantRolesAndAdmins",
+        [
+          ["GOV_ROLE", "EXECUTE_ROLE"],
+          ["DAO_ROLE", "DAO_ROLE"],
+          [[govModule.address], [timelock.address]],
+        ]
+      );
+      await dao
+        .connect(executor1)
+        .execute([accessControl.address], [0], [transferCallDataRoles]);
 
-  //       await network.provider.send("evm_mine");
+      const transferCallDataActions =
+        accessControl.interface.encodeFunctionData("addActionsRoles", [
+          [
+            timelock.address,
+            timelock.address,
+            timelock.address,
+            timelock.address,
+          ],
+          [
+            "updateDelay(uint256)",
+            "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
+            "cancel(bytes32)",
+            "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
+          ],
+          [["GOV_ROLE"], ["GOV_ROLE"], ["GOV_ROLE"], ["GOV_ROLE"]],
+        ]);
+      await dao
+        .connect(executor1)
+        .execute([accessControl.address], [0], [transferCallDataActions]);
+      await delegateTokens(governanceToken, [voterA, voterB]);
+    });
 
-  //       // Voters A, B, C votes "For"
-  //       await govModule
-  //         .connect(voterA)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterB)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterC)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+    it("Should setup Roles", async () => {
+      expect(
+        await accessControl.hasRole("UPGRADE_ROLE", upgrader.address)
+      ).to.eq(true);
+      expect(await accessControl.hasRole("GOV_ROLE", govModule.address)).to.eq(
+        true
+      );
+    });
 
-  //       await network.provider.send("evm_mine");
-  //       await network.provider.send("evm_mine");
+    it("Should setup Actions", async () => {
+      expect(
+        await accessControl.getActionRoles(
+          timelock.address,
+          "updateDelay(uint256)"
+        )
+      ).to.deep.eq(["GOV_ROLE"]);
+      expect(
+        await accessControl.getActionRoles(
+          timelock.address,
+          "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)"
+        )
+      ).to.deep.eq(["GOV_ROLE"]);
+      expect(
+        await accessControl.getActionRoles(timelock.address, "cancel(bytes32)")
+      ).to.deep.eq(["GOV_ROLE"]);
+      expect(
+        await accessControl.getActionRoles(
+          timelock.address,
+          "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)"
+        )
+      ).to.deep.eq(["GOV_ROLE"]);
+    });
 
-  //       await govModule
-  //         .connect(voterA)
-  //         .queue(
-  //           proposalCreatedEvent.targets,
-  //           proposalCreatedEvent._values,
-  //           proposalCreatedEvent.calldatas,
-  //           ethers.utils.id(proposalCreatedEvent.description)
-  //         );
+    it("Should execute a passing proposal", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
 
-  //       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
-  //         ethers.utils.parseUnits("600.0", 18)
-  //       );
+      const proposalCreatedEvent = await govModPropose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
 
-  //       expect(await governanceToken.balanceOf(voterB.address)).to.eq(
-  //         ethers.utils.parseUnits("100.0", 18)
-  //       );
+      await network.provider.send("evm_mine");
 
-  //       expect(await governanceToken.balanceOf(voterC.address)).to.eq(
-  //         ethers.utils.parseUnits("100.0", 18)
-  //       );
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
 
-  //       expect(await governanceToken.balanceOf(dao.address)).to.eq(
-  //         ethers.utils.parseUnits("800.0", 18)
-  //       );
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
 
-  //       await govModule
-  //         .connect(voterA)
-  //         .execute(
-  //           proposalCreatedEvent.targets,
-  //           proposalCreatedEvent._values,
-  //           proposalCreatedEvent.calldatas,
-  //           ethers.utils.id(proposalCreatedEvent.description)
-  //         );
+      await govModule
+        .connect(voterA)
+        .queue(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
 
-  //       expect(await governanceToken.balanceOf(voterA.address)).to.eq(
-  //         ethers.utils.parseUnits("600.0", 18)
-  //       );
+      expect(await governanceToken.balanceOf(voterA.address)).to.eq(
+        ethers.utils.parseUnits("600.0", 18)
+      );
 
-  //       expect(await governanceToken.balanceOf(voterB.address)).to.eq(
-  //         ethers.utils.parseUnits("200.0", 18)
-  //       );
+      expect(await governanceToken.balanceOf(voterB.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
 
-  //       expect(await governanceToken.balanceOf(voterC.address)).to.eq(
-  //         ethers.utils.parseUnits("100.0", 18)
-  //       );
+      expect(await governanceToken.balanceOf(voterC.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
 
-  //       expect(await governanceToken.balanceOf(dao.address)).to.eq(
-  //         ethers.utils.parseUnits("700.0", 18)
-  //       );
-  //     });
+      expect(await governanceToken.balanceOf(daoAddress)).to.eq(
+        ethers.utils.parseUnits("800.0", 18)
+      );
 
-  //     it("Revert if execution is too early", async () => {
-  //       const transferCallData = governanceToken.interface.encodeFunctionData(
-  //         "transfer",
-  //         [voterB.address, ethers.utils.parseUnits("100", 18)]
-  //       );
+      await govModule
+        .connect(voterA)
+        .execute(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
 
-  //       const proposalCreatedEvent = await govModPropose(
-  //         [governanceToken.address],
-  //         [BigNumber.from("0")],
-  //         govModule,
-  //         voterA,
-  //         [transferCallData],
-  //         "Proposal #1: transfer 100 tokens to Voter B"
-  //       );
+      expect(await governanceToken.balanceOf(voterA.address)).to.eq(
+        ethers.utils.parseUnits("600.0", 18)
+      );
 
-  //       await network.provider.send("evm_mine");
+      expect(await governanceToken.balanceOf(voterB.address)).to.eq(
+        ethers.utils.parseUnits("200.0", 18)
+      );
 
-  //       // Voters A, B, C votes "For"
-  //       await govModule
-  //         .connect(voterA)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterB)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterC)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      expect(await governanceToken.balanceOf(voterC.address)).to.eq(
+        ethers.utils.parseUnits("100.0", 18)
+      );
 
-  //       await network.provider.send("evm_mine");
-  //       await network.provider.send("evm_mine");
+      expect(await governanceToken.balanceOf(daoAddress)).to.eq(
+        ethers.utils.parseUnits("700.0", 18)
+      );
+    });
 
-  //       govModule
-  //         .connect(voterA)
-  //         .queue(
-  //           proposalCreatedEvent.targets,
-  //           proposalCreatedEvent._values,
-  //           proposalCreatedEvent.calldatas,
-  //           ethers.utils.id(proposalCreatedEvent.description)
-  //         );
-  //       await expect(
-  //         govModule
-  //           .connect(voterA)
-  //           .execute(
-  //             proposalCreatedEvent.targets,
-  //             proposalCreatedEvent._values,
-  //             proposalCreatedEvent.calldatas,
-  //             ethers.utils.id(proposalCreatedEvent.description)
-  //           )
-  //       ).to.be.revertedWith("TimelockController: operation is not ready");
-  //     });
+    it("Should revert if non Gov tries to execute", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
 
-  //     it("Does not allow a non proposalid to be executed", async () => {
-  //       const transferCallData = governanceToken.interface.encodeFunctionData(
-  //         "transfer",
-  //         [voterB.address, ethers.utils.parseUnits("100", 18)]
-  //       );
+      const proposalCreatedEvent = await govModPropose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
 
-  //       await network.provider.send("evm_mine");
-  //       await expect(
-  //         govModule
-  //           .connect(voterA)
-  //           .execute(
-  //             [governanceToken.address],
-  //             [BigNumber.from("0")],
-  //             [transferCallData],
-  //             ethers.utils.id("fakeId")
-  //           )
-  //       ).to.be.revertedWith("Governor: unknown proposal id");
-  //     });
+      await network.provider.send("evm_mine");
 
-  //     it("Does not allow a proposal to be executed before it is queued", async () => {
-  //       const transferCallData = governanceToken.interface.encodeFunctionData(
-  //         "transfer",
-  //         [voterB.address, ethers.utils.parseUnits("100", 18)]
-  //       );
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
 
-  //       const proposalCreatedEvent = await govModPropose(
-  //         [governanceToken.address],
-  //         [BigNumber.from("0")],
-  //         govModule,
-  //         voterA,
-  //         [transferCallData],
-  //         "Proposal #1: transfer 100 tokens to Voter B"
-  //       );
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
 
-  //       await network.provider.send("evm_mine");
+      await govModule
+        .connect(voterA)
+        .queue(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
 
-  //       // Voters A, B, C votes "For"
-  //       await govModule
-  //         .connect(voterA)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterB)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
-  //       await govModule
-  //         .connect(voterC)
-  //         .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await expect(
+        timelock
+          .connect(executor1)
+          .executeBatch(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id("0"),
+            ethers.utils.id("0")
+          )
+      ).to.revertedWith("NotAuthorized()");
+      await govModule
+        .connect(voterA)
+        .execute(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
+    });
 
-  //       await network.provider.send("evm_mine");
-  //       await network.provider.send("evm_mine");
+    it("Revert if execution is too early", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
 
-  //       await expect(
-  //         govModule
-  //           .connect(voterA)
-  //           .execute(
-  //             proposalCreatedEvent.targets,
-  //             proposalCreatedEvent._values,
-  //             proposalCreatedEvent.calldatas,
-  //             ethers.utils.id(proposalCreatedEvent.description)
-  //           )
-  //       ).to.be.revertedWith("TimelockController: operation is not ready");
-  //     });
-  //   });
+      const proposalCreatedEvent = await govModPropose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      govModule
+        .connect(voterA)
+        .queue(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
+      await expect(
+        govModule
+          .connect(voterA)
+          .execute(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id(proposalCreatedEvent.description)
+          )
+      ).to.be.revertedWith("TimelockController: operation is not ready");
+    });
+
+    it("Revert non Gov schedules transaction", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalCreatedEvent = await govModPropose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(
+        timelock
+          .connect(executor1)
+          .scheduleBatch(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id("0"),
+            ethers.utils.id(proposalCreatedEvent.description),
+            0
+          )
+      ).to.revertedWith("NotAuthorized()");
+    });
+
+    it("Does not allow a non proposalid to be executed", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      await network.provider.send("evm_mine");
+      await expect(
+        govModule
+          .connect(voterA)
+          .execute(
+            [governanceToken.address],
+            [BigNumber.from("0")],
+            [transferCallData],
+            ethers.utils.id("fakeId")
+          )
+      ).to.be.revertedWith("Governor: unknown proposal id");
+    });
+
+    it("Does not allow a proposal to be executed before it is queued", async () => {
+      const transferCallData = governanceToken.interface.encodeFunctionData(
+        "transfer",
+        [voterB.address, ethers.utils.parseUnits("100", 18)]
+      );
+
+      const proposalCreatedEvent = await govModPropose(
+        [governanceToken.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "Proposal #1: transfer 100 tokens to Voter B"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await expect(
+        govModule
+          .connect(voterA)
+          .execute(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id(proposalCreatedEvent.description)
+          )
+      ).to.be.revertedWith("TimelockController: operation is not ready");
+    });
+  });
 });

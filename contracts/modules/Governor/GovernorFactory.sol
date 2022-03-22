@@ -33,8 +33,6 @@ contract GovernorFactory is  IGovernorFactory, ERC165{
         address _accessControl,
         address _dao
     ) external returns(address timelock, address governorModule) {
-        // Not init 
-        // stack to deep
         timelock = address(
             new ERC1967Proxy(
                 address(_timelockImpl),
