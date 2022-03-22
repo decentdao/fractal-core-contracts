@@ -10,87 +10,19 @@ import {
   DAO__factory,
   GovernorModule,
   GovernorModule__factory,
+  IGovernorModule__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
+import {
+  VoteType,
+  delegateTokens,
+  govModPropose,
+} from "./helpers/governorModuleHelpers";
 
 const expect = chai.expect;
-
-const VoteType = {
-  Against: 0,
-  For: 1,
-  Abstain: 2,
-};
-
-type ProposalCreatedEvent = {
-  proposalId: BigNumber;
-  proposer: string;
-  targets: string[];
-  _values: BigNumber[];
-  signatures: string[];
-  calldatas: string[];
-  startBlock: BigNumber;
-  endBlock: BigNumber;
-  description: string;
-};
-
-async function govModPropose(
-  _targets: string[],
-  _values: BigNumber[],
-  _DAO: GovernorModule,
-  _proposer: SignerWithAddress,
-  _transferCallData: string[],
-  _description: string
-): Promise<ProposalCreatedEvent> {
-  const tx: ContractTransaction = await _DAO
-    .connect(_proposer)
-    .propose(_targets, _values, _transferCallData, _description);
-
-  const receipt: ContractReceipt = await tx.wait();
-
-  const _proposalCreatedEvent = receipt.events?.filter((x) => {
-    return x.event === "ProposalCreated";
-  });
-
-  if (
-    _proposalCreatedEvent === undefined ||
-    _proposalCreatedEvent[0].args === undefined
-  ) {
-    return {
-      proposalId: BigNumber.from("0"),
-      proposer: "",
-      targets: [""],
-      _values: [BigNumber.from("0")],
-      signatures: [""],
-      calldatas: [""],
-      startBlock: BigNumber.from("0"),
-      endBlock: BigNumber.from("0"),
-      description: "",
-    };
-  }
-
-  return {
-    proposalId: _proposalCreatedEvent[0].args[0],
-    proposer: _proposalCreatedEvent[0].args[1],
-    targets: _proposalCreatedEvent[0].args[2],
-    _values: _proposalCreatedEvent[0].args[3],
-    signatures: _proposalCreatedEvent[0].args[4],
-    calldatas: _proposalCreatedEvent[0].args[5],
-    startBlock: _proposalCreatedEvent[0].args[6],
-    endBlock: _proposalCreatedEvent[0].args[7],
-    description: _proposalCreatedEvent[0].args[8],
-  };
-}
-
-async function delegateTokens(
-  governanceToken: VotesTokenWithSupply,
-  voters: SignerWithAddress[]
-): Promise<void> {
-  for (let i = 0; i < voters.length; i++) {
-    await governanceToken.connect(voters[i]).delegate(voters[i].address);
-  }
-}
 
 describe("Gov Module", function () {
   let deployer: SignerWithAddress;
@@ -242,6 +174,18 @@ describe("Gov Module", function () {
       expect(await governanceToken.balanceOf(dao.address)).to.eq(
         ethers.utils.parseUnits("800.0", 18)
       );
+    });
+
+    it("Supports the expected ERC165 interface", async () => {
+      // Supports DAO Factory interface
+      expect(
+        await govModule.supportsInterface(
+          // eslint-disable-next-line camelcase
+          getInterfaceSelector(IGovernorModule__factory.createInterface())
+        )
+      ).to.eq(true);
+      // Supports ERC-165 interface
+      expect(await govModule.supportsInterface("0x01ffc9a7")).to.eq(true);
     });
   });
 

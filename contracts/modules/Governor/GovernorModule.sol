@@ -244,6 +244,7 @@ contract GovernorModule is
         override(GovernorUpgradeable, GovTimelockUpgradeable, ModuleBase)
         returns (bool)
     {
-        return super.supportsInterface(interfaceId);
+        return interfaceId == type(IGovernorModule).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
