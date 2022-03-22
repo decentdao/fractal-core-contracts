@@ -66,14 +66,11 @@ describe("Gov Module", function () {
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address, executor2.address], [upgrader.address]],
-      daoFunctionDescs: [
-        "execute(address[],uint256[],bytes[])",
-        "upgradeTo(address)",
-      ],
-      daoActionRoles: [["EXECUTE_ROLE"], ["UPGRADE_ROLE"]],
+      roles: ["EXECUTE_ROLE"],
+      rolesAdmins: ["DAO_ROLE"],
+      members: [[executor1.address, executor2.address]],
+      daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
+      daoActionRoles: [["EXECUTE_ROLE"]],
       moduleTargets: [],
       moduleFunctionDescs: [],
       moduleActionRoles: [],
@@ -81,14 +78,11 @@ describe("Gov Module", function () {
     createDAOTx = await daoFactory.createDAO({
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address, executor2.address], [upgrader.address]],
-      daoFunctionDescs: [
-        "execute(address[],uint256[],bytes[])",
-        "upgradeTo(address)",
-      ],
-      daoActionRoles: [["EXECUTE_ROLE"], ["UPGRADE_ROLE"]],
+      roles: ["EXECUTE_ROLE"],
+      rolesAdmins: ["DAO_ROLE"],
+      members: [[executor1.address, executor2.address]],
+      daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
+      daoActionRoles: [["EXECUTE_ROLE"]],
       moduleTargets: [],
       moduleFunctionDescs: [],
       moduleActionRoles: [],
@@ -268,9 +262,9 @@ describe("Gov Module", function () {
       const transferCallDataRoles = accessControl.interface.encodeFunctionData(
         "grantRolesAndAdmins",
         [
-          ["GOV_ROLE", "EXECUTE_ROLE"],
-          ["DAO_ROLE", "DAO_ROLE"],
-          [[govModule.address], [timelock.address]],
+          ["GOV_ROLE", "EXECUTE_ROLE", "UPGRADE_ROLE"],
+          ["DAO_ROLE", "DAO_ROLE", "DAO_ROLE"],
+          [[govModule.address], [timelock.address], [dao.address]],
         ]
       );
       await dao
@@ -284,14 +278,25 @@ describe("Gov Module", function () {
             timelock.address,
             timelock.address,
             timelock.address,
+            govModule.address,
+            timelock.address,
           ],
           [
             "updateDelay(uint256)",
             "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
             "cancel(bytes32)",
             "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
+            "upgradeTo(address)",
+            "upgradeTo(address)",
           ],
-          [["GOV_ROLE"], ["GOV_ROLE"], ["GOV_ROLE"], ["GOV_ROLE"]],
+          [
+            ["GOV_ROLE"],
+            ["GOV_ROLE"],
+            ["GOV_ROLE"],
+            ["GOV_ROLE"],
+            ["UPGRADE_ROLE"],
+            ["UPGRADE_ROLE"],
+          ],
         ]);
       await dao
         .connect(executor1)
@@ -300,9 +305,9 @@ describe("Gov Module", function () {
     });
 
     it("Should setup Roles", async () => {
-      expect(
-        await accessControl.hasRole("UPGRADE_ROLE", upgrader.address)
-      ).to.eq(true);
+      expect(await accessControl.hasRole("UPGRADE_ROLE", dao.address)).to.eq(
+        true
+      );
       expect(await accessControl.hasRole("GOV_ROLE", govModule.address)).to.eq(
         true
       );
@@ -330,6 +335,18 @@ describe("Gov Module", function () {
           "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)"
         )
       ).to.deep.eq(["GOV_ROLE"]);
+      expect(
+        await accessControl.getActionRoles(
+          timelock.address,
+          "upgradeTo(address)"
+        )
+      ).to.deep.eq(["UPGRADE_ROLE"]);
+      expect(
+        await accessControl.getActionRoles(
+          govModule.address,
+          "upgradeTo(address)"
+        )
+      ).to.deep.eq(["UPGRADE_ROLE"]);
     });
 
     it("Should execute a passing proposal", async () => {
@@ -631,6 +648,124 @@ describe("Gov Module", function () {
             ethers.utils.id(proposalCreatedEvent.description)
           )
       ).to.be.revertedWith("TimelockController: operation is not ready");
+    });
+
+    it("Should upgrade the timelock contract", async () => {
+      const timelock2 = await new TimelockUpgradeable__factory(
+        deployer
+      ).deploy();
+
+      const transferCallData = timelock.interface.encodeFunctionData(
+        "upgradeTo",
+        [timelock2.address]
+      );
+
+      const proposalCreatedEvent = await govModPropose(
+        [timelock.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "upgradeTo new timelock"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await govModule
+        .connect(voterA)
+        .queue(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
+
+      expect(await govModule.timelock()).to.eq(timelock.address);
+
+      await expect(
+        govModule
+          .connect(voterA)
+          .execute(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id(proposalCreatedEvent.description)
+          )
+      )
+        .to.emit(timelock, "Upgraded")
+        .withArgs(timelock2.address);
+
+      expect(await govModule.timelock()).to.eq(timelock.address);
+    });
+
+    it("Should upgrade the timelock contract", async () => {
+      const govModule2 = await new GovernorModule__factory(deployer).deploy();
+
+      const transferCallData = govModule.interface.encodeFunctionData(
+        "upgradeTo",
+        [govModule2.address]
+      );
+
+      const proposalCreatedEvent = await govModPropose(
+        [govModule.address],
+        [BigNumber.from("0")],
+        govModule,
+        voterA,
+        [transferCallData],
+        "upgradeTo new GovModule"
+      );
+
+      await network.provider.send("evm_mine");
+
+      // Voters A, B, C votes "For"
+      await govModule
+        .connect(voterA)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterB)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+      await govModule
+        .connect(voterC)
+        .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+      await network.provider.send("evm_mine");
+      await network.provider.send("evm_mine");
+
+      await govModule
+        .connect(voterA)
+        .queue(
+          proposalCreatedEvent.targets,
+          proposalCreatedEvent._values,
+          proposalCreatedEvent.calldatas,
+          ethers.utils.id(proposalCreatedEvent.description)
+        );
+
+      await expect(
+        govModule
+          .connect(voterA)
+          .execute(
+            proposalCreatedEvent.targets,
+            proposalCreatedEvent._values,
+            proposalCreatedEvent.calldatas,
+            ethers.utils.id(proposalCreatedEvent.description)
+          )
+      )
+        .to.emit(govModule, "Upgraded")
+        .withArgs(govModule2.address);
     });
   });
 });
