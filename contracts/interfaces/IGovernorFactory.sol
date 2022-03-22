@@ -22,6 +22,8 @@ interface IGovernorFactory {
     /// @param _minDelay init the contract with a given `minDelay`.
     /// @param _accessControl The address of the access control contract
     /// @param _dao The address of the dao contract
+    /// @return timelock The address of the created timelock contract
+    /// @return governorModule The address of the created governor module contract
     function createGovernor(
         IGovernorModule _govImpl,
         string memory _name,
