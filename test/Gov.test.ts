@@ -14,7 +14,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { BigNumber } from "ethers";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 import {
   VoteType,

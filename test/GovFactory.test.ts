@@ -18,7 +18,7 @@ import {
 } from "../typechain";
 import chai from "chai";
 import { ethers, network } from "hardhat";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { BigNumber, ContractTransaction } from "ethers";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 import {
   VoteType,
@@ -35,7 +35,6 @@ describe("Gov Module", function () {
   let voterC: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
-  let upgrader: SignerWithAddress;
 
   let daoFactory: DAOFactory;
   let createDAOTx: ContractTransaction;
@@ -57,7 +56,7 @@ describe("Gov Module", function () {
   let dao: DAO;
 
   beforeEach(async function () {
-    [deployer, voterA, voterB, voterC, executor1, executor2, upgrader] =
+    [deployer, voterA, voterB, voterC, executor1, executor2] =
       await ethers.getSigners();
 
     daoFactory = await new DAOFactory__factory(deployer).deploy();
