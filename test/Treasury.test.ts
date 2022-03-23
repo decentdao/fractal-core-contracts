@@ -141,13 +141,6 @@ describe("Treasury", function () {
         [ethers.utils.parseUnits("1", 18), ethers.utils.parseUnits("2", 18)]
       );
 
-      // await TreasuryWithdrawEth(
-      //   treasury,
-      //   withdrawer,
-      //   [userB.address],
-      //   [ethers.utils.parseUnits("2", 18)]
-      // );
-
       expect((await userA.getBalance()).sub(userABalanceBefore)).to.equal(
         ethers.utils.parseUnits("1", 18)
       );
