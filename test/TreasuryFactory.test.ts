@@ -10,11 +10,14 @@ import {
   MockERC721__factory,
   TreasuryModule,
   TreasuryModule__factory,
+  TreasuryModuleFactory,
+  TreasuryModuleFactory__factory,
 } from "../typechain";
 import chai from "chai";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import {
+  createTreasuryFromFactory,
   TreasuryDepositEth,
   TreasuryWithdrawEth,
   TreasuryDepositERC20Tokens,
@@ -25,9 +28,12 @@ import {
 
 const expect = chai.expect;
 
-describe("Treasury", function () {
+describe("Treasury Factory", function () {
   let dao: DAO;
   let accessControl: AccessControl;
+  let treasuryFactory: TreasuryModuleFactory;
+  let treasuryImplementationOne: TreasuryModule;
+  let treasuryImplementationTwo: TreasuryModule;
   let treasury: TreasuryModule;
 
   // eslint-disable-next-line camelcase
@@ -39,18 +45,133 @@ describe("Treasury", function () {
   let withdrawer: SignerWithAddress;
   let userA: SignerWithAddress;
   let userB: SignerWithAddress;
+  let upgrader: SignerWithAddress;
 
   // Roles
   const daoRoleString = "DAO_ROLE";
   const withdrawerRoleString = "WITHDRAWER_ROLE";
+  const upgraderRoleString = "UPGRADER_ROLE";
 
-  describe("Treasury supports Ether", function () {
+  describe("Supports authorized upgradeability", function () {
     beforeEach(async function () {
-      [deployer, withdrawer, userA, userB] = await ethers.getSigners();
+      [deployer, withdrawer, userA, userB, upgrader] =
+        await ethers.getSigners();
 
       dao = await new DAO__factory(deployer).deploy();
       accessControl = await new AccessControl__factory(deployer).deploy();
-      treasury = await new TreasuryModule__factory(deployer).deploy();
+      treasuryFactory = await new TreasuryModuleFactory__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationOne = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationTwo = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+
+      const treasuryAddress = await createTreasuryFromFactory(
+        deployer,
+        treasuryFactory,
+        accessControl.address,
+        treasuryImplementationOne.address
+      );
+
+      // eslint-disable-next-line camelcase
+      treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
+
+      await accessControl
+        .connect(deployer)
+        .initialize(
+          dao.address,
+          [withdrawerRoleString, upgraderRoleString],
+          [daoRoleString, daoRoleString],
+          [[withdrawer.address], [upgrader.address]],
+          [
+            treasury.address,
+            treasury.address,
+            treasury.address,
+            treasury.address,
+            treasury.address,
+            treasury.address,
+          ],
+          [
+            "withdrawEth(address[],uint256[])",
+            "depositERC20Tokens(address[],address[],uint256[])",
+            "withdrawERC20Tokens(address[],address[],uint256[])",
+            "depositERC721Tokens(address[],address[],uint256[])",
+            "withdrawERC721Tokens(address[],address[],uint256[])",
+            "upgradeTo(address)",
+          ],
+          [
+            [withdrawerRoleString],
+            [withdrawerRoleString],
+            [withdrawerRoleString],
+            [withdrawerRoleString],
+            [withdrawerRoleString],
+            [upgraderRoleString],
+          ]
+        );
+
+      await TreasuryDepositEth(
+        treasury,
+        deployer,
+        ethers.utils.parseUnits("10", 18)
+      );
+    });
+
+    it("Can be upgraded by an authorized user", async () => {
+      await expect(
+        treasury.connect(upgrader).upgradeTo(treasuryImplementationTwo.address)
+      ).to.emit(treasury, "Upgraded");
+    });
+
+    it("Cannot be upgraded by an unauthorized user", async () => {
+      await expect(
+        treasury.connect(deployer).upgradeTo(treasuryImplementationTwo.address)
+      ).to.be.revertedWith("NotAuthorized()");
+
+      await expect(
+        treasury
+          .connect(withdrawer)
+          .upgradeTo(treasuryImplementationTwo.address)
+      ).to.be.revertedWith("NotAuthorized()");
+
+      await expect(
+        treasury.connect(userA).upgradeTo(treasuryImplementationTwo.address)
+      ).to.be.revertedWith("NotAuthorized()");
+
+      await expect(
+        treasury.connect(userB).upgradeTo(treasuryImplementationTwo.address)
+      ).to.be.revertedWith("NotAuthorized()");
+    });
+  });
+
+  describe("Treasury supports Ether", function () {
+    beforeEach(async function () {
+      [deployer, withdrawer, userA, userB, upgrader] =
+        await ethers.getSigners();
+
+      dao = await new DAO__factory(deployer).deploy();
+      accessControl = await new AccessControl__factory(deployer).deploy();
+      treasuryFactory = await new TreasuryModuleFactory__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationOne = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationTwo = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+
+      const treasuryAddress = await createTreasuryFromFactory(
+        deployer,
+        treasuryFactory,
+        accessControl.address,
+        treasuryImplementationOne.address
+      );
+
+      // eslint-disable-next-line camelcase
+      treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
 
       await accessControl
         .connect(deployer)
@@ -81,8 +202,6 @@ describe("Treasury", function () {
             [withdrawerRoleString],
           ]
         );
-
-      await treasury.connect(deployer).initialize(accessControl.address);
 
       await TreasuryDepositEth(
         treasury,

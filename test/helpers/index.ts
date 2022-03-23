@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { TreasuryModule } from "../../typechain";
+import { TreasuryModule, TreasuryModuleFactory } from "../../typechain";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
 export type TreasuryEthDepositedEvent = {
@@ -35,6 +35,32 @@ export type TreasuryERC721TokensWithdrawnEvent = {
   recipients: string[];
   tokenIds: BigNumber[];
 };
+
+export async function createTreasuryFromFactory(
+  caller: SignerWithAddress,
+  treasuryFactory: TreasuryModuleFactory,
+  accessControlAddress: string,
+  treasuryImplementationAddress: string
+): Promise<string> {
+  const tx: ContractTransaction = await treasuryFactory
+    .connect(caller)
+    .createTreasury(accessControlAddress, treasuryImplementationAddress);
+
+  const receipt: ContractReceipt = await tx.wait();
+
+  const treasuryCreatedEvent = receipt.events?.filter((x) => {
+    return x.event === "TreasuryCreated";
+  });
+
+  if (
+    treasuryCreatedEvent === undefined ||
+    treasuryCreatedEvent[0].args === undefined
+  ) {
+    return "";
+  } else {
+    return treasuryCreatedEvent[0].args.treasuryAddress;
+  }
+}
 
 export async function TreasuryDepositEth(
   _treasury: TreasuryModule,
