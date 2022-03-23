@@ -25,7 +25,7 @@ import {
 
 const expect = chai.expect;
 
-describe.only("Treasury", function () {
+describe("Treasury", function () {
   let dao: DAO;
   let accessControl: AccessControl;
   let treasury: TreasuryModule;
