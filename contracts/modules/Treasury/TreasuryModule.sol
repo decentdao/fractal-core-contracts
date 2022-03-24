@@ -37,8 +37,12 @@ contract TreasuryModule is ERC721Holder, ModuleBase, ITreasuryModule {
       revert UnequalArrayLengths();
     }
 
-    for (uint256 index = 0; index < recipients.length; index++) {
+    uint256 recipientsLength =  recipients.length;
+    for (uint256 index = 0; index < recipientsLength;) {
       payable(recipients[index]).transfer(amounts[index]);
+      unchecked {
+       index ++; 
+      }
     }
 
     emit EthWithdrawn(recipients, amounts);
@@ -60,12 +64,16 @@ contract TreasuryModule is ERC721Holder, ModuleBase, ITreasuryModule {
       revert UnequalArrayLengths();
     }
 
-    for (uint256 index = 0; index < tokenAddresses.length; index++) {
+    uint256 tokenAddressesLength = tokenAddresses.length;
+    for (uint256 index = 0; index < tokenAddressesLength;) {
       IERC20(tokenAddresses[index]).safeTransferFrom(
         senders[index],
         address(this),
         amounts[index]
       );
+      unchecked {
+        index ++;
+      }
     }
 
     emit ERC20TokensDeposited(tokenAddresses, senders, amounts);
@@ -87,11 +95,15 @@ contract TreasuryModule is ERC721Holder, ModuleBase, ITreasuryModule {
       revert UnequalArrayLengths();
     }
 
-    for (uint256 index = 0; index < tokenAddresses.length; index++) {
+    uint256 tokenAddressesLength =  tokenAddresses.length;
+    for (uint256 index = 0; index < tokenAddressesLength; index ++) {
       IERC20(tokenAddresses[index]).safeTransfer(
         recipients[index],
         amounts[index]
       );
+      unchecked {
+        index ++;
+      }
     }
 
     emit ERC20TokensWithdrawn(tokenAddresses, recipients, amounts);
@@ -113,12 +125,16 @@ contract TreasuryModule is ERC721Holder, ModuleBase, ITreasuryModule {
       revert UnequalArrayLengths();
     }
 
-    for (uint256 index = 0; index < tokenAddresses.length; index++) {
+    uint256 tokenAddressesLength = tokenAddresses.length;
+    for (uint256 index = 0; index < tokenAddressesLength;) {
       IERC721(tokenAddresses[index]).safeTransferFrom(
         senders[index],
         address(this),
         tokenIds[index]
       );
+      unchecked {
+        index ++;
+      }
     }
 
     emit ERC721TokensDeposited(tokenAddresses, senders, tokenIds);
@@ -140,12 +156,16 @@ contract TreasuryModule is ERC721Holder, ModuleBase, ITreasuryModule {
       revert UnequalArrayLengths();
     }
 
-    for (uint256 index = 0; index < tokenAddresses.length; index++) {
+    uint256 tokenAddressesLength = tokenAddresses.length;  
+    for (uint256 index = 0; index < tokenAddressesLength;) {
       IERC721(tokenAddresses[index]).safeTransferFrom(
         address(this),
         recipients[index],
         tokenIds[index]
       );
+      unchecked {
+        index ++;
+      }
     }
 
     emit ERC721TokensWithdrawn(tokenAddresses, recipients, tokenIds);

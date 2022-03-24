@@ -12,6 +12,7 @@ contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
     /// @notice Creates a Treasury Module with an ERC-1967 proxy
     /// @param accessControl The address of the access control contract for the DAO
     /// @param treasuryImplementation The address of the treasury implementation contract
+    /// @return treasury The address of the treasury proxy
     function createTreasury(
         address accessControl,
         address treasuryImplementation
