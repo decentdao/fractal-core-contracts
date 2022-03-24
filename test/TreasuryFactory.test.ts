@@ -260,13 +260,6 @@ describe("Treasury Factory", function () {
         [ethers.utils.parseUnits("1", 18), ethers.utils.parseUnits("2", 18)]
       );
 
-      // await TreasuryWithdrawEth(
-      //   treasury,
-      //   withdrawer,
-      //   [userB.address],
-      //   [ethers.utils.parseUnits("2", 18)]
-      // );
-
       expect((await userA.getBalance()).sub(userABalanceBefore)).to.equal(
         ethers.utils.parseUnits("1", 18)
       );
@@ -327,7 +320,25 @@ describe("Treasury Factory", function () {
 
       dao = await new DAO__factory(deployer).deploy();
       accessControl = await new AccessControl__factory(deployer).deploy();
-      treasury = await new TreasuryModule__factory(deployer).deploy();
+      treasuryFactory = await new TreasuryModuleFactory__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationOne = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationTwo = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+
+      const treasuryAddress = await createTreasuryFromFactory(
+        deployer,
+        treasuryFactory,
+        accessControl.address,
+        treasuryImplementationOne.address
+      );
+
+      // eslint-disable-next-line camelcase
+      treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
 
       await accessControl
         .connect(deployer)
@@ -358,8 +369,6 @@ describe("Treasury Factory", function () {
             [withdrawerRoleString],
           ]
         );
-
-      await treasury.connect(deployer).initialize(accessControl.address);
 
       erc20TokenAlpha = await new VotesTokenWithSupply__factory(
         deployer
@@ -704,7 +713,25 @@ describe("Treasury Factory", function () {
 
       dao = await new DAO__factory(deployer).deploy();
       accessControl = await new AccessControl__factory(deployer).deploy();
-      treasury = await new TreasuryModule__factory(deployer).deploy();
+      treasuryFactory = await new TreasuryModuleFactory__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationOne = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+      treasuryImplementationTwo = await new TreasuryModule__factory(
+        deployer
+      ).deploy();
+
+      const treasuryAddress = await createTreasuryFromFactory(
+        deployer,
+        treasuryFactory,
+        accessControl.address,
+        treasuryImplementationOne.address
+      );
+
+      // eslint-disable-next-line camelcase
+      treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
 
       await accessControl
         .connect(deployer)
@@ -735,8 +762,6 @@ describe("Treasury Factory", function () {
             [withdrawerRoleString],
           ]
         );
-
-      await treasury.connect(deployer).initialize(accessControl.address);
 
       erc721TokenAlpha = await new MockERC721__factory(deployer).deploy(
         "ALPHA",
