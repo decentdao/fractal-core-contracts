@@ -70,7 +70,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
 
         IDAO(dao).initialize(accessControl, createDAOParams.daoName);
 
-        emit DAOCreated(dao, accessControl);
+        emit DAOCreated(dao, accessControl, msg.sender);
     }
 
     /// @notice Returns whether a given interface ID is supported

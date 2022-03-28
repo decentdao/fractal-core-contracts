@@ -28,7 +28,7 @@ import {
 
 const expect = chai.expect;
 
-describe("Gov Module", function () {
+describe("Gov Module Factory", function () {
   let deployer: SignerWithAddress;
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
@@ -164,7 +164,7 @@ describe("Gov Module", function () {
     it("emits an event with the new DAO's address", async () => {
       expect(createDAOTx)
         .to.emit(daoFactory, "DAOCreated")
-        .withArgs(daoAddress, accessControlAddress);
+        .withArgs(daoAddress, accessControlAddress, deployer.address);
     });
 
     it("emits an event with the new Gov's address", async () => {
