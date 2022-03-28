@@ -11,7 +11,7 @@ import {
 } from "../typechain";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("DAO", () => {
+describe("DAO", () => {
   let daoAccessControl: AccessControl;
   let dao: DAO;
   // Wallets
@@ -86,7 +86,7 @@ describe.only("DAO", () => {
         ["execute(address[],uint256[],bytes[])"],
         [["EXECUTE_ROLE"]]
       );
-      await dao.initialize(daoAccessControl.address);
+      await dao.initialize(daoAccessControl.address, "TestDao");
     });
 
     it("Init Access Control", async () => {

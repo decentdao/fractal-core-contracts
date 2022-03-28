@@ -65,6 +65,7 @@ describe("Gov Module", function () {
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
+      daoName: "TestDao",
       roles: ["EXECUTE_ROLE"],
       rolesAdmins: ["DAO_ROLE"],
       members: [[executor1.address, executor2.address]],
@@ -77,6 +78,7 @@ describe("Gov Module", function () {
     createDAOTx = await daoFactory.createDAO({
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
+      daoName: "TestDao",
       roles: ["EXECUTE_ROLE"],
       rolesAdmins: ["DAO_ROLE"],
       members: [[executor1.address, executor2.address]],

@@ -68,7 +68,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
             )
         );
 
-        IDAO(dao).initialize(accessControl);
+        IDAO(dao).initialize(accessControl, createDAOParams.daoName);
 
         emit DAOCreated(dao, accessControl);
     }

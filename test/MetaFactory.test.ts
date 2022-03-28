@@ -41,6 +41,7 @@ describe("MetaFactory", () => {
       {
         daoImplementation: daoImpl.address,
         accessControlImplementation: accessControlImpl.address,
+        daoName: "TestDao",
         roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
         rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
         members: [[executor1.address, executor2.address], [upgrader.address]],
@@ -55,9 +56,9 @@ describe("MetaFactory", () => {
       },
     ]);
 
-    await metaFactory
-      .connect(deployer)
-      .createDAOAndModules(daoFactory.address, 0);
+    // await metaFactory
+    //   .connect(deployer)
+    //   .createDAOAndModules(daoFactory.address, 0);
   });
 
   it("Deploys a DAO and modules", async () => {});
