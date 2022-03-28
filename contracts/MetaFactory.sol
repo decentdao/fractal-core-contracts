@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts-upgradeable/governance/utils/IVotesUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+
 
 import "./interfaces/IMetaFactory.sol";
 import "./interfaces/IDAOFactory.sol";
@@ -41,16 +43,16 @@ contract MetaFactory is IMetaFactory, ERC165 {
             address treasury
         )
     {
-        (dao, accessControl) = createDAO(daoFactory, createDAOParams);
+        (dao, accessControl) = _createDAO(daoFactory, createDAOParams);
 
-        governor = createGovernor(
+        governor = _createGovernor(
             dao,
             accessControl,
             governorFactory,
             createGovernorParams
         );
 
-        treasury = createTreasury(
+        treasury = _createTreasury(
             treasuryFactory,
             treasuryImplementation,
             accessControl
@@ -74,30 +76,29 @@ contract MetaFactory is IMetaFactory, ERC165 {
 
     /// @notice Creates the DAO and Access Control contract
     /// @param daoFactory The address of the DAO
-    function createDAO(
+    function _createDAO(
         address daoFactory,
         IDAOFactory.CreateDAOParams calldata createDAOParams
-    ) private returns (address dao, address accessControl) {
+    ) internal returns (address dao, address accessControl) {
+        string memory errorMessage = "DAOFactory: call reverted without message";
         (bool success, bytes memory data) = daoFactory.delegatecall(
             abi.encodeWithSignature(
                 "createDAO(CreateDAOParams)",
                 createDAOParams
             )
         );
-
-        if (!success) {
-            revert CreateDAOReverted();
-        }
+        Address.verifyCallResult(success, data, errorMessage);
 
         (dao, accessControl) = abi.decode(data, (address, address));
     }
 
-    function createGovernor(
+    function _createGovernor(
         address dao,
         address accessControl,
         address governorFactory,
         IGovernorFactory.CreateGovernorParams calldata createGovernorParams
     ) internal returns (address governor) {
+        string memory errorMessage = "GovFactory: call reverted without message";
         (bool success, bytes memory data) = governorFactory.delegatecall(
             abi.encodeWithSignature(
                 "createGovernor(address,address,address,CreateGovernorParams)",
@@ -107,19 +108,17 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 createGovernorParams
             )
         );
-
-        if (!success) {
-            revert CreateGovernorReverted();
-        }
+        Address.verifyCallResult(success, data, errorMessage);
 
         (, governor) = abi.decode(data, (address, address));
     }
 
-    function createTreasury(
+    function _createTreasury(
         address treasuryFactory,
         address treasuryImplementation,
         address accessControl
-    ) private returns (address treasury) {
+    ) internal returns (address treasury) {
+        string memory errorMessage = "TreasuryFactory: call reverted without message";
         (bool success, bytes memory data) = treasuryFactory.delegatecall(
             abi.encodeWithSignature(
                 "createTreasury(address,address)",
@@ -127,10 +126,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 treasuryImplementation
             )
         );
-
-        if (!success) {
-            revert CreateTreasuryReverted();
-        }
+        Address.verifyCallResult(success, data, errorMessage);  
 
         treasury = abi.decode(data, (address));
     }
