@@ -12,6 +12,7 @@ contract DAO is IDAO, ModuleBase {
 
     /// @notice Function for initializing the contract that can only be called once
     /// @param _accessControl The address of the access control contract
+    /// @param _name Name of the Dao
     function initialize(address _accessControl, string calldata _name) external initializer {
         __initBase(_accessControl);
         name = _name;

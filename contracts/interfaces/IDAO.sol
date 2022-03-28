@@ -9,6 +9,7 @@ interface IDAO {
 
     /// @notice Function for initializing the Dao
     /// @param _accessControl The address of the access control contract
+    /// @param _name Name of the Dao
     function initialize(address _accessControl, string calldata _name) external;
 
     /// @notice A function for executing function calls from the DAO
