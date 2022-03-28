@@ -9,7 +9,7 @@ interface IDAO {
 
     /// @notice Function for initializing the Dao
     /// @param _accessControl The address of the access control contract
-    function initialize(address _accessControl) external;
+    function initialize(address _accessControl, string calldata _name) external;
 
     /// @notice A function for executing function calls from the DAO
     /// @param targets An array of addresses to target for the function calls
@@ -20,4 +20,7 @@ interface IDAO {
         uint256[] calldata values,
         bytes[] calldata calldatas
     ) external;
+
+    /// @return string The string "Name"
+    function name() external view returns (string memory);
 }
