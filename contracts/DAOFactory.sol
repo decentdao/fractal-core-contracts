@@ -11,10 +11,11 @@ import "./interfaces/IDAO.sol";
 /// @notice A factory contract for deploying DAOs with an access control contract
 contract DAOFactory is IDAOFactory, ERC165 {
     /// @notice Creates a DAO with an access control contract
+    /// @param creator Address of the Dao Creator
     /// @param createDAOParams Struct of all the parameters required to create a DAO
     /// @return dao The address of the deployed DAO proxy contract
     /// @return accessControl The address of the deployed access control proxy contract
-    function createDAO(CreateDAOParams calldata createDAOParams)
+    function createDAO(address creator, CreateDAOParams calldata createDAOParams)
         external
         returns (address dao, address accessControl)
     {
@@ -68,9 +69,9 @@ contract DAOFactory is IDAOFactory, ERC165 {
             )
         );
 
-        IDAO(dao).initialize(accessControl);
+        IDAO(dao).initialize(accessControl, createDAOParams.daoName);
 
-        emit DAOCreated(dao, accessControl);
+        emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
 
     /// @notice Returns whether a given interface ID is supported

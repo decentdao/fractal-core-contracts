@@ -71,7 +71,7 @@ describe("Gov Module", function () {
 
   describe("Init DAO", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,
@@ -191,7 +191,7 @@ describe("Gov Module", function () {
 
   describe("Proposals", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,
@@ -380,7 +380,7 @@ describe("Gov Module", function () {
 
   describe("Votes", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,
@@ -688,7 +688,7 @@ describe("Gov Module", function () {
 
   describe("Queue", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,
@@ -856,7 +856,7 @@ describe("Gov Module", function () {
 
   describe("PreventLateQuorum", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,
@@ -1009,7 +1009,7 @@ describe("Gov Module", function () {
 
   describe("Execution", function () {
     beforeEach(async function () {
-      await dao.initialize(accessControl.address);
+      await dao.initialize(accessControl.address, "TestDao");
       await govModule.initialize(
         "TestGov",
         governanceToken.address,

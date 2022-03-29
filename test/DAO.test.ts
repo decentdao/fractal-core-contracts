@@ -32,7 +32,7 @@ describe("DAO", () => {
     beforeEach(async () => {
       // Initilizes Contracts
       await daoAccessControl.initialize(dao.address, [], [], [], [], [], []);
-      await dao.initialize(daoAccessControl.address);
+      await dao.initialize(daoAccessControl.address, "TestDao");
     });
 
     it("Supports the expected ERC165 interface", async () => {
@@ -86,11 +86,18 @@ describe("DAO", () => {
         ["execute(address[],uint256[],bytes[])"],
         [["EXECUTE_ROLE"]]
       );
-      await dao.initialize(daoAccessControl.address);
+      await dao.initialize(daoAccessControl.address, "TestDao");
     });
 
     it("Init Access Control", async () => {
-      expect(await dao.accessControl()).to.eq(daoAccessControl.address);
+      expect(await dao.accessControl()).to.eq(
+        daoAccessControl.address,
+        "TestDao"
+      );
+    });
+
+    it("Init Dao Name", async () => {
+      expect(await dao.name()).to.eq("TestDao");
     });
 
     it("executor EOA should be able to call `execute`", async () => {
@@ -135,7 +142,7 @@ describe("DAO", () => {
 
     it("UnAuthDAO should NOT be able to call `execute`", async () => {
       const daoUnAuth = await new DAO__factory(deployer).deploy();
-      daoUnAuth.initialize(daoAccessControl.address);
+      daoUnAuth.initialize(daoAccessControl.address, "BadDao");
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
         "grantRole",
         ["EXECUTE_ROLE", executor3.address]

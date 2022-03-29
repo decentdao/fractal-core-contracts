@@ -31,7 +31,6 @@ contract GovernorModule is
     /// @param _initialProposalThreshold Total tokens required to submit a proposal
     /// @param _initialQuorumNumeratorValue Total votes needed to reach quorum
     /// @param _accessControl Address of Access Control
-
     function initialize(
         string memory _name,
         IVotesUpgradeable _token,

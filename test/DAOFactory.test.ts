@@ -38,25 +38,30 @@ describe("DAOFactory", () => {
     daoImpl = await ethers.getContract("DAO");
     accessControlImpl = await ethers.getContract("AccessControl");
 
-    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
-      daoImplementation: daoImpl.address,
-      accessControlImplementation: accessControlImpl.address,
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address, executor2.address], [upgrader1.address]],
-      daoFunctionDescs: [
-        "execute(address[],uint256[],bytes[])",
-        "upgradeTo(address)",
-      ],
-      daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
-    });
+    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
+      deployer.address,
+      {
+        daoImplementation: daoImpl.address,
+        accessControlImplementation: accessControlImpl.address,
+        daoName: "TestDao",
+        roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
+        rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
+        members: [[executor1.address, executor2.address], [upgrader1.address]],
+        daoFunctionDescs: [
+          "execute(address[],uint256[],bytes[])",
+          "upgradeTo(address)",
+        ],
+        daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
+        moduleTargets: [],
+        moduleFunctionDescs: [],
+        moduleActionRoles: [],
+      }
+    );
 
-    createDAOTx = await daoFactory.createDAO({
+    createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
+      daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
       rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
       members: [[executor1.address, executor2.address], [upgrader1.address]],
@@ -83,7 +88,12 @@ describe("DAOFactory", () => {
   it("emits an event with the new DAO's address", async () => {
     expect(createDAOTx)
       .to.emit(daoFactory, "DAOCreated")
-      .withArgs(daoAddress, accessControlAddress);
+      .withArgs(
+        daoAddress,
+        accessControlAddress,
+        deployer.address,
+        deployer.address
+      );
   });
 
   it("Creates a DAO and AccessControl Contract", async () => {
@@ -95,6 +105,7 @@ describe("DAOFactory", () => {
 
   it("Base Init for DAO", async () => {
     expect(await daoCreated.accessControl()).to.eq(accessControlAddress);
+    expect(await daoCreated.name()).to.eq("TestDao");
   });
 
   it("Base Init for Access Control", async () => {
@@ -149,7 +160,7 @@ describe("DAOFactory", () => {
   it("Revert Initilize", async () => {
     await expect(accessControlCreated.initialize("", [], [], [], [], [], [])).to
       .reverted;
-    await expect(daoCreated.initialize("")).to.reverted;
+    await expect(daoCreated.initialize("", "")).to.reverted;
   });
 
   it("executor EOA should be able to call `execute`", async () => {
