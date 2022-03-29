@@ -16,13 +16,14 @@ interface IDAOFactory {
         string[][] moduleActionRoles;
     }
 
-    event DAOCreated(address indexed daoAddress, address indexed accessControl, address indexed creator);
+    event DAOCreated(address indexed daoAddress, address indexed accessControl, address indexed sender, address creator);
 
     /// @notice Creates a DAO with an access control contract
+    /// @param creator Address of the Dao Creator
     /// @param createDAOParams Struct of all the parameters required to create a DAO
     /// @return dao The address of the deployed DAO proxy contract
     /// @return accessControl The address of the deployed access control proxy contract
-    function createDAO(CreateDAOParams calldata createDAOParams)
+    function createDAO(address creator, CreateDAOParams calldata createDAOParams)
         external
         returns (address, address);
 }

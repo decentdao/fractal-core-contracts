@@ -38,7 +38,9 @@ describe("DAOFactory", () => {
     daoImpl = await ethers.getContract("DAO");
     accessControlImpl = await ethers.getContract("AccessControl");
 
-    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
+    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
+      deployer.address,
+      {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
@@ -55,7 +57,9 @@ describe("DAOFactory", () => {
       moduleActionRoles: [],
     });
 
-    createDAOTx = await daoFactory.createDAO({
+    createDAOTx = await daoFactory.createDAO(
+      deployer.address,
+      {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",

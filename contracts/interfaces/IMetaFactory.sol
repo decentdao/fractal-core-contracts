@@ -19,6 +19,7 @@ interface IMetaFactory {
     /// @param createGovernorParams The struct of parameters used for the governor creation
     /// @return dao The address of the created DAO contract
     /// @return accessControl The address of the created access control contract
+    /// @return timelock The address of the created timelock contract
     /// @return governor The address of the created governor contract
     /// @return treasury The address of the created treasury contract
     function createDAOAndModules(
@@ -33,6 +34,7 @@ interface IMetaFactory {
         returns (
             address dao,
             address accessControl,
+            address timelock,
             address governor,
             address treasury
         );

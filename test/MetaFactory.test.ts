@@ -91,7 +91,7 @@ describe.only("MetaFactory", () => {
   };
 
   beforeEach(async () => {
-    [deployer, executor1, voterA, voterB, voterC] = await ethers.getSigners();
+    [deployer, executor1, voterA, voterB, voterC, upgrader] = await ethers.getSigners();
 
     // Deploy Impl Contracts
     daoImpl = await new DAO__factory(deployer).deploy();
@@ -184,10 +184,10 @@ describe.only("MetaFactory", () => {
     timelock = TimelockUpgradeable__factory.connect(timelockAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    accessControl = AccessControl__factory.connect(treasuryAddress, deployer);
+    accessControl = AccessControl__factory.connect(accessControlAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    treasury = TreasuryModule__factory.connect(accessControlAddress, deployer);
+    treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
 
     // eslint-disable-next-line camelcase
     dao = DAO__factory.connect(daoAddress, deployer);
@@ -247,6 +247,4 @@ describe.only("MetaFactory", () => {
     // Supports ERC-165 interface
     expect(await govFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
   });
-
-  // it("Deploys a Inits a DAO", async () => {});
 });

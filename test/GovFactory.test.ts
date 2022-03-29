@@ -55,6 +55,19 @@ describe("Gov Module Factory", function () {
   let accessControl: AccessControl;
   let dao: DAO;
 
+  let govCalldata: {
+    _govImpl: string;
+    _token: string;
+    _timelockImpl: string;
+    _name: string;
+    _initialVoteExtension: BigNumber;
+    _initialVotingDelay: BigNumber;
+    _initialVotingPeriod: BigNumber;
+    _initialProposalThreshold: BigNumber;
+    _initialQuorumNumeratorValue: BigNumber;
+    _minDelay: BigNumber;
+  };
+
   beforeEach(async function () {
     [deployer, voterA, voterB, voterC, executor1, executor2] =
       await ethers.getSigners();
@@ -62,7 +75,9 @@ describe("Gov Module Factory", function () {
     daoFactory = await new DAOFactory__factory(deployer).deploy();
     daoImpl = await new DAO__factory(deployer).deploy();
     accessControlImpl = await new AccessControl__factory(deployer).deploy();
-    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO({
+    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
+      deployer.address,
+      {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
@@ -75,7 +90,9 @@ describe("Gov Module Factory", function () {
       moduleFunctionDescs: [],
       moduleActionRoles: [],
     });
-    createDAOTx = await daoFactory.createDAO({
+    createDAOTx = await daoFactory.createDAO(
+      deployer.address,
+      {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
@@ -119,34 +136,29 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
+      govCalldata = {
+        _govImpl: govModuleImpl.address,
+        _token: governanceToken.address,
+        _timelockImpl: timelockImpl.address,
+        _name: "TestGov",
+        _initialVoteExtension: BigNumber.from("0"),
+        _initialVotingDelay: BigNumber.from("1"),
+        _initialVotingPeriod: BigNumber.from("5"),
+        _initialProposalThreshold: BigNumber.from("0"),
+        _initialQuorumNumeratorValue: BigNumber.from("4"),
+        _minDelay: BigNumber.from("1"),
+      };
+
       [timelockAddress, governorModuleAddress] =
         await govFactory.callStatic.createGovernor(
-          govModuleImpl.address,
-          "TestGov",
-          governanceToken.address,
-          timelockImpl.address,
-          BigNumber.from("0"),
-          BigNumber.from("1"),
-          BigNumber.from("5"),
-          BigNumber.from("0"),
-          BigNumber.from("4"),
-          BigNumber.from("1"),
+          daoAddress,
           accessControlAddress,
-          daoAddress
+          govCalldata
         );
       createGovTx = await govFactory.createGovernor(
-        govModuleImpl.address,
-        "TestGov",
-        governanceToken.address,
-        timelockImpl.address,
-        BigNumber.from("0"),
-        BigNumber.from("1"),
-        BigNumber.from("5"),
-        BigNumber.from("0"),
-        BigNumber.from("4"),
-        BigNumber.from("1"),
+        daoAddress,
         accessControlAddress,
-        daoAddress
+        govCalldata
       );
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
@@ -164,7 +176,7 @@ describe("Gov Module Factory", function () {
     it("emits an event with the new DAO's address", async () => {
       expect(createDAOTx)
         .to.emit(daoFactory, "DAOCreated")
-        .withArgs(daoAddress, accessControlAddress, deployer.address);
+        .withArgs(daoAddress, accessControlAddress, deployer.address, deployer.address);
     });
 
     it("emits an event with the new Gov's address", async () => {
@@ -219,34 +231,29 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
+      govCalldata = {
+        _govImpl: govModuleImpl.address,
+        _token: governanceToken.address,
+        _timelockImpl: timelockImpl.address,
+        _name: "TestGov",
+        _initialVoteExtension: BigNumber.from("0"),
+        _initialVotingDelay: BigNumber.from("1"),
+        _initialVotingPeriod: BigNumber.from("5"),
+        _initialProposalThreshold: BigNumber.from("0"),
+        _initialQuorumNumeratorValue: BigNumber.from("4"),
+        _minDelay: BigNumber.from("1"),
+      };
+
       [timelockAddress, governorModuleAddress] =
         await govFactory.callStatic.createGovernor(
-          govModuleImpl.address,
-          "TestGov",
-          governanceToken.address,
-          timelockImpl.address,
-          BigNumber.from("0"),
-          BigNumber.from("1"),
-          BigNumber.from("5"),
-          BigNumber.from("0"),
-          BigNumber.from("4"),
-          BigNumber.from("1"),
+          daoAddress,
           accessControlAddress,
-          daoAddress
+          govCalldata
         );
       createGovTx = await govFactory.createGovernor(
-        govModuleImpl.address,
-        "TestGov",
-        governanceToken.address,
-        timelockImpl.address,
-        BigNumber.from("0"),
-        BigNumber.from("1"),
-        BigNumber.from("5"),
-        BigNumber.from("0"),
-        BigNumber.from("4"),
-        BigNumber.from("1"),
+        daoAddress,
         accessControlAddress,
-        daoAddress
+        govCalldata
       );
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
