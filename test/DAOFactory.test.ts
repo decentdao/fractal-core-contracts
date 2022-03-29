@@ -41,25 +41,24 @@ describe("DAOFactory", () => {
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
       deployer.address,
       {
-      daoImplementation: daoImpl.address,
-      accessControlImplementation: accessControlImpl.address,
-      daoName: "TestDao",
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address, executor2.address], [upgrader1.address]],
-      daoFunctionDescs: [
-        "execute(address[],uint256[],bytes[])",
-        "upgradeTo(address)",
-      ],
-      daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
-    });
+        daoImplementation: daoImpl.address,
+        accessControlImplementation: accessControlImpl.address,
+        daoName: "TestDao",
+        roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
+        rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
+        members: [[executor1.address, executor2.address], [upgrader1.address]],
+        daoFunctionDescs: [
+          "execute(address[],uint256[],bytes[])",
+          "upgradeTo(address)",
+        ],
+        daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
+        moduleTargets: [],
+        moduleFunctionDescs: [],
+        moduleActionRoles: [],
+      }
+    );
 
-    createDAOTx = await daoFactory.createDAO(
-      deployer.address,
-      {
+    createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
@@ -89,7 +88,12 @@ describe("DAOFactory", () => {
   it("emits an event with the new DAO's address", async () => {
     expect(createDAOTx)
       .to.emit(daoFactory, "DAOCreated")
-      .withArgs(daoAddress, accessControlAddress);
+      .withArgs(
+        daoAddress,
+        accessControlAddress,
+        deployer.address,
+        deployer.address
+      );
   });
 
   it("Creates a DAO and AccessControl Contract", async () => {
