@@ -39,13 +39,14 @@ contract MetaFactory is IMetaFactory, ERC165 {
         returns (
             address dao,
             address accessControl,
+            address timelock,
             address governor,
             address treasury
         )
     {
         (dao, accessControl) = _createDAO(daoFactory, createDAOParams);
 
-        governor = _createGovernor(
+        (timelock, governor) = _createGovernor(
             dao,
             accessControl,
             governorFactory,
@@ -97,7 +98,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
         address accessControl,
         address governorFactory,
         IGovernorFactory.CreateGovernorParams calldata createGovernorParams
-    ) internal returns (address governor) {
+    ) internal returns (address timelock, address governor) {
         string memory errorMessage = "GovFactory: call reverted without message";
         (bool success, bytes memory data) = governorFactory.delegatecall(
             abi.encodeWithSignature(
@@ -110,7 +111,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
         );
         Address.verifyCallResult(success, data, errorMessage);
 
-        (, governor) = abi.decode(data, (address, address));
+        (timelock, governor) = abi.decode(data, (address, address));
     }
 
     function _createTreasury(
