@@ -78,21 +78,20 @@ describe("Gov Module Factory", function () {
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
       deployer.address,
       {
-      daoImplementation: daoImpl.address,
-      accessControlImplementation: accessControlImpl.address,
-      daoName: "TestDao",
-      roles: ["EXECUTE_ROLE"],
-      rolesAdmins: ["DAO_ROLE"],
-      members: [[executor1.address, executor2.address]],
-      daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
-      daoActionRoles: [["EXECUTE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
-    });
-    createDAOTx = await daoFactory.createDAO(
-      deployer.address,
-      {
+        daoImplementation: daoImpl.address,
+        accessControlImplementation: accessControlImpl.address,
+        daoName: "TestDao",
+        roles: ["EXECUTE_ROLE"],
+        rolesAdmins: ["DAO_ROLE"],
+        members: [[executor1.address, executor2.address]],
+        daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
+        daoActionRoles: [["EXECUTE_ROLE"]],
+        moduleTargets: [],
+        moduleFunctionDescs: [],
+        moduleActionRoles: [],
+      }
+    );
+    createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
@@ -176,7 +175,12 @@ describe("Gov Module Factory", function () {
     it("emits an event with the new DAO's address", async () => {
       expect(createDAOTx)
         .to.emit(daoFactory, "DAOCreated")
-        .withArgs(daoAddress, accessControlAddress, deployer.address, deployer.address);
+        .withArgs(
+          daoAddress,
+          accessControlAddress,
+          deployer.address,
+          deployer.address
+        );
     });
 
     it("emits an event with the new Gov's address", async () => {

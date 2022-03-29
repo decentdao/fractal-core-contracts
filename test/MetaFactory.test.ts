@@ -91,7 +91,8 @@ describe.only("MetaFactory", () => {
   };
 
   beforeEach(async () => {
-    [deployer, executor1, voterA, voterB, voterC, upgrader] = await ethers.getSigners();
+    [deployer, executor1, voterA, voterB, voterC, upgrader] =
+      await ethers.getSigners();
 
     // Deploy Impl Contracts
     daoImpl = await new DAO__factory(deployer).deploy();
@@ -184,7 +185,10 @@ describe.only("MetaFactory", () => {
     timelock = TimelockUpgradeable__factory.connect(timelockAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    accessControl = AccessControl__factory.connect(accessControlAddress, deployer);
+    accessControl = AccessControl__factory.connect(
+      accessControlAddress,
+      deployer
+    );
 
     // eslint-disable-next-line camelcase
     treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
@@ -193,12 +197,28 @@ describe.only("MetaFactory", () => {
     dao = DAO__factory.connect(daoAddress, deployer);
   });
 
-  // No events
-  // it("emits an event with the new DAO's address", async () => {
-  //   expect(createTx)
-  //     .to.emit(daoFactory, "DAOCreated")
-  //     .withArgs(daoAddress, accessControlAddress);
-  // });
+  it("emits an event with the new DAO's address", async () => {
+    expect(createTx)
+      .to.emit(daoFactory, "DAOCreated")
+      .withArgs(
+        daoAddress,
+        accessControlAddress,
+        metaFactory.address,
+        deployer.address
+      );
+  });
+
+  it("emits an event with the new Gov's address", async () => {
+    expect(createTx)
+      .to.emit(govFactory, "GovernorCreated")
+      .withArgs(timelockAddress, governorAddress);
+  });
+
+  it("emits an event with the new treasury's address", async () => {
+    expect(createTx)
+      .to.emit(treasuryFactory, "TreasuryCreated")
+      .withArgs(treasuryAddress, accessControlAddress);
+  });
 
   it("Creates a DAO and AccessControl Contract", async () => {
     // eslint-disable-next-line no-unused-expressions
@@ -246,5 +266,32 @@ describe.only("MetaFactory", () => {
     ).to.eq(true);
     // Supports ERC-165 interface
     expect(await govFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
+  });
+
+  it("Executor Role is set", async () => {
+    expect(
+      await accessControl.hasRole("EXECUTE_ROLE", executor1.address)
+    ).to.eq(true);
+    expect(await accessControl.getRoleAdmin("EXECUTE_ROLE")).to.eq("DAO_ROLE");
+  });
+
+  it("Upgrade Role is set", async () => {
+    expect(await accessControl.hasRole("UPGRADE_ROLE", upgrader.address)).to.eq(
+      true
+    );
+    expect(await accessControl.getRoleAdmin("UPGRADE_ROLE")).to.eq("DAO_ROLE");
+  });
+
+  it("Should setup Actions", async () => {
+    expect(
+      await accessControl.getActionRoles(
+        daoAddress,
+        "execute(address[],uint256[],bytes[])"
+      )
+    ).to.deep.eq(["EXECUTE_ROLE"]);
+
+    expect(
+      await accessControl.getActionRoles(daoAddress, "upgradeTo(address)")
+    ).to.deep.eq(["EXECUTE_ROLE", "UPGRADE_ROLE"]);
   });
 });

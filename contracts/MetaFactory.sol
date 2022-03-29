@@ -45,20 +45,9 @@ contract MetaFactory is IMetaFactory, ERC165 {
             address treasury
         )
     {
-        (dao, accessControl) = _createDAO(daoFactory, msg.sender, createDAOParams);
-
-        (timelock, governor) = _createGovernor(
-            dao,
-            accessControl,
-            governorFactory,
-            createGovernorParams
-        );
-
-        treasury = _createTreasury(
-            treasuryFactory,
-            treasuryImplementation,
-            accessControl
-        );
+        (dao, accessControl) = IDAOFactory(daoFactory).createDAO(msg.sender, createDAOParams);
+        (timelock, governor) = IGovernorFactory(governorFactory).createGovernor(dao, accessControl, createGovernorParams);
+        treasury = ITreasuryModuleFactory(treasuryFactory).createTreasury(accessControl, treasuryImplementation);
     }
 
     /// @notice Returns whether a given interface ID is supported
@@ -74,32 +63,5 @@ contract MetaFactory is IMetaFactory, ERC165 {
         return
             interfaceId == type(IMetaFactory).interfaceId ||
             super.supportsInterface(interfaceId);
-    }
-
-    /// @notice Creates the DAO and Access Control contract
-    /// @param daoFactory The address of the DAO
-    function _createDAO(
-        address daoFactory,
-        address creator,
-        IDAOFactory.CreateDAOParams calldata createDAOParams
-    ) internal returns (address dao, address accessControl) {
-        (dao, accessControl) = IDAOFactory(daoFactory).createDAO(creator, createDAOParams);
-    }
-
-    function _createGovernor(
-        address dao,
-        address accessControl,
-        address governorFactory,
-        IGovernorFactory.CreateGovernorParams calldata createGovernorParams
-    ) internal returns (address timelock, address governor) {
-        (timelock, governor) = IGovernorFactory(governorFactory).createGovernor(dao, accessControl, createGovernorParams);
-    }
-
-    function _createTreasury(
-        address treasuryFactory,
-        address treasuryImplementation,
-        address accessControl
-    ) internal returns (address treasury) {
-        treasury = ITreasuryModuleFactory(treasuryFactory).createTreasury(accessControl, treasuryImplementation);
     }
 }
