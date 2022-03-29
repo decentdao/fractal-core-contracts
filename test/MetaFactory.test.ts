@@ -52,7 +52,6 @@ describe("MetaFactory", () => {
   let dao: DAO;
   let govModule: GovernorModule;
   let timelock: TimelockUpgradeable;
-  let treasury: TreasuryModule;
   let createTx: ContractTransaction;
 
   // Wallets
@@ -189,9 +188,6 @@ describe("MetaFactory", () => {
       accessControlAddress,
       deployer
     );
-
-    // eslint-disable-next-line camelcase
-    treasury = TreasuryModule__factory.connect(treasuryAddress, deployer);
 
     // eslint-disable-next-line camelcase
     dao = DAO__factory.connect(daoAddress, deployer);
