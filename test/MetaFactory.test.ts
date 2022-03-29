@@ -27,7 +27,7 @@ import {
 } from "../typechain";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("MetaFactory", () => {
+describe("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
@@ -128,7 +128,7 @@ describe.only("MetaFactory", () => {
       daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
       rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address], [upgrader.address]],
+      members: [[executor1.address, metaFactory.address], [upgrader.address]],
       daoFunctionDescs: [
         "execute(address[],uint256[],bytes[])",
         "upgradeTo(address)",
@@ -272,6 +272,9 @@ describe.only("MetaFactory", () => {
     expect(
       await accessControl.hasRole("EXECUTE_ROLE", executor1.address)
     ).to.eq(true);
+    expect(
+      await accessControl.hasRole("EXECUTE_ROLE", metaFactory.address)
+    ).to.eq(false);
     expect(await accessControl.getRoleAdmin("EXECUTE_ROLE")).to.eq("DAO_ROLE");
   });
 
@@ -282,7 +285,7 @@ describe.only("MetaFactory", () => {
     expect(await accessControl.getRoleAdmin("UPGRADE_ROLE")).to.eq("DAO_ROLE");
   });
 
-  it("Should setup Actions", async () => {
+  it("Should setup Actions for MVD", async () => {
     expect(
       await accessControl.getActionRoles(
         daoAddress,
@@ -293,5 +296,47 @@ describe.only("MetaFactory", () => {
     expect(
       await accessControl.getActionRoles(daoAddress, "upgradeTo(address)")
     ).to.deep.eq(["EXECUTE_ROLE", "UPGRADE_ROLE"]);
+  });
+
+  it("Should setup Roles for Gov", async () => {
+    expect(await accessControl.hasRole("GOV_ROLE", govModule.address)).to.eq(
+      true
+    );
+    expect(await accessControl.hasRole("EXECUTE_ROLE", timelock.address)).to.eq(
+      true
+    );
+  });
+
+  it("Should setup Actions for Gov", async () => {
+    expect(
+      await accessControl.getActionRoles(
+        timelock.address,
+        "updateDelay(uint256)"
+      )
+    ).to.deep.eq(["GOV_ROLE"]);
+    expect(
+      await accessControl.getActionRoles(
+        timelock.address,
+        "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)"
+      )
+    ).to.deep.eq(["GOV_ROLE"]);
+    expect(
+      await accessControl.getActionRoles(timelock.address, "cancel(bytes32)")
+    ).to.deep.eq(["GOV_ROLE"]);
+    expect(
+      await accessControl.getActionRoles(
+        timelock.address,
+        "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)"
+      )
+    ).to.deep.eq(["GOV_ROLE"]);
+    expect(
+      await accessControl.getActionRoles(timelock.address, "upgradeTo(address)")
+    ).to.deep.eq(["UPGRADE_ROLE"]);
+    expect(
+      await accessControl.getActionRoles(
+        govModule.address,
+        "upgradeTo(address)"
+      )
+    ).to.deep.eq(["UPGRADE_ROLE"]);
   });
 });
