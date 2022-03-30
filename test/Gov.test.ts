@@ -11,7 +11,7 @@ import {
   GovernorModule,
   GovernorModule__factory,
   IGovernorModule__factory,
-} from "../typechain";
+} from "../typechain-types";
 import chai from "chai";
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";

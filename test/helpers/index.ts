@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { TreasuryModule, TreasuryModuleFactory } from "../../typechain";
+import { TreasuryModule, TreasuryModuleFactory } from "../../typechain-types";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
 export type TreasuryEthDepositedEvent = {

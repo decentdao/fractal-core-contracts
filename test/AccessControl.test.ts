@@ -3,7 +3,7 @@ import {
   AccessControl,
   AccessControl__factory,
   IAccessControl__factory,
-} from "../typechain";
+} from "../typechain-types";
 import chai from "chai";
 import { ethers } from "hardhat";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";

@@ -6,7 +6,7 @@ import {
   DAOFactory,
   IDAOFactory__factory,
   DAO__factory,
-} from "../typechain";
+} from "../typechain-types";
 import { expect } from "chai";
 import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
