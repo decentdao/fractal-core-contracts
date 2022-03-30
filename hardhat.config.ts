@@ -22,6 +22,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 task("createDAO", "Creates a Fractal DAO")
+  .addParam("creator", "The address credited with creating the DAO")
   .addParam(
     "daoFactory",
     "The address of the DAO factory to create the DAO from"
@@ -34,6 +35,7 @@ task("createDAO", "Creates a Fractal DAO")
     "accessControlImplementation",
     "The address of the Access Control implementation contract"
   )
+  .addParam("daoName", "Name of the DAO")
   .addParam("roles", "Array of strings of the roles to initialize")
   .addParam("rolesAdmins", "Array of strings of role admins to initialize")
   .addParam("members", "Two-dimensional array of addresses of role members")
@@ -60,9 +62,11 @@ task("createDAO", "Creates a Fractal DAO")
   .setAction(async (taskArgs, hre) => {
     await createDAO(
       hre,
+      taskArgs.creator,
       taskArgs.daoFactory,
       taskArgs.daoImplementation,
       taskArgs.accessControlImplementation,
+      taskArgs.daoName,
       JSON.parse(taskArgs.roles.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.rolesAdmins.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.members.replaceAll(`'`, `"`)),

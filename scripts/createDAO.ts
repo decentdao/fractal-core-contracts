@@ -2,9 +2,11 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const createDAO = async (
   hre: HardhatRuntimeEnvironment,
+  creator: string,
   daoFactoryAddress: string,
   daoImplementationAddress: string,
   accessControlImplementationAddress: string,
+  daoName: string,
   roles: string[],
   rolesAdmins: string[],
   members: string[][],
@@ -19,9 +21,10 @@ const createDAO = async (
     daoFactoryAddress
   );
 
-  const tx = await daoFactory.createDAO({
+  const tx = await daoFactory.createDAO(creator, {
     daoImplementation: daoImplementationAddress,
     accessControlImplementation: accessControlImplementationAddress,
+    daoName: daoName,
     roles: roles,
     rolesAdmins: rolesAdmins,
     members: members,
