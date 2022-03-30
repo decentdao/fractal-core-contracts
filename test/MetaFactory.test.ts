@@ -24,7 +24,7 @@ import {
   VotesTokenWithSupply,
   VotesTokenWithSupply__factory,
   IMetaFactory__factory,
-} from "../typechain";
+} from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("MetaFactory", () => {

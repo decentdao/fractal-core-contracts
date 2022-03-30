@@ -10,7 +10,7 @@ import {
   MockERC721__factory,
   TreasuryModule,
   TreasuryModule__factory,
-} from "../typechain";
+} from "../typechain-types";
 import chai from "chai";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";

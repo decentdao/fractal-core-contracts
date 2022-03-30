@@ -8,7 +8,7 @@ import {
   IDAO__factory,
   AccessControl,
   AccessControl__factory,
-} from "../typechain";
+} from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAO", () => {

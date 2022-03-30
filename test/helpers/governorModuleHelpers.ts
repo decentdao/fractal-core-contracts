@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { VotesTokenWithSupply, GovernorModule } from "../../typechain";
+import { VotesTokenWithSupply, GovernorModule } from "../../typechain-types";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
 
 export const VoteType = {

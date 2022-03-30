@@ -1,11 +1,12 @@
-import { DAOFactory__factory } from "../typechain";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const createDAO = async (
   hre: HardhatRuntimeEnvironment,
+  creator: string,
   daoFactoryAddress: string,
   daoImplementationAddress: string,
   accessControlImplementationAddress: string,
+  daoName: string,
   roles: string[],
   rolesAdmins: string[],
   members: string[][],
@@ -16,14 +17,14 @@ const createDAO = async (
   moduleActionRoles: string[][]
 ): Promise<void> => {
   const daoFactory = await hre.ethers.getContractAt(
-    // eslint-disable-next-line camelcase
-    DAOFactory__factory.abi,
+    "DAOFactory",
     daoFactoryAddress
   );
 
-  const tx = await daoFactory.createDAO({
+  const tx = await daoFactory.createDAO(creator, {
     daoImplementation: daoImplementationAddress,
     accessControlImplementation: accessControlImplementationAddress,
+    daoName: daoName,
     roles: roles,
     rolesAdmins: rolesAdmins,
     members: members,
