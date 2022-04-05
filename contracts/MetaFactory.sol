@@ -79,9 +79,6 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 ) {
                     revert InvalidModuleAddressToPass();
                 }
-                address newAddress = newContractAddresses[
-                    moduleFactoriesCallData[i].newContractAddressesToPass[j]
-                ];
                 
                 newData = abi.encodePacked(abi.encode(
                     newContractAddresses[
