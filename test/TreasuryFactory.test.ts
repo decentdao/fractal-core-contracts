@@ -8,6 +8,7 @@ import {
   VotesTokenWithSupply__factory,
   MockERC721,
   MockERC721__factory,
+  IModuleFactory__factory,
   TreasuryModule,
   TreasuryModule__factory,
   TreasuryModuleFactory,
@@ -16,6 +17,7 @@ import {
 import chai from "chai";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
+import getInterfaceSelector from "./helpers/getInterfaceSelector";
 import {
   createTreasuryFromFactory,
   TreasuryDepositEth,
@@ -208,6 +210,18 @@ describe("Treasury Factory", function () {
         deployer,
         ethers.utils.parseUnits("10", 18)
       );
+    });
+
+    it("Supports the expected ERC165 interface", async () => {
+      // Supports Module Factory interface
+      expect(
+        await treasuryFactory.supportsInterface(
+          // eslint-disable-next-line camelcase
+          getInterfaceSelector(IModuleFactory__factory.createInterface())
+        )
+      ).to.eq(true);
+      // Supports ERC-165 interface
+      expect(await treasuryFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
     });
 
     it("Receives Ether", async () => {
