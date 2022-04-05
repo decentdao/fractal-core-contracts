@@ -27,7 +27,7 @@ import {
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("MetaFactory", () => {
+describe("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
