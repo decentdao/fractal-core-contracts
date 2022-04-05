@@ -116,6 +116,17 @@ contract MetaFactory is IMetaFactory, ERC165 {
             address(this)
         );
 
+        address[] memory moduleAddresses = new address[](newContractAddresses.length - 2);
+        for(uint256 i; i < moduleAddresses.length;) {
+          moduleAddresses[i] = newContractAddresses[i + 2];
+
+          unchecked {
+            i++;
+          }
+        }
+
+        emit DAOAndModulesCreated(newContractAddresses[0], newContractAddresses[1], moduleAddresses);
+
         return newContractAddresses;
     }
 
