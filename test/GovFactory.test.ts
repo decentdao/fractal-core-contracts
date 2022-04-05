@@ -28,7 +28,7 @@ import {
 
 const expect = chai.expect;
 
-describe("Gov Module Factory", function () {
+describe.only("Gov Module Factory", function () {
   let deployer: SignerWithAddress;
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
@@ -55,18 +55,7 @@ describe("Gov Module Factory", function () {
   let accessControl: AccessControl;
   let dao: DAO;
 
-  let govCalldata: {
-    _govImpl: string;
-    _token: string;
-    _timelockImpl: string;
-    _name: string;
-    _initialVoteExtension: BigNumber;
-    _initialVotingDelay: BigNumber;
-    _initialVotingPeriod: BigNumber;
-    _initialProposalThreshold: BigNumber;
-    _initialQuorumNumeratorValue: BigNumber;
-    _minDelay: BigNumber;
-  };
+  const abiCoder = new ethers.utils.AbiCoder();
 
   beforeEach(async function () {
     [deployer, voterA, voterB, voterC, executor1, executor2] =
@@ -135,35 +124,32 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
-      govCalldata = {
-        _govImpl: govModuleImpl.address,
-        _token: governanceToken.address,
-        _timelockImpl: timelockImpl.address,
-        _name: "TestGov",
-        _initialVoteExtension: BigNumber.from("0"),
-        _initialVotingDelay: BigNumber.from("1"),
-        _initialVotingPeriod: BigNumber.from("5"),
-        _initialProposalThreshold: BigNumber.from("0"),
-        _initialQuorumNumeratorValue: BigNumber.from("4"),
-        _minDelay: BigNumber.from("1"),
-      };
+      const govCalldata = [
+        abiCoder.encode(["address"], [daoAddress]),
+        abiCoder.encode(["address"], [accessControlAddress]),
+        abiCoder.encode(["address"], [governanceToken.address]),
+        abiCoder.encode(["address"], [govModuleImpl.address]),
+        abiCoder.encode(["address"], [timelockImpl.address]),
+        abiCoder.encode(["string"], ["TestGov"]),
+        abiCoder.encode(["uint64"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("5")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("4")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+      ];
 
-      [timelockAddress, governorModuleAddress] =
-        await govFactory.callStatic.createGovernor(
-          daoAddress,
-          accessControlAddress,
-          govCalldata
-        );
-      createGovTx = await govFactory.createGovernor(
-        daoAddress,
-        accessControlAddress,
+      governorModuleAddress = await govFactory.callStatic.createGovernor(
         govCalldata
       );
+      createGovTx = await govFactory.createGovernor(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
         deployer
       );
+
+      timelockAddress = await govModule.timelock();
 
       // eslint-disable-next-line camelcase
       timelock = TimelockUpgradeable__factory.connect(
@@ -235,35 +221,32 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
-      govCalldata = {
-        _govImpl: govModuleImpl.address,
-        _token: governanceToken.address,
-        _timelockImpl: timelockImpl.address,
-        _name: "TestGov",
-        _initialVoteExtension: BigNumber.from("0"),
-        _initialVotingDelay: BigNumber.from("1"),
-        _initialVotingPeriod: BigNumber.from("5"),
-        _initialProposalThreshold: BigNumber.from("0"),
-        _initialQuorumNumeratorValue: BigNumber.from("4"),
-        _minDelay: BigNumber.from("1"),
-      };
+      const govCalldata = [
+        abiCoder.encode(["address"], [daoAddress]),
+        abiCoder.encode(["address"], [accessControlAddress]),
+        abiCoder.encode(["address"], [governanceToken.address]),
+        abiCoder.encode(["address"], [govModuleImpl.address]),
+        abiCoder.encode(["address"], [timelockImpl.address]),
+        abiCoder.encode(["string"], ["TestGov"]),
+        abiCoder.encode(["uint64"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("5")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("4")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+      ];
 
-      [timelockAddress, governorModuleAddress] =
-        await govFactory.callStatic.createGovernor(
-          daoAddress,
-          accessControlAddress,
-          govCalldata
-        );
-      createGovTx = await govFactory.createGovernor(
-        daoAddress,
-        accessControlAddress,
+      governorModuleAddress = await govFactory.callStatic.createGovernor(
         govCalldata
       );
+      createGovTx = await govFactory.createGovernor(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
         deployer
       );
+
+      timelockAddress = await govModule.timelock();
 
       // eslint-disable-next-line camelcase
       timelock = TimelockUpgradeable__factory.connect(

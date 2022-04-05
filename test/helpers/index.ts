@@ -45,10 +45,10 @@ export async function createTreasuryFromFactory(
 ): Promise<string> {
   const abiCoder = new ethers.utils.AbiCoder();
 
-  const data = abiCoder.encode(
-    ["address", "address"],
-    [accessControlAddress, treasuryImplementationAddress]
-  );
+  const data = [
+    abiCoder.encode(["address"], [accessControlAddress]),
+    abiCoder.encode(["address"], [treasuryImplementationAddress]),
+  ];
 
   const tx: ContractTransaction = await treasuryFactory
     .connect(caller)

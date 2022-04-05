@@ -21,18 +21,21 @@ import {
   TreasuryModuleFactory__factory,
   TimelockUpgradeable,
   TimelockUpgradeable__factory,
+  TokenFactory,
+  TokenFactory__factory,
   VotesTokenWithSupply,
   VotesTokenWithSupply__factory,
   IMetaFactory__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("MetaFactory", () => {
+describe("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
   let treasuryFactory: TreasuryModuleFactory;
   let metaFactory: MetaFactory;
+  let tokenFactory: TokenFactory;
 
   // Impl
   let accessControlImpl: AccessControl;
@@ -42,18 +45,21 @@ describe.only("MetaFactory", () => {
   let treasuryImpl: TreasuryModule;
   let governanceToken: VotesTokenWithSupply;
 
-  // Deployed contracts(Proxy)
+  // Deployed contract addresses
   let daoAddress: string;
   let accessControlAddress: string;
   let timelockAddress: string;
   let governorAddress: string;
   let treasuryAddress: string;
+  let tokenAddress: string;
+
+  // Deployed contracts
   let accessControl: AccessControl;
   let dao: DAO;
   let govModule: GovernorModule;
   let treasuryModule: TreasuryModule;
   let timelock: TimelockUpgradeable;
-  let createTx: ContractTransaction;
+  let token: VotesTokenWithSupply;
 
   // Wallets
   let deployer: SignerWithAddress;
@@ -62,6 +68,8 @@ describe.only("MetaFactory", () => {
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
   let voterC: SignerWithAddress;
+
+  let createTx: ContractTransaction;
 
   beforeEach(async () => {
     [deployer, executor1, voterA, voterB, voterC, upgrader] =
@@ -81,6 +89,7 @@ describe.only("MetaFactory", () => {
     treasuryFactory = await new TreasuryModuleFactory__factory(
       deployer
     ).deploy();
+    tokenFactory = await new TokenFactory__factory(deployer).deploy();
     metaFactory = await new MetaFactory__factory(deployer).deploy();
 
     const abiCoder = new ethers.utils.AbiCoder();
@@ -105,9 +114,21 @@ describe.only("MetaFactory", () => {
     const moduleFactoriesCalldata = [
       {
         factory: treasuryFactory.address,
-        data: abiCoder.encode(["address"], [treasuryImpl.address]),
+        data: [abiCoder.encode(["address"], [treasuryImpl.address])],
         value: 0,
         newContractAddressesToPass: [1],
+      },
+      {
+        factory: tokenFactory.address,
+        data: [
+          abiCoder.encode(["string"], ["DECENT"]),
+          abiCoder.encode(["string"], ["DCNT"]),
+          abiCoder.encode(["address[]"], [[]]),
+          abiCoder.encode(["uint256[]"], [[]]),
+          abiCoder.encode(["uint256"], [ethers.utils.parseUnits("1000", 18)]),
+        ],
+        value: 0,
+        newContractAddressesToPass: [2],
       },
     ];
 
@@ -131,7 +152,7 @@ describe.only("MetaFactory", () => {
       ],
     };
 
-    [daoAddress, accessControlAddress, treasuryAddress] =
+    [daoAddress, accessControlAddress, treasuryAddress, tokenAddress] =
       await metaFactory.callStatic.createDAOAndModules(
         daoFactory.address,
         0,
@@ -161,12 +182,18 @@ describe.only("MetaFactory", () => {
 
     // eslint-disable-next-line camelcase
     treasuryModule = TreasuryModule__factory.connect(treasuryAddress, deployer);
+
+    // eslint-disable-next-line camelcase
+    token = VotesTokenWithSupply__factory.connect(tokenAddress, deployer);
   });
 
   it("Emitted the correct events", async () => {
     expect(createTx)
       .to.emit(metaFactory, "DAOAndModulesCreated")
-      .withArgs(dao.address, accessControl.address, [treasuryModule.address]);
+      .withArgs(dao.address, accessControl.address, [
+        treasuryModule.address,
+        token.address,
+      ]);
 
     expect(createTx)
       .to.emit(daoFactory, "DAOCreated")
