@@ -9,11 +9,12 @@ import "../../interfaces/ITreasuryModule.sol";
 
 /// @notice A factory contract for deploying Treasury Modules
 contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
-    function create(bytes calldata data)
+    function create(bytes[] calldata data)
         external
         returns (address treasury)
     {
-        (address accessControl, address treasuryImplementation) = abi.decode(data, (address, address));  
+        address accessControl = abi.decode(data[0], (address));
+        address treasuryImplementation = abi.decode(data[1], (address));
 
         treasury = address(
             new ERC1967Proxy(

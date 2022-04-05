@@ -70,7 +70,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 i
             ].newContractAddressesToPass.length;
 
-            bytes memory newData = moduleFactoriesCallData[i].data;
+            bytes[] memory newData = new bytes[](moduleFactoriesCallData[i].data.length + newContractAddressesToPassLength);
 
             for (uint256 j; j < newContractAddressesToPassLength; ) {
                 if (
@@ -79,12 +79,11 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 ) {
                     revert InvalidModuleAddressToPass();
                 }
-                
-                newData = abi.encodePacked(abi.encode(
+
+                newData[j] = abi.encode(
                     newContractAddresses[
                         moduleFactoriesCallData[i].newContractAddressesToPass[j]
-                    ]),
-                    newData
+                    ]
                 );
 
                 unchecked {
@@ -92,10 +91,18 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 }
             }
 
+            for (uint256 j; j < moduleFactoriesCallData[i].data.length;) {
+              newData[j + newContractAddressesToPassLength] = moduleFactoriesCallData[i].data[j];
+              
+              unchecked {
+                j++;
+              }
+            }
+
             (bool success, bytes memory returnData) = moduleFactoriesCallData[i]
                 .factory
                 .call{value: moduleFactoriesCallData[i].value}(
-                abi.encodeWithSignature("create(bytes)", newData)
+                abi.encodeWithSignature("create(bytes[])", newData)
             );
 
             if (!success) {

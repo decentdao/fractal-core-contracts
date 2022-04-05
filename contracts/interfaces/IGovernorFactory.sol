@@ -21,16 +21,7 @@ interface IGovernorFactory {
         uint256 _initialQuorumNumeratorValue;
         uint256 _minDelay;
     }
-
-    /// @dev Configures Gov Module implementation
-    /// @param _dao The address of the dao contract
-    /// @param _accessControl The address of the access control contract
-    /// @param _createGovernorParams The struct of parameters to create the governor contract
-    /// @return timelock The address of the created timelock contract
-    /// @return governorModule The address of the created governor module contract
     function createGovernor(
-        address _dao,
-        address _accessControl,
-        CreateGovernorParams calldata _createGovernorParams
-    ) external returns (address timelock, address governorModule);
+        bytes[] calldata data
+    ) external returns (address governorModule);
 }

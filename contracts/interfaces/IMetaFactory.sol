@@ -14,7 +14,7 @@ interface IMetaFactory {
 
     struct ModuleFactoryCallData {
         address factory;
-        bytes data;
+        bytes[] data;
         uint256 value;
         uint256[] newContractAddressesToPass;
     }
