@@ -14,7 +14,7 @@ import {
   DAOFactory,
   GovernorFactory,
   GovernorFactory__factory,
-  IGovernorFactory__factory,
+  IModuleFactory__factory,
 } from "../typechain-types";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -199,11 +199,11 @@ describe("Gov Module Factory", function () {
     });
 
     it("Supports the expected ERC165 interface", async () => {
-      // Supports DAO Factory interface
+      // Supports Module Factory interface
       expect(
         await govFactory.supportsInterface(
           // eslint-disable-next-line camelcase
-          getInterfaceSelector(IGovernorFactory__factory.createInterface())
+          getInterfaceSelector(IModuleFactory__factory.createInterface())
         )
       ).to.eq(true);
       // Supports ERC-165 interface
