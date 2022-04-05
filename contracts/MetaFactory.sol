@@ -11,9 +11,6 @@ import "./interfaces/IMetaFactory.sol";
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IDAO.sol";
 import "./interfaces/IAccessControl.sol";
-import "./interfaces/IGovernorFactory.sol";
-import "./interfaces/ITreasuryModuleFactory.sol";
-import "./interfaces/ITimelockUpgradeable.sol";
 
 /// @notice A factory contract for deploying DAOs along with any desired modules within one transaction
 contract MetaFactory is IMetaFactory, ERC165 {
