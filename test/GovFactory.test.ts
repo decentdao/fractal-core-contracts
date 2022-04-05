@@ -28,7 +28,7 @@ import {
 
 const expect = chai.expect;
 
-describe.only("Gov Module Factory", function () {
+describe("Gov Module Factory", function () {
   let deployer: SignerWithAddress;
   let voterA: SignerWithAddress;
   let voterB: SignerWithAddress;
@@ -139,10 +139,8 @@ describe.only("Gov Module Factory", function () {
         abiCoder.encode(["uint256"], [BigNumber.from("1")]),
       ];
 
-      governorModuleAddress = await govFactory.callStatic.createGovernor(
-        govCalldata
-      );
-      createGovTx = await govFactory.createGovernor(govCalldata);
+      governorModuleAddress = await govFactory.callStatic.create(govCalldata);
+      createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
@@ -236,10 +234,8 @@ describe.only("Gov Module Factory", function () {
         abiCoder.encode(["uint256"], [BigNumber.from("1")]),
       ];
 
-      governorModuleAddress = await govFactory.callStatic.createGovernor(
-        govCalldata
-      );
-      createGovTx = await govFactory.createGovernor(govCalldata);
+      governorModuleAddress = await govFactory.callStatic.create(govCalldata);
+      createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
