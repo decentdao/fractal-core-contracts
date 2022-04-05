@@ -9,14 +9,12 @@ import "../../interfaces/ITreasuryModule.sol";
 
 /// @notice A factory contract for deploying Treasury Modules
 contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
-    /// @notice Creates a Treasury Module with an ERC-1967 proxy
-    /// @param accessControl The address of the access control contract for the DAO
-    /// @param treasuryImplementation The address of the treasury implementation contract
-    /// @return treasury The address of the treasury proxy
-    function createTreasury(
-        address accessControl,
-        address treasuryImplementation
-    ) external returns (address treasury) {
+    function create(bytes calldata data)
+        external
+        returns (address treasury)
+    {
+        (address accessControl, address treasuryImplementation) = abi.decode(data, (address, address));  
+
         treasury = address(
             new ERC1967Proxy(
                 treasuryImplementation,
@@ -27,7 +25,7 @@ contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
             )
         );
 
-      emit TreasuryCreated(treasury, accessControl);
+        emit TreasuryCreated(treasury, accessControl);
     }
 
     /// @notice Returns whether a given interface ID is supported
