@@ -6,13 +6,14 @@ import "./IDAOFactory.sol";
 import "./IGovernorFactory.sol";
 
 interface IMetaFactory {
+    event DAOAndModulesCreated(address dao, address accessControl, address[] modules);
+
     error UnequalArrayLengths();
     error InvalidModuleAddressToPass();
     error FactoryCallFailed();
 
     struct ModuleFactoryCallData {
         address factory;
-        address implementation;
         bytes data;
         uint256 value;
         uint256[] newContractAddressesToPass;
