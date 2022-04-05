@@ -2,13 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "./mocks/VotesTokenWithSupply.sol";
-import "./interfaces/ITokenFactory.sol";
-
-import "hardhat/console.sol";
+import "./interfaces/IModuleFactory.sol";
 
 /// @notice Token Factory used to deploy votes tokens
-contract TokenFactory is ITokenFactory, ERC165 {
-    function create(bytes[] calldata data) external returns (address token) {
+contract TokenFactory is IModuleFactory, ERC165 {
+    /// @dev Creates an ERC-20 votes token
+    /// @param data The array of bytes used to create the token
+    /// @return address The address of the created token
+    function create(bytes[] calldata data) external returns (address) {
         address treasury = abi.decode(data[0], (address));
         string memory name = abi.decode(data[1], (string));
         string memory symbol = abi.decode(data[2], (string));
@@ -16,7 +17,7 @@ contract TokenFactory is ITokenFactory, ERC165 {
         uint256[] memory allocations = abi.decode(data[4], (uint256[]));
         uint256 totalSupply = abi.decode(data[5], (uint256));
 
-        token = address(
+        return address(
             new VotesTokenWithSupply(
                 name,
                 symbol,
@@ -39,7 +40,7 @@ contract TokenFactory is ITokenFactory, ERC165 {
         returns (bool)
     {
         return
-            interfaceId == type(ITokenFactory).interfaceId ||
+            interfaceId == type(IModuleFactory).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

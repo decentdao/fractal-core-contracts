@@ -3,21 +3,26 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import "../../interfaces/IGovernorFactory.sol";
+import "../../interfaces/IModuleFactory.sol";
+import "../../interfaces/ITimelockUpgradeable.sol";
+import "../../interfaces/IGovernorModule.sol";
 
 /// @dev Governor Factory used to deploy Gov Modules
 /// @dev Deploys Timelock dependecies
-contract GovernorFactory is IGovernorFactory, ERC165 {
-    /// @dev Configures Gov Module implementation
-    function createGovernor(bytes[] calldata data)
-        external
-        returns (address governorModule)
-    {
+contract GovernorFactory is IModuleFactory, ERC165 {
+    event GovernorCreated(address timelock, address governorModule);
+
+    /// @dev Creates a module
+    /// @param data The array of bytes used to create the module
+    /// @return address The address of the created module
+    function create(bytes[] calldata data) external returns (address) {
         address timelock = createTimelock(data);
 
-        governorModule = createGovernor(timelock, data);
+        address governorModule = createGovernor(timelock, data);
 
         emit GovernorCreated(timelock, governorModule);
+
+        return governorModule;
     }
 
     function createTimelock(bytes[] memory data)
@@ -73,7 +78,7 @@ contract GovernorFactory is IGovernorFactory, ERC165 {
         returns (bool)
     {
         return
-            interfaceId == type(IGovernorFactory).interfaceId ||
+            interfaceId == type(IModuleFactory).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

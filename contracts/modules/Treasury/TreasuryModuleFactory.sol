@@ -4,11 +4,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "../../interfaces/ITreasuryModuleFactory.sol";
+import "../../interfaces/IModuleFactory.sol";
 import "../../interfaces/ITreasuryModule.sol";
 
 /// @notice A factory contract for deploying Treasury Modules
-contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
+contract TreasuryModuleFactory is IModuleFactory, ERC165 {
+    event TreasuryCreated(address indexed treasuryAddress, address indexed accessControl);
+
     function create(bytes[] calldata data)
         external
         returns (address treasury)
@@ -40,7 +42,7 @@ contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
         returns (bool)
     {
         return
-            interfaceId == type(ITreasuryModuleFactory).interfaceId ||
+            interfaceId == type(IModuleFactory).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }
