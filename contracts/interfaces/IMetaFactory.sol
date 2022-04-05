@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "./IGovernorModule.sol";
 import "./IDAOFactory.sol";
-import "./IGovernorFactory.sol";
 
 interface IMetaFactory {
     event DAOAndModulesCreated(address dao, address accessControl, address[] modules);
