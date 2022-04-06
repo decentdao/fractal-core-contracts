@@ -9,6 +9,7 @@ import {
   DAOFactory__factory,
   AccessControl,
   AccessControl__factory,
+  IMetaFactory__factory,
   MetaFactory__factory,
   MetaFactory,
   GovernorModule,
@@ -25,7 +26,6 @@ import {
   TokenFactory__factory,
   VotesTokenWithSupply,
   VotesTokenWithSupply__factory,
-  IMetaFactory__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
@@ -43,7 +43,6 @@ describe.only("MetaFactory", () => {
   let govImpl: GovernorModule;
   let timelockImpl: TimelockUpgradeable;
   let treasuryImpl: TreasuryModule;
-  let governanceToken: VotesTokenWithSupply;
 
   // Deployed contract addresses
   let daoAddress: string;
@@ -64,16 +63,13 @@ describe.only("MetaFactory", () => {
   // Wallets
   let deployer: SignerWithAddress;
   let upgrader: SignerWithAddress;
-  let executor1: SignerWithAddress;
-  let voterA: SignerWithAddress;
-  let voterB: SignerWithAddress;
-  let voterC: SignerWithAddress;
+  let executor: SignerWithAddress;
+  let withdrawer: SignerWithAddress;
 
   let createTx: ContractTransaction;
 
   beforeEach(async () => {
-    [deployer, executor1, voterA, voterB, voterC, upgrader] =
-      await ethers.getSigners();
+    [deployer, upgrader, executor, withdrawer] = await ethers.getSigners();
 
     // Deploy Impl Contracts
     daoImpl = await new DAO__factory(deployer).deploy();
@@ -98,14 +94,14 @@ describe.only("MetaFactory", () => {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
-      members: [[executor1.address], [upgrader.address]],
+      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE", "WITHDRAWER_ROLE"],
+      rolesAdmins: ["DAO_ROLE", "DAO_ROLE", "DAO_ROLE"],
+      members: [[executor.address], [upgrader.address], [withdrawer.address]],
       daoFunctionDescs: [
         "execute(address[],uint256[],bytes[])",
         "upgradeTo(address)",
       ],
-      daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
+      daoActionRoles: [["EXECUTE_ROLE"], ["UPGRADE_ROLE"]],
     };
 
     const moduleFactoriesCalldata = [
@@ -149,7 +145,7 @@ describe.only("MetaFactory", () => {
     ];
 
     const moduleActionCalldata = {
-      contractIndexes: [2, 2, 2, 2, 2, 2],
+      contractIndexes: [2, 2, 2, 2, 2, 2, 4, 5, 5, 5, 5, 5],
       functionDescs: [
         "withdrawEth(address[],uint256[])",
         "depositERC20Tokens(address[],address[],uint256[])",
@@ -157,6 +153,12 @@ describe.only("MetaFactory", () => {
         "depositERC721Tokens(address[],address[],uint256[])",
         "withdrawERC721Tokens(address[],address[],uint256[])",
         "upgradeTo(address)",
+        "upgradeTo(address)",
+        "upgradeTo(address)",
+        "updateDelay(uint256)",
+        "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)",
+        "cancel(bytes32)",
+        "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)",
       ],
       roles: [
         ["WITHDRAWER_ROLE"],
@@ -165,6 +167,12 @@ describe.only("MetaFactory", () => {
         ["WITHDRAWER_ROLE"],
         ["WITHDRAWER_ROLE"],
         ["UPGRADE_ROLE"],
+        ["UPGRADE_ROLE"],
+        ["UPGRADE_ROLE"],
+        ["GOVERNOR_ROLE"],
+        ["GOVERNOR_ROLE"],
+        ["GOVERNOR_ROLE"],
+        ["GOVERNOR_ROLE"],
       ],
     };
 
@@ -181,7 +189,7 @@ describe.only("MetaFactory", () => {
       createDAOParams,
       moduleFactoriesCalldata,
       moduleActionCalldata,
-      [[], []]
+      [[5], [0], [0]]
     );
 
     createTx = await metaFactory
@@ -192,7 +200,7 @@ describe.only("MetaFactory", () => {
         createDAOParams,
         moduleFactoriesCalldata,
         moduleActionCalldata,
-        [[], []]
+        [[5], [0], [0]]
       );
 
     // eslint-disable-next-line camelcase
@@ -252,9 +260,9 @@ describe.only("MetaFactory", () => {
       false
     );
 
-    expect(
-      await accessControl.hasRole("EXECUTE_ROLE", executor1.address)
-    ).to.eq(true);
+    expect(await accessControl.hasRole("EXECUTE_ROLE", executor.address)).to.eq(
+      true
+    );
 
     expect(
       await accessControl.hasRole("EXECUTE_ROLE", metaFactory.address)
@@ -268,61 +276,652 @@ describe.only("MetaFactory", () => {
       true
     );
 
+    expect(await accessControl.hasRole("UPGRADE_ROLE", executor.address)).to.eq(
+      false
+    );
+  });
+
+  it("Sets up the correct DAO role authorization", async () => {
     expect(
-      await accessControl.hasRole("UPGRADE_ROLE", executor1.address)
+      await accessControl.isRoleAuthorized(
+        "EXECUTE_ROLE",
+        dao.address,
+        "execute(address[],uint256[],bytes[])"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        dao.address,
+        "execute(address[],uint256[],bytes[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "RANDOM_ROLE",
+        dao.address,
+        "execute(address[],uint256[],bytes[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "EXECUTE_ROLE",
+        dao.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        dao.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "RANDOM_ROLE",
+        dao.address,
+        "upgradeTo(address)"
+      )
     ).to.eq(false);
   });
 
-  it("Setup the correct action authorization", async () => {
-    // "execute(address[],uint256[],bytes[])",
-    // "upgradeTo(address)",
-
+  it("Sets up the correct Treasury role authorization", async () => {
     expect(
       await accessControl.isRoleAuthorized(
-        "EXECUTE_ROLE",
-        dao.address,
-        "execute(address[],uint256[],bytes[])"
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
+        "withdrawEth(address[],uint256[])"
       )
     ).to.eq(true);
 
     expect(
       await accessControl.isRoleAuthorized(
         "UPGRADE_ROLE",
-        dao.address,
-        "execute(address[],uint256[],bytes[])"
+        treasuryModule.address,
+        "withdrawEth(address[],uint256[])"
       )
     ).to.eq(false);
 
     expect(
       await accessControl.isRoleAuthorized(
-        "RANDOM_ROLE",
-        dao.address,
-        "execute(address[],uint256[],bytes[])"
-      )
-    ).to.eq(false);
-
-    expect(
-      await accessControl.isRoleAuthorized(
-        "EXECUTE_ROLE",
-        dao.address,
-        "upgradeTo(address)"
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
+        "depositERC20Tokens(address[],address[],uint256[])"
       )
     ).to.eq(true);
 
     expect(
       await accessControl.isRoleAuthorized(
         "UPGRADE_ROLE",
-        dao.address,
+        treasuryModule.address,
+        "depositERC20Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
+        "withdrawERC20Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        treasuryModule.address,
+        "withdrawERC20Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
+        "depositERC721Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        treasuryModule.address,
+        "depositERC721Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
+        "withdrawERC721Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        treasuryModule.address,
+        "withdrawERC721Tokens(address[],address[],uint256[])"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        treasuryModule.address,
         "upgradeTo(address)"
       )
     ).to.eq(true);
 
     expect(
       await accessControl.isRoleAuthorized(
-        "RANDOM_ROLE",
-        dao.address,
+        "WITHDRAWER_ROLE",
+        treasuryModule.address,
         "upgradeTo(address)"
       )
     ).to.eq(false);
+  });
+
+  it("Sets up the correct Governor module role authorization", async () => {
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        govModule.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "WITHDRAWER_ROLE",
+        govModule.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(false);
+  });
+
+  it("Sets up the correct timelock role authorization", async () => {
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "upgradeTo(address)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "updateDelay(uint256)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "updateDelay(uint256)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "updateDelay(uint256)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "updateDelay(uint256)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "scheduleBatch(address[],uint256[],bytes[],bytes32,bytes32,uint256)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "cancel(bytes32)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "cancel(bytes32)"
+      )
+    ).to.eq(false);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "GOVERNOR_ROLE",
+        timelock.address,
+        "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)"
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.isRoleAuthorized(
+        "UPGRADE_ROLE",
+        timelock.address,
+        "executeBatch(address[],uint256[],bytes[],bytes32,bytes32)"
+      )
+    ).to.eq(false);
+  });
+
+  it("Sets up the correct DAO action authorization", async () => {
+    expect(
+      await accessControl.actionIsAuthorized(
+        executor.address,
+        dao.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["execute(address[],uint256[],bytes[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        timelock.address,
+        dao.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["execute(address[],uint256[],bytes[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        upgrader.address,
+        dao.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        executor.address,
+        dao.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(false);
+  });
+
+  it("Sets up the correct Treasury action authorization", async () => {
+    expect(
+      await accessControl.actionIsAuthorized(
+        withdrawer.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawEth(address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawEth(address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        withdrawer.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["depositERC20Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["depositERC20Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        withdrawer.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawERC20Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawERC20Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        withdrawer.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["depositERC721Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["depositERC721Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        withdrawer.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawERC721Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [
+              ethers.utils.solidityPack(
+                ["string"],
+                ["withdrawERC721Tokens(address[],address[],uint256[])"]
+              ),
+            ]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        upgrader.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        treasuryModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+  });
+
+  it("Sets up the correct Governor module action authorization", async () => {
+    expect(
+      await accessControl.actionIsAuthorized(
+        upgrader.address,
+        govModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        govModule.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+  });
+
+  it("Sets up the correct timelock action authorization", async () => {
+    expect(
+      await accessControl.actionIsAuthorized(
+        upgrader.address,
+        timelock.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+
+    expect(
+      await accessControl.actionIsAuthorized(
+        dao.address,
+        timelock.address,
+        ethers.utils.hexDataSlice(
+          ethers.utils.solidityKeccak256(
+            ["bytes"],
+            [ethers.utils.solidityPack(["string"], ["upgradeTo(address)"])]
+          ),
+          0,
+          4
+        )
+      )
+    ).to.eq(true);
+  });
+
+  it("Supports the expected ERC165 interface", async () => {
+    // Supports Module Factory interface
+    expect(
+      await govFactory.supportsInterface(
+        // eslint-disable-next-line camelcase
+        getInterfaceSelector(IMetaFactory__factory.createInterface())
+      )
+    ).to.eq(true);
+    // Supports ERC-165 interface
+    expect(await govFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
   });
 });
