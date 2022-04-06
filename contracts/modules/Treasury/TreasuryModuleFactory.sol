@@ -13,12 +13,14 @@ contract TreasuryModuleFactory is IModuleFactory, ERC165 {
 
     function create(bytes[] calldata data)
         external
-        returns (address treasury)
+        returns (address[] memory)
     {
+        address[] memory createdContracts = new address[](1);
+      
         address accessControl = abi.decode(data[0], (address));
         address treasuryImplementation = abi.decode(data[1], (address));
 
-        treasury = address(
+        createdContracts[0] = address(
             new ERC1967Proxy(
                 treasuryImplementation,
                 abi.encodeWithSelector(
@@ -28,7 +30,9 @@ contract TreasuryModuleFactory is IModuleFactory, ERC165 {
             )
         );
 
-        emit TreasuryCreated(treasury, accessControl);
+        emit TreasuryCreated(createdContracts[0], accessControl);
+
+        return createdContracts;
     }
 
     /// @notice Returns whether a given interface ID is supported

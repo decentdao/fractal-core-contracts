@@ -9,7 +9,9 @@ contract TokenFactory is IModuleFactory, ERC165 {
     /// @dev Creates an ERC-20 votes token
     /// @param data The array of bytes used to create the token
     /// @return address The address of the created token
-    function create(bytes[] calldata data) external returns (address) {
+    function create(bytes[] calldata data) external returns (address[] memory) {
+        address[] memory createdContracts = new address[](1);
+
         address treasury = abi.decode(data[0], (address));
         string memory name = abi.decode(data[1], (string));
         string memory symbol = abi.decode(data[2], (string));
@@ -17,7 +19,7 @@ contract TokenFactory is IModuleFactory, ERC165 {
         uint256[] memory allocations = abi.decode(data[4], (uint256[]));
         uint256 totalSupply = abi.decode(data[5], (uint256));
 
-        return address(
+        createdContracts[0] = address(
             new VotesTokenWithSupply(
                 name,
                 symbol,
@@ -27,6 +29,8 @@ contract TokenFactory is IModuleFactory, ERC165 {
                 treasury
             )
         );
+
+        return createdContracts;
     }
 
     /// @notice Returns whether a given interface ID is supported

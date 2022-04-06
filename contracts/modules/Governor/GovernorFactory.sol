@@ -15,15 +15,17 @@ contract GovernorFactory is IModuleFactory, ERC165 {
 
     /// @dev Creates a module
     /// @param data The array of bytes used to create the module
-    /// @return address The address of the created module
-    function create(bytes[] calldata data) external returns (address) {
-        address timelock = createTimelock(data);
+    /// @return address[] The array of addresses of the created module
+    function create(bytes[] calldata data) external returns (address[] memory) {
+        address[] memory createdContracts = new address[](2);
 
-        address governorModule = createGovernor(timelock, data);
+        createdContracts[1] = createTimelock(data);
 
-        emit GovernorCreated(timelock, governorModule);
+        createdContracts[0] = createGovernor(createdContracts[1], data);
 
-        return governorModule;
+        emit GovernorCreated(createdContracts[0], createdContracts[1]);
+
+        return createdContracts;
     }
 
     function createTimelock(bytes[] memory data)
