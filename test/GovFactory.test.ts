@@ -133,15 +133,14 @@ describe("Gov Module Factory", function () {
         abiCoder.encode(["uint256"], [BigNumber.from("1")]),
       ];
 
-      governorModuleAddress = await govFactory.callStatic.create(govCalldata);
+      [governorModuleAddress, timelockAddress] =
+        await govFactory.callStatic.create(govCalldata);
       createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
         deployer
       );
-
-      timelockAddress = await govModule.timelock();
 
       // eslint-disable-next-line camelcase
       timelock = TimelockUpgradeable__factory.connect(
@@ -228,15 +227,14 @@ describe("Gov Module Factory", function () {
         abiCoder.encode(["uint256"], [BigNumber.from("1")]),
       ];
 
-      governorModuleAddress = await govFactory.callStatic.create(govCalldata);
+      [governorModuleAddress, timelockAddress] =
+        await govFactory.callStatic.create(govCalldata);
       createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
         deployer
       );
-
-      timelockAddress = await govModule.timelock();
 
       // eslint-disable-next-line camelcase
       timelock = TimelockUpgradeable__factory.connect(

@@ -29,7 +29,7 @@ import {
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe("MetaFactory", () => {
+describe.only("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
@@ -114,6 +114,7 @@ describe("MetaFactory", () => {
         data: [abiCoder.encode(["address"], [treasuryImpl.address])],
         value: 0,
         newContractAddressesToPass: [1],
+        addressesReturned: 1,
       },
       {
         factory: tokenFactory.address,
@@ -126,6 +127,7 @@ describe("MetaFactory", () => {
         ],
         value: 0,
         newContractAddressesToPass: [2],
+        addressesReturned: 1,
       },
       {
         factory: govFactory.address,
@@ -142,6 +144,7 @@ describe("MetaFactory", () => {
         ],
         value: 0,
         newContractAddressesToPass: [0, 1, 3],
+        addressesReturned: 2,
       },
     ];
 
@@ -171,6 +174,7 @@ describe("MetaFactory", () => {
       treasuryAddress,
       tokenAddress,
       governorAddress,
+      timelockAddress,
     ] = await metaFactory.callStatic.createDAOAndModules(
       daoFactory.address,
       0,
@@ -209,8 +213,6 @@ describe("MetaFactory", () => {
     // eslint-disable-next-line camelcase
     govModule = GovernorModule__factory.connect(governorAddress, deployer);
 
-    timelockAddress = await govModule.timelock();
-
     // eslint-disable-next-line camelcase
     timelock = TimelockUpgradeable__factory.connect(timelockAddress, deployer);
   });
@@ -222,6 +224,7 @@ describe("MetaFactory", () => {
         treasuryModule.address,
         token.address,
         govModule.address,
+        timelock.address,
       ]);
 
     expect(createTx)
@@ -236,6 +239,10 @@ describe("MetaFactory", () => {
     expect(createTx)
       .to.emit(treasuryFactory, "TreasuryCreated")
       .withArgs(treasuryModule.address, accessControl.address);
+
+    expect(createTx)
+      .to.emit(govFactory, "GovernorCreated")
+      .withArgs(govModule.address, timelock.address);
   });
 
   it("Setup the correct roles", async () => {
