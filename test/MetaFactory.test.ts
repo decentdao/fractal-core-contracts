@@ -176,7 +176,8 @@ describe("MetaFactory", () => {
       0,
       createDAOParams,
       moduleFactoriesCalldata,
-      moduleActionCalldata
+      moduleActionCalldata,
+      [[], []]
     );
 
     createTx = await metaFactory
@@ -186,7 +187,8 @@ describe("MetaFactory", () => {
         0,
         createDAOParams,
         moduleFactoriesCalldata,
-        moduleActionCalldata
+        moduleActionCalldata,
+        [[], []]
       );
 
     // eslint-disable-next-line camelcase

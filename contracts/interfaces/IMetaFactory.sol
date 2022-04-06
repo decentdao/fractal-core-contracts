@@ -29,6 +29,7 @@ interface IMetaFactory {
         uint256 metaFactoryTempRoleIndex,
         IDAOFactory.CreateDAOParams memory createDAOParams,
         ModuleFactoryCallData[] memory moduleFactoriesCallData,
-        ModuleActionData memory moduleActionData
+        ModuleActionData memory moduleActionData,
+        uint256[][] memory roleModuleMembers
     ) external returns (address[] memory);
 }

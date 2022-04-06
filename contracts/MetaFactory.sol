@@ -19,13 +19,16 @@ contract MetaFactory is IMetaFactory, ERC165 {
         uint256 metaFactoryTempRoleIndex,
         IDAOFactory.CreateDAOParams memory createDAOParams,
         ModuleFactoryCallData[] memory moduleFactoriesCallData,
-        ModuleActionData memory moduleActionData
+        ModuleActionData memory moduleActionData,
+        uint256[][] memory roleModuleMembers
     ) external returns (address[] memory) {
         if (
             moduleActionData.contractIndexes.length !=
             moduleActionData.functionDescs.length ||
             moduleActionData.contractIndexes.length !=
-            moduleActionData.roles.length
+            moduleActionData.roles.length ||
+            createDAOParams.roles.length !=
+            roleModuleMembers.length
         ) {
             revert UnequalArrayLengths();
         }
@@ -114,6 +117,8 @@ contract MetaFactory is IMetaFactory, ERC165 {
 
         addActionsRoles(moduleActionData, newContractAddresses);
 
+        addModuleRoles(createDAOParams.roles, roleModuleMembers, newContractAddresses);
+
         // Renounce the MetaFactory temporary role
         IAccessControl(newContractAddresses[1]).renounceRole(
             createDAOParams.roles[metaFactoryTempRoleIndex],
@@ -174,6 +179,25 @@ contract MetaFactory is IMetaFactory, ERC165 {
             valuesArray,
             dataArray
         );
+    }
+
+    function addModuleRoles(string[] memory roles, uint256[][] memory roleModuleMembers, address[] memory newContractAddresses) private {
+        uint256 newMembersLength = roleModuleMembers.length;
+        address[][] memory newMembers = new address[][](newMembersLength);
+        for(uint256 i; i < newMembersLength;) {
+          uint256 newMembersInnerLength = roleModuleMembers[i].length;
+          for(uint256 j; j < newMembersInnerLength;) {
+            newMembers[i][j] = newContractAddresses[roleModuleMembers[i][j]];
+            unchecked {
+              j++;
+            }
+          }
+          unchecked {
+            i++;
+          }
+        }
+
+        IAccessControl(newContractAddresses[1]).grantRoles(roles, newMembers);
     }
 
     /// @notice Returns whether a given interface ID is supported
