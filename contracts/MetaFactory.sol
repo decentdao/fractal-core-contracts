@@ -27,14 +27,24 @@ contract MetaFactory is IMetaFactory, ERC165 {
             moduleActionData.functionDescs.length ||
             moduleActionData.contractIndexes.length !=
             moduleActionData.roles.length ||
-            createDAOParams.roles.length !=
-            roleModuleMembers.length
+            createDAOParams.roles.length != roleModuleMembers.length
         ) {
             revert UnequalArrayLengths();
         }
 
+        uint256 modulesLength = moduleFactoriesCallData.length;
+        uint256 newContractAddressesLength = 2;
+        for (uint256 i; i < modulesLength; ) {
+            newContractAddressesLength += moduleFactoriesCallData[i]
+                .addressesReturned;
+
+            unchecked {
+                i++;
+            }
+        }
+
         address[] memory newContractAddresses = new address[](
-            moduleFactoriesCallData.length + 2
+            newContractAddressesLength
         );
 
         // Give this contract a temporary role so it can execute through DAO
@@ -64,15 +74,59 @@ contract MetaFactory is IMetaFactory, ERC165 {
         newContractAddresses[0] = dao;
         newContractAddresses[1] = accessControl;
 
-        uint256 moduleFactoriesCallDataLength = moduleFactoriesCallData.length;
-        for (uint256 i; i < moduleFactoriesCallDataLength; ) {
+        newContractAddresses = createModules(newContractAddresses, moduleFactoriesCallData);
+
+        addActionsRoles(moduleActionData, newContractAddresses);
+
+        addModuleRoles(
+            createDAOParams.roles,
+            roleModuleMembers,
+            newContractAddresses
+        );
+
+        // Renounce the MetaFactory temporary role
+        IAccessControl(newContractAddresses[1]).renounceRole(
+            createDAOParams.roles[metaFactoryTempRoleIndex],
+            address(this)
+        );
+
+        address[] memory moduleAddresses = new address[](
+            newContractAddresses.length - 2
+        );
+        for (uint256 i; i < moduleAddresses.length; ) {
+            moduleAddresses[i] = newContractAddresses[i + 2];
+
+            unchecked {
+                i++;
+            }
+        }
+
+        emit DAOAndModulesCreated(
+            newContractAddresses[0],
+            newContractAddresses[1],
+            moduleAddresses
+        );
+
+        return newContractAddresses;
+    }
+
+    function createModules(
+        address[] memory newContractAddresses,
+        ModuleFactoryCallData[] memory moduleFactoriesCallData
+    ) private returns (address[] memory) {
+        uint256 newContractAddressIndex = 2;
+
+        for (uint256 i; i < moduleFactoriesCallData.length;) {
             uint256 newContractAddressesToPassLength = moduleFactoriesCallData[
                 i
             ].newContractAddressesToPass.length;
 
-            bytes[] memory newData = new bytes[](moduleFactoriesCallData[i].data.length + newContractAddressesToPassLength);
+            bytes[] memory newData = new bytes[](
+                moduleFactoriesCallData[i].data.length +
+                    newContractAddressesToPassLength
+            );
 
-            for (uint256 j; j < newContractAddressesToPassLength; ) {
+            for (uint256 j; j < newContractAddressesToPassLength;) {
                 if (
                     moduleFactoriesCallData[i].newContractAddressesToPass[j] >=
                     i + 2
@@ -91,12 +145,14 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 }
             }
 
-            for (uint256 j; j < moduleFactoriesCallData[i].data.length;) {
-              newData[j + newContractAddressesToPassLength] = moduleFactoriesCallData[i].data[j];
-              
-              unchecked {
-                j++;
-              }
+            for (uint256 j; j < moduleFactoriesCallData[i].data.length; ) {
+                newData[
+                    j + newContractAddressesToPassLength
+                ] = moduleFactoriesCallData[i].data[j];
+
+                unchecked {
+                    j++;
+                }
             }
 
             (bool success, bytes memory returnData) = moduleFactoriesCallData[i]
@@ -109,32 +165,21 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 revert FactoryCallFailed();
             }
 
-            newContractAddresses[i + 2] = abi.decode(returnData, (address));
+            address[] memory newModuleAddresses = new address[](moduleFactoriesCallData[i].addressesReturned);
+            newModuleAddresses = abi.decode(returnData, (address[]));
+
+            for(uint256 j; j < newModuleAddresses.length;) {
+              newContractAddresses[newContractAddressIndex] = newModuleAddresses[j];
+              unchecked {
+                newContractAddressIndex++;
+                j++;
+              }
+            }
+           
             unchecked {
                 i++;
             }
         }
-
-        addActionsRoles(moduleActionData, newContractAddresses);
-
-        addModuleRoles(createDAOParams.roles, roleModuleMembers, newContractAddresses);
-
-        // Renounce the MetaFactory temporary role
-        IAccessControl(newContractAddresses[1]).renounceRole(
-            createDAOParams.roles[metaFactoryTempRoleIndex],
-            address(this)
-        );
-
-        address[] memory moduleAddresses = new address[](newContractAddresses.length - 2);
-        for(uint256 i; i < moduleAddresses.length;) {
-          moduleAddresses[i] = newContractAddresses[i + 2];
-
-          unchecked {
-            i++;
-          }
-        }
-
-        emit DAOAndModulesCreated(newContractAddresses[0], newContractAddresses[1], moduleAddresses);
 
         return newContractAddresses;
     }
@@ -181,23 +226,49 @@ contract MetaFactory is IMetaFactory, ERC165 {
         );
     }
 
-    function addModuleRoles(string[] memory roles, uint256[][] memory roleModuleMembers, address[] memory newContractAddresses) private {
+    function addModuleRoles(
+        string[] memory roles,
+        uint256[][] memory roleModuleMembers,
+        address[] memory newContractAddresses
+    ) private {
+
+      
         uint256 newMembersLength = roleModuleMembers.length;
         address[][] memory newMembers = new address[][](newMembersLength);
-        for(uint256 i; i < newMembersLength;) {
-          uint256 newMembersInnerLength = roleModuleMembers[i].length;
-          for(uint256 j; j < newMembersInnerLength;) {
-            newMembers[i][j] = newContractAddresses[roleModuleMembers[i][j]];
-            unchecked {
-              j++;
+        for (uint256 i; i < newMembersLength; ) {
+            uint256 newMembersInnerLength = roleModuleMembers[i].length;
+            for (uint256 j; j < newMembersInnerLength; ) {
+                newMembers[i][j] = newContractAddresses[
+                    roleModuleMembers[i][j]
+                ];
+                unchecked {
+                    j++;
+                }
             }
-          }
-          unchecked {
-            i++;
-          }
+            unchecked {
+                i++;
+            }
         }
 
-        IAccessControl(newContractAddresses[1]).grantRoles(roles, newMembers);
+        bytes memory data = abi.encodeWithSignature(
+            "grantRoles(string[],address[][])",
+            roles,
+            newMembers
+        );
+
+        address[] memory targetArray = new address[](1);
+        uint256[] memory valuesArray = new uint256[](1);
+        bytes[] memory dataArray = new bytes[](1);
+
+        targetArray[0] = newContractAddresses[1];
+        valuesArray[0] = 0;
+        dataArray[0] = data;
+
+        IDAO(newContractAddresses[0]).execute(
+            targetArray,
+            valuesArray,
+            dataArray
+        );
     }
 
     /// @notice Returns whether a given interface ID is supported
