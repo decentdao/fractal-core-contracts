@@ -230,21 +230,21 @@ contract MetaFactory is IMetaFactory, ERC165 {
         string[] memory roles,
         uint256[][] memory roleModuleMembers,
         address[] memory newContractAddresses
-    ) private {
-
-      
+    ) private {     
         uint256 newMembersLength = roleModuleMembers.length;
         address[][] memory newMembers = new address[][](newMembersLength);
         for (uint256 i; i < newMembersLength; ) {
             uint256 newMembersInnerLength = roleModuleMembers[i].length;
+            address[] memory newMembersInner = new address[](newMembersInnerLength);
             for (uint256 j; j < newMembersInnerLength; ) {
-                newMembers[i][j] = newContractAddresses[
+                newMembersInner[j] = newContractAddresses[
                     roleModuleMembers[i][j]
                 ];
                 unchecked {
                     j++;
                 }
             }
+            newMembers[i] = newMembersInner;
             unchecked {
                 i++;
             }
