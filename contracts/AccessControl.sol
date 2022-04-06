@@ -64,6 +64,16 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         _grantRolesAndAdmins(roles, roleAdmins, members);
     }
 
+    /// @notice Grants roles to the specified addresses
+    /// @param roles The roles being granted
+    /// @param members Addresses being granted each specified role
+    function grantRoles(string[] memory roles, address[][] memory members)
+        external
+        onlyRole(DAO_ROLE)
+    {
+        _grantRoles(roles, members);
+    }
+
     /// @notice Grants a role to the specified address
     /// @param role The role being granted
     /// @param account The address being granted the specified role
@@ -281,6 +291,29 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         for (uint256 i = 0; i < rolesLength; ) {
             _setRoleAdmin(roles[i], roleAdmins[i]);
 
+            uint256 membersLength = members[i].length;
+            for (uint256 j = 0; j < membersLength; ) {
+                _grantRole(roles[i], members[i][j]);
+                unchecked {
+                    j++;
+                }
+            }
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    /// @notice Grants roles to the specified addresses and defines admin roles
+    /// @param roles The roles being granted
+    /// @param members Addresses being granted each specified role
+    function _grantRoles(string[] memory roles, address[][] memory members)
+        internal
+    {
+        if (roles.length != members.length) revert UnequalArrayLengths();
+
+        uint256 rolesLength = roles.length;
+        for (uint256 i = 0; i < rolesLength; ) {
             uint256 membersLength = members[i].length;
             for (uint256 j = 0; j < membersLength; ) {
                 _grantRole(roles[i], members[i][j]);
