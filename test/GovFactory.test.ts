@@ -75,9 +75,6 @@ describe("Gov Module Factory", function () {
         members: [[executor1.address, executor2.address]],
         daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
         daoActionRoles: [["EXECUTE_ROLE"]],
-        moduleTargets: [],
-        moduleFunctionDescs: [],
-        moduleActionRoles: [],
       }
     );
     createDAOTx = await daoFactory.createDAO(deployer.address, {
@@ -89,9 +86,6 @@ describe("Gov Module Factory", function () {
       members: [[executor1.address, executor2.address]],
       daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
       daoActionRoles: [["EXECUTE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
     });
 
     // Create a new ERC20Votes token to bring as the DAO governance token

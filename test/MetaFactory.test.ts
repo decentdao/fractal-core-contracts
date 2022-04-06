@@ -29,7 +29,7 @@ import {
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe.only("MetaFactory", () => {
+describe("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
@@ -106,9 +106,6 @@ describe.only("MetaFactory", () => {
         "upgradeTo(address)",
       ],
       daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
     };
 
     const moduleFactoriesCalldata = [
