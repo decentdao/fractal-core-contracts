@@ -29,7 +29,7 @@ import {
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe("MetaFactory", () => {
+describe.only("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
@@ -78,8 +78,8 @@ describe("MetaFactory", () => {
     // Deploy Impl Contracts
     daoImpl = await new DAO__factory(deployer).deploy();
     accessControlImpl = await new AccessControl__factory(deployer).deploy();
-    // govImpl = await new GovernorModule__factory(deployer).deploy();
-    // timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
+    govImpl = await new GovernorModule__factory(deployer).deploy();
+    timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
     treasuryImpl = await new TreasuryModule__factory(deployer).deploy();
     // Create a new ERC20Votes token to bring as the DAO governance token
 
@@ -130,6 +130,22 @@ describe("MetaFactory", () => {
         value: 0,
         newContractAddressesToPass: [2],
       },
+      {
+        factory: govFactory.address,
+        data: [
+          abiCoder.encode(["address"], [govImpl.address]),
+          abiCoder.encode(["address"], [timelockImpl.address]),
+          abiCoder.encode(["string"], ["TestGov"]),
+          abiCoder.encode(["uint64"], [BigNumber.from("0")]),
+          abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+          abiCoder.encode(["uint256"], [BigNumber.from("5")]),
+          abiCoder.encode(["uint256"], [BigNumber.from("0")]),
+          abiCoder.encode(["uint256"], [BigNumber.from("4")]),
+          abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+        ],
+        value: 0,
+        newContractAddressesToPass: [0, 1, 3],
+      },
     ];
 
     const moduleActionCalldata = {
@@ -152,14 +168,19 @@ describe("MetaFactory", () => {
       ],
     };
 
-    [daoAddress, accessControlAddress, treasuryAddress, tokenAddress] =
-      await metaFactory.callStatic.createDAOAndModules(
-        daoFactory.address,
-        0,
-        createDAOParams,
-        moduleFactoriesCalldata,
-        moduleActionCalldata
-      );
+    [
+      daoAddress,
+      accessControlAddress,
+      treasuryAddress,
+      tokenAddress,
+      governorAddress,
+    ] = await metaFactory.callStatic.createDAOAndModules(
+      daoFactory.address,
+      0,
+      createDAOParams,
+      moduleFactoriesCalldata,
+      moduleActionCalldata
+    );
 
     createTx = await metaFactory
       .connect(deployer)
@@ -185,6 +206,14 @@ describe("MetaFactory", () => {
 
     // eslint-disable-next-line camelcase
     token = VotesTokenWithSupply__factory.connect(tokenAddress, deployer);
+
+    // eslint-disable-next-line camelcase
+    govModule = GovernorModule__factory.connect(governorAddress, deployer);
+
+    timelockAddress = await govModule.timelock();
+
+    // eslint-disable-next-line camelcase
+    timelock = TimelockUpgradeable__factory.connect(timelockAddress, deployer);
   });
 
   it("Emitted the correct events", async () => {
@@ -193,6 +222,7 @@ describe("MetaFactory", () => {
       .withArgs(dao.address, accessControl.address, [
         treasuryModule.address,
         token.address,
+        govModule.address,
       ]);
 
     expect(createTx)
