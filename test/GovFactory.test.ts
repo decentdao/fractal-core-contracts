@@ -163,7 +163,7 @@ describe("Gov Module Factory", function () {
     it("emits an event with the new Gov's address", async () => {
       expect(createGovTx)
         .to.emit(govFactory, "GovernorCreated")
-        .withArgs(timelockAddress, governorModuleAddress);
+        .withArgs(governorModuleAddress, timelockAddress);
     });
 
     it("Contracts are deployed", async () => {
