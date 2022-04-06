@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import {
   DAO__factory,
   DAO,
@@ -28,8 +28,13 @@ import {
   VotesTokenWithSupply__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
+import {
+  VoteType,
+  govModPropose,
+  delegateTokens,
+} from "./helpers/governorModuleHelpers";
 
-describe.only("MetaFactory", () => {
+describe("MetaFactory", () => {
   // Factories
   let daoFactory: DAOFactory;
   let govFactory: GovernorFactory;
@@ -65,11 +70,14 @@ describe.only("MetaFactory", () => {
   let upgrader: SignerWithAddress;
   let executor: SignerWithAddress;
   let withdrawer: SignerWithAddress;
+  let userA: SignerWithAddress;
+  let userB: SignerWithAddress;
 
   let createTx: ContractTransaction;
 
   beforeEach(async () => {
-    [deployer, upgrader, executor, withdrawer] = await ethers.getSigners();
+    [deployer, upgrader, executor, withdrawer, userA, userB] =
+      await ethers.getSigners();
 
     // Deploy Impl Contracts
     daoImpl = await new DAO__factory(deployer).deploy();
@@ -94,9 +102,19 @@ describe.only("MetaFactory", () => {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
-      roles: ["EXECUTE_ROLE", "UPGRADE_ROLE", "WITHDRAWER_ROLE"],
-      rolesAdmins: ["DAO_ROLE", "DAO_ROLE", "DAO_ROLE"],
-      members: [[executor.address], [upgrader.address], [withdrawer.address]],
+      roles: [
+        "EXECUTE_ROLE",
+        "UPGRADE_ROLE",
+        "WITHDRAWER_ROLE",
+        "GOVERNOR_ROLE",
+      ],
+      rolesAdmins: ["DAO_ROLE", "DAO_ROLE", "DAO_ROLE", "DAO_ROLE"],
+      members: [
+        [executor.address],
+        [upgrader.address],
+        [withdrawer.address],
+        [],
+      ],
       daoFunctionDescs: [
         "execute(address[],uint256[],bytes[])",
         "upgradeTo(address)",
@@ -117,8 +135,16 @@ describe.only("MetaFactory", () => {
         data: [
           abiCoder.encode(["string"], ["DECENT"]),
           abiCoder.encode(["string"], ["DCNT"]),
-          abiCoder.encode(["address[]"], [[]]),
-          abiCoder.encode(["uint256[]"], [[]]),
+          abiCoder.encode(["address[]"], [[userA.address, userB.address]]),
+          abiCoder.encode(
+            ["uint256[]"],
+            [
+              [
+                ethers.utils.parseUnits("100", 18),
+                ethers.utils.parseUnits("100", 18),
+              ],
+            ]
+          ),
           abiCoder.encode(["uint256"], [ethers.utils.parseUnits("1000", 18)]),
         ],
         value: 0,
@@ -189,7 +215,7 @@ describe.only("MetaFactory", () => {
       createDAOParams,
       moduleFactoriesCalldata,
       moduleActionCalldata,
-      [[5], [0], [0]]
+      [[5], [0], [0], [4]]
     );
 
     createTx = await metaFactory
@@ -200,7 +226,7 @@ describe.only("MetaFactory", () => {
         createDAOParams,
         moduleFactoriesCalldata,
         moduleActionCalldata,
-        [[5], [0], [0]]
+        [[5], [0], [0], [4]]
       );
 
     // eslint-disable-next-line camelcase
@@ -916,12 +942,84 @@ describe.only("MetaFactory", () => {
   it("Supports the expected ERC165 interface", async () => {
     // Supports Module Factory interface
     expect(
-      await govFactory.supportsInterface(
+      await metaFactory.supportsInterface(
         // eslint-disable-next-line camelcase
         getInterfaceSelector(IMetaFactory__factory.createInterface())
       )
     ).to.eq(true);
     // Supports ERC-165 interface
     expect(await govFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
+  });
+
+  it("Allocated correct token amounts", async () => {
+    expect(await token.balanceOf(treasuryModule.address)).to.eq(
+      ethers.utils.parseUnits("800", 18)
+    );
+
+    expect(await token.balanceOf(userA.address)).to.eq(
+      ethers.utils.parseUnits("100", 18)
+    );
+
+    expect(await token.balanceOf(userB.address)).to.eq(
+      ethers.utils.parseUnits("100", 18)
+    );
+  });
+
+  it("Supports creating, voting on, and executing a proposal", async () => {
+    await delegateTokens(token, [userA, userB]);
+
+    const transferCallData = treasuryModule.interface.encodeFunctionData(
+      "withdrawERC20Tokens",
+      [[token.address], [userA.address], [ethers.utils.parseUnits("100", 18)]]
+    );
+
+    const proposalCreatedEvent = await govModPropose(
+      [treasuryModule.address],
+      [BigNumber.from("0")],
+      govModule,
+      userA,
+      [transferCallData],
+      "Proposal #1: transfer 100 tokens from treasury to User A"
+    );
+
+    await network.provider.send("evm_mine");
+
+    // Users A and B vote "For"
+    await govModule
+      .connect(userA)
+      .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+    await govModule
+      .connect(userB)
+      .castVote(proposalCreatedEvent.proposalId, VoteType.For);
+
+    await network.provider.send("evm_mine");
+    await network.provider.send("evm_mine");
+    await network.provider.send("evm_mine");
+
+    await govModule
+      .connect(userA)
+      .queue(
+        proposalCreatedEvent.targets,
+        proposalCreatedEvent._values,
+        proposalCreatedEvent.calldatas,
+        ethers.utils.id(proposalCreatedEvent.description)
+      );
+
+    await govModule
+      .connect(userA)
+      .execute(
+        proposalCreatedEvent.targets,
+        proposalCreatedEvent._values,
+        proposalCreatedEvent.calldatas,
+        ethers.utils.id(proposalCreatedEvent.description)
+      );
+
+    expect(await token.balanceOf(treasuryModule.address)).to.eq(
+      ethers.utils.parseUnits("700", 18)
+    );
+
+    expect(await token.balanceOf(userA.address)).to.eq(
+      ethers.utils.parseUnits("200", 18)
+    );
   });
 });
