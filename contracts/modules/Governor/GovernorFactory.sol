@@ -13,7 +13,7 @@ import "../../interfaces/IGovernorModule.sol";
 contract GovernorFactory is IModuleFactory, ERC165 {
     event GovernorCreated(address timelock, address governorModule);
 
-    /// @dev Creates a module
+    /// @dev Creates a Governor module
     /// @param data The array of bytes used to create the module
     /// @return address[] The array of addresses of the created module
     function create(bytes[] calldata data) external returns (address[] memory) {

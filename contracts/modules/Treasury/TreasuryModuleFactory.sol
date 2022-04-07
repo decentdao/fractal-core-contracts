@@ -11,6 +11,9 @@ import "../../interfaces/ITreasuryModule.sol";
 contract TreasuryModuleFactory is IModuleFactory, ERC165 {
     event TreasuryCreated(address indexed treasuryAddress, address indexed accessControl);
 
+    /// @dev Creates a Treasury module
+    /// @param data The array of bytes used to create the module
+    /// @return address[] The array of addresses of the created module
     function create(bytes[] calldata data)
         external
         returns (address[] memory)

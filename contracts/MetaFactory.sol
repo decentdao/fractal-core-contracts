@@ -14,6 +14,14 @@ import "./interfaces/IAccessControl.sol";
 
 /// @notice A factory contract for deploying DAOs along with any desired modules within one transaction
 contract MetaFactory is IMetaFactory, ERC165 {
+    /// @notice Creates a DAO, Access Control, and any modules specified
+    /// @param daoFactory The address of the DAO factory
+    /// @param metaFactoryTempRoleIndex The index of which role specified in createDAOParams should be temporarily given to the MetaFactory
+    /// @param createDAOParams The struct of parameters used for creating the DAO and Access Control contracts
+    /// @param moduleFactoriesCallData The calldata required for each module factory call
+    /// @param moduleActionData Struct of functionDescs and roles to setup for each newly created module
+    /// @param roleModuleMembers Array of which newly created modules should be given each role
+    /// @return Array of addresses of the newly created modules
     function createDAOAndModules(
         address daoFactory,
         uint256 metaFactoryTempRoleIndex,
@@ -33,6 +41,8 @@ contract MetaFactory is IMetaFactory, ERC165 {
         }
 
         uint256 modulesLength = moduleFactoriesCallData.length;
+
+        // Get the number of new module addresses to be created
         uint256 newContractAddressesLength = 2;
         for (uint256 i; i < modulesLength; ) {
             newContractAddressesLength += moduleFactoriesCallData[i]
@@ -47,7 +57,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
             newContractAddressesLength
         );
 
-        // Give this contract a temporary role so it can execute through DAO
+        // Give this contract a temporary role so it can execute through the DAO
         uint256 tempRoleMembersLength = createDAOParams
             .members[metaFactoryTempRoleIndex]
             .length;
@@ -68,12 +78,15 @@ contract MetaFactory is IMetaFactory, ERC165 {
 
         createDAOParams.members[metaFactoryTempRoleIndex] = tempRoleNewMembers;
 
+
+        // Create the DAO and Access Control contracts
         (address dao, address accessControl) = IDAOFactory(daoFactory)
             .createDAO(msg.sender, createDAOParams);
 
         newContractAddresses[0] = dao;
         newContractAddresses[1] = accessControl;
 
+        // Create the DAO modules
         newContractAddresses = createModules(newContractAddresses, moduleFactoriesCallData);
 
         addActionsRoles(moduleActionData, newContractAddresses);
@@ -90,6 +103,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
             address(this)
         );
 
+        // Create array of created module addresses to emit in event
         address[] memory moduleAddresses = new address[](
             newContractAddresses.length - 2
         );
@@ -110,12 +124,17 @@ contract MetaFactory is IMetaFactory, ERC165 {
         return newContractAddresses;
     }
 
+    /// @notice Creates each new module contract
+    /// @param newContractAddresses The incomplete array of new contract addresses
+    /// @param moduleFactoriesCallData The calldata required for each module factory call
+    /// @return The newContractAddresses array updated with new addresses from modules creation
     function createModules(
         address[] memory newContractAddresses,
         ModuleFactoryCallData[] memory moduleFactoriesCallData
     ) private returns (address[] memory) {
         uint256 newContractAddressIndex = 2;
 
+        // Loop through each module to be created
         for (uint256 i; i < moduleFactoriesCallData.length;) {
             uint256 newContractAddressesToPassLength = moduleFactoriesCallData[
                 i
@@ -126,6 +145,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                     newContractAddressesToPassLength
             );
 
+            // Add new contract addresses to module calldata
             for (uint256 j; j < newContractAddressesToPassLength;) {
                 if (
                     moduleFactoriesCallData[i].newContractAddressesToPass[j] >=
@@ -134,6 +154,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                     revert InvalidModuleAddressToPass();
                 }
 
+                // Encode the new contract address into bytes
                 newData[j] = abi.encode(
                     newContractAddresses[
                         moduleFactoriesCallData[i].newContractAddressesToPass[j]
@@ -145,6 +166,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 }
             }
 
+            // Fill in the new bytes array with the old bytes array parameters
             for (uint256 j; j < moduleFactoriesCallData[i].data.length; ) {
                 newData[
                     j + newContractAddressesToPassLength
@@ -155,6 +177,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 }
             }
 
+            // Call the module factory with the new calldata
             (bool success, bytes memory returnData) = moduleFactoriesCallData[i]
                 .factory
                 .call{value: moduleFactoriesCallData[i].value}(
@@ -165,9 +188,11 @@ contract MetaFactory is IMetaFactory, ERC165 {
                 revert FactoryCallFailed();
             }
 
+            // Create an array of the returned module addresses
             address[] memory newModuleAddresses = new address[](moduleFactoriesCallData[i].addressesReturned);
             newModuleAddresses = abi.decode(returnData, (address[]));
 
+            // Add the new module addresses to the new contract addresses array
             for(uint256 j; j < newModuleAddresses.length;) {
               newContractAddresses[newContractAddressIndex] = newModuleAddresses[j];
               unchecked {
@@ -184,6 +209,9 @@ contract MetaFactory is IMetaFactory, ERC165 {
         return newContractAddresses;
     }
 
+    /// @notice Adds the roles and functionDescs for each newly created contract
+    /// @param moduleActionData Struct of functionDescs and roles to setup for each newly created module
+    /// @param newContractAddresses The array of new contract addresses
     function addActionsRoles(
         ModuleActionData memory moduleActionData,
         address[] memory newContractAddresses
@@ -191,6 +219,8 @@ contract MetaFactory is IMetaFactory, ERC165 {
         uint256 moduleActionTargetsLength = moduleActionData
             .contractIndexes
             .length;
+
+        // Create address array of modules to be targeted
         address[] memory moduleActionTargets = new address[](
             moduleActionTargetsLength
         );
@@ -215,10 +245,12 @@ contract MetaFactory is IMetaFactory, ERC165 {
         uint256[] memory valuesArray = new uint256[](1);
         bytes[] memory dataArray = new bytes[](1);
 
+        // Target array contains just the access control contract address
         targetArray[0] = newContractAddresses[1];
         valuesArray[0] = 0;
         dataArray[0] = data;
 
+        // Execute the addActionRoles function on Access Control by calling through the DAO
         IDAO(newContractAddresses[0]).execute(
             targetArray,
             valuesArray,
@@ -226,6 +258,10 @@ contract MetaFactory is IMetaFactory, ERC165 {
         );
     }
 
+    /// @notice Grants roles to the modules specified
+    /// @param roles The array of roles to be granted to modules
+    /// @param roleModuleMembers Indexes of the modules to be granted each role
+    /// @param newContractAddresses Array of addresses of the newly created contracts
     function addModuleRoles(
         string[] memory roles,
         uint256[][] memory roleModuleMembers,
