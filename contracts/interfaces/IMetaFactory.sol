@@ -3,39 +3,46 @@ pragma solidity ^0.8.0;
 
 import "./IGovernorModule.sol";
 import "./IDAOFactory.sol";
-import "./IGovernorFactory.sol";
 
 interface IMetaFactory {
-    error CreateDAOReverted();
-    error CreateGovernorReverted();
-    error CreateTreasuryReverted();
+    event DAOAndModulesCreated(
+        address dao,
+        address accessControl,
+        address[] modules
+    );
 
-    /// @notice Creates a DAO, access control, governor, and treasury contracts
+    error UnequalArrayLengths();
+    error InvalidModuleAddressToPass();
+    error FactoryCallFailed();
+
+    struct ModuleFactoryCallData {
+        address factory;
+        bytes[] data;
+        uint256 value;
+        uint256[] newContractAddressesToPass;
+        uint256 addressesReturned;
+    }
+
+    struct ModuleActionData {
+        uint256[] contractIndexes;
+        string[] functionDescs;
+        string[][] roles;
+    }
+
+    /// @notice A factory contract for deploying DAOs along with any desired modules within one transaction
     /// @param daoFactory The address of the DAO factory
-    /// @param governorFactory The address of the governor factory
-    /// @param treasuryFactory The address of the treasury factory
-    /// @param treasuryImplementation The address of the treasury implementation
-    /// @param createDAOParams The struct of parameters used for the DAO creation
-    /// @param createGovernorParams The struct of parameters used for the governor creation
-    /// @return dao The address of the created DAO contract
-    /// @return accessControl The address of the created access control contract
-    /// @return timelock The address of the created timelock contract
-    /// @return governor The address of the created governor contract
-    /// @return treasury The address of the created treasury contract
+    /// @param metaFactoryTempRoleIndex The index of which role specified in createDAOParams should be temporarily given to the MetaFactory
+    /// @param createDAOParams The struct of parameters used for creating the DAO and Access Control contracts
+    /// @param moduleFactoriesCallData The calldata required for each module factory call
+    /// @param moduleActionData Struct of functionDescs and roles to setup for each newly created module
+    /// @param roleModuleMembers Array of which newly created modules should be given each role
+    /// @return Array of addresses of the newly created modules
     function createDAOAndModules(
         address daoFactory,
-        address governorFactory,
-        address treasuryFactory,
-        address treasuryImplementation,
-        IDAOFactory.CreateDAOParams calldata createDAOParams,
-        IGovernorFactory.CreateGovernorParams calldata createGovernorParams
-    )
-        external
-        returns (
-            address dao,
-            address accessControl,
-            address timelock,
-            address governor,
-            address treasury
-        );
+        uint256 metaFactoryTempRoleIndex,
+        IDAOFactory.CreateDAOParams memory createDAOParams,
+        ModuleFactoryCallData[] memory moduleFactoriesCallData,
+        ModuleActionData memory moduleActionData,
+        uint256[][] memory roleModuleMembers
+    ) external returns (address[] memory);
 }

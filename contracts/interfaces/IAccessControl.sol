@@ -59,6 +59,12 @@ interface IAccessControl {
         address[][] memory members
     ) external;
 
+    /// @notice Grants roles to the specified addresses
+    /// @param roles The roles being granted
+    /// @param members Addresses being granted each specified role
+    function grantRoles(string[] memory roles, address[][] memory members)
+        external;
+
     /// @notice Grants a role to the specified address
     /// @param role The role being granted
     /// @param account The address being granted the specified role

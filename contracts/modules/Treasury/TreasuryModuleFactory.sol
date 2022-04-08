@@ -4,20 +4,26 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-import "../../interfaces/ITreasuryModuleFactory.sol";
+import "../../interfaces/IModuleFactory.sol";
 import "../../interfaces/ITreasuryModule.sol";
 
 /// @notice A factory contract for deploying Treasury Modules
-contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
-    /// @notice Creates a Treasury Module with an ERC-1967 proxy
-    /// @param accessControl The address of the access control contract for the DAO
-    /// @param treasuryImplementation The address of the treasury implementation contract
-    /// @return treasury The address of the treasury proxy
-    function createTreasury(
-        address accessControl,
-        address treasuryImplementation
-    ) external returns (address treasury) {
-        treasury = address(
+contract TreasuryModuleFactory is IModuleFactory, ERC165 {
+    event TreasuryCreated(address indexed treasuryAddress, address indexed accessControl);
+
+    /// @dev Creates a Treasury module
+    /// @param data The array of bytes used to create the module
+    /// @return address[] The array of addresses of the created module
+    function create(bytes[] calldata data)
+        external
+        returns (address[] memory)
+    {
+        address[] memory createdContracts = new address[](1);
+      
+        address accessControl = abi.decode(data[0], (address));
+        address treasuryImplementation = abi.decode(data[1], (address));
+
+        createdContracts[0] = address(
             new ERC1967Proxy(
                 treasuryImplementation,
                 abi.encodeWithSelector(
@@ -27,7 +33,9 @@ contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
             )
         );
 
-      emit TreasuryCreated(treasury, accessControl);
+        emit TreasuryCreated(createdContracts[0], accessControl);
+
+        return createdContracts;
     }
 
     /// @notice Returns whether a given interface ID is supported
@@ -41,7 +49,7 @@ contract TreasuryModuleFactory is ITreasuryModuleFactory, ERC165 {
         returns (bool)
     {
         return
-            interfaceId == type(ITreasuryModuleFactory).interfaceId ||
+            interfaceId == type(IModuleFactory).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

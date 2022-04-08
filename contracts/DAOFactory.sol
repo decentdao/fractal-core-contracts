@@ -15,39 +15,31 @@ contract DAOFactory is IDAOFactory, ERC165 {
     /// @param createDAOParams Struct of all the parameters required to create a DAO
     /// @return dao The address of the deployed DAO proxy contract
     /// @return accessControl The address of the deployed access control proxy contract
-    function createDAO(address creator, CreateDAOParams calldata createDAOParams)
-        external
-        returns (address dao, address accessControl)
-    {
+    function createDAO(
+        address creator,
+        CreateDAOParams calldata createDAOParams
+    ) external returns (address dao, address accessControl) {
         dao = address(new ERC1967Proxy(createDAOParams.daoImplementation, ""));
 
-        uint256 arrayLength = createDAOParams.moduleTargets.length +
-            createDAOParams.daoFunctionDescs.length;
+        accessControl = createAccessControl(dao, createDAOParams);
 
-        address[] memory targets = new address[](arrayLength);
-        string[] memory functionDescs = new string[](arrayLength);
-        string[][] memory actionRoles = new string[][](arrayLength);
+        IDAO(dao).initialize(accessControl, createDAOParams.daoName);
 
+        emit DAOCreated(dao, accessControl, msg.sender, creator);
+    }
+
+    function createAccessControl(address dao, CreateDAOParams memory createDAOParams)
+        private
+        returns (address accessControl)
+    {
         uint256 daoFunctionDescsLength = createDAOParams
             .daoFunctionDescs
             .length;
+
+        address[] memory targets = new address[](daoFunctionDescsLength);
+
         for (uint256 i; i < daoFunctionDescsLength; ) {
             targets[i] = dao;
-            functionDescs[i] = createDAOParams.daoFunctionDescs[i];
-            actionRoles[i] = createDAOParams.daoActionRoles[i];
-            unchecked {
-                i++;
-            }
-        }
-
-        uint256 moduleTargetsLength = createDAOParams.moduleTargets.length;
-        for (uint256 i; i < moduleTargetsLength; ) {
-            uint256 currentIndex = i + createDAOParams.daoFunctionDescs.length;
-            targets[currentIndex] = createDAOParams.moduleTargets[i];
-            functionDescs[currentIndex] = createDAOParams.moduleFunctionDescs[
-                i
-            ];
-            actionRoles[currentIndex] = createDAOParams.moduleActionRoles[i];
             unchecked {
                 i++;
             }
@@ -63,15 +55,11 @@ contract DAOFactory is IDAOFactory, ERC165 {
                     createDAOParams.rolesAdmins,
                     createDAOParams.members,
                     targets,
-                    functionDescs,
-                    actionRoles
+                    createDAOParams.daoFunctionDescs,
+                    createDAOParams.daoActionRoles
                 )
             )
         );
-
-        IDAO(dao).initialize(accessControl, createDAOParams.daoName);
-
-        emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
 
     /// @notice Returns whether a given interface ID is supported

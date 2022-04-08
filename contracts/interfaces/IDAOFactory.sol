@@ -11,9 +11,6 @@ interface IDAOFactory {
         address[][] members;
         string[] daoFunctionDescs;
         string[][] daoActionRoles;
-        address[] moduleTargets;
-        string[] moduleFunctionDescs;
-        string[][] moduleActionRoles;
     }
 
     event DAOCreated(address indexed daoAddress, address indexed accessControl, address indexed sender, address creator);

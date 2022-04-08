@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { TreasuryModule, TreasuryModuleFactory } from "../../typechain-types";
-import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { BigNumber, ContractReceipt, ContractTransaction, utils } from "ethers";
+import { ethers } from "hardhat";
 
 export type TreasuryEthDepositedEvent = {
   sender: string;
@@ -42,9 +43,16 @@ export async function createTreasuryFromFactory(
   accessControlAddress: string,
   treasuryImplementationAddress: string
 ): Promise<string> {
+  const abiCoder = new ethers.utils.AbiCoder();
+
+  const data = [
+    abiCoder.encode(["address"], [accessControlAddress]),
+    abiCoder.encode(["address"], [treasuryImplementationAddress]),
+  ];
+
   const tx: ContractTransaction = await treasuryFactory
     .connect(caller)
-    .createTreasury(accessControlAddress, treasuryImplementationAddress);
+    .create(data);
 
   const receipt: ContractReceipt = await tx.wait();
 

@@ -14,7 +14,7 @@ import {
   DAOFactory,
   GovernorFactory,
   GovernorFactory__factory,
-  IGovernorFactory__factory,
+  IModuleFactory__factory,
 } from "../typechain-types";
 import chai from "chai";
 import { ethers, network } from "hardhat";
@@ -55,18 +55,7 @@ describe("Gov Module Factory", function () {
   let accessControl: AccessControl;
   let dao: DAO;
 
-  let govCalldata: {
-    _govImpl: string;
-    _token: string;
-    _timelockImpl: string;
-    _name: string;
-    _initialVoteExtension: BigNumber;
-    _initialVotingDelay: BigNumber;
-    _initialVotingPeriod: BigNumber;
-    _initialProposalThreshold: BigNumber;
-    _initialQuorumNumeratorValue: BigNumber;
-    _minDelay: BigNumber;
-  };
+  const abiCoder = new ethers.utils.AbiCoder();
 
   beforeEach(async function () {
     [deployer, voterA, voterB, voterC, executor1, executor2] =
@@ -86,9 +75,6 @@ describe("Gov Module Factory", function () {
         members: [[executor1.address, executor2.address]],
         daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
         daoActionRoles: [["EXECUTE_ROLE"]],
-        moduleTargets: [],
-        moduleFunctionDescs: [],
-        moduleActionRoles: [],
       }
     );
     createDAOTx = await daoFactory.createDAO(deployer.address, {
@@ -100,9 +86,6 @@ describe("Gov Module Factory", function () {
       members: [[executor1.address, executor2.address]],
       daoFunctionDescs: ["execute(address[],uint256[],bytes[])"],
       daoActionRoles: [["EXECUTE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
     });
 
     // Create a new ERC20Votes token to bring as the DAO governance token
@@ -135,30 +118,24 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
-      govCalldata = {
-        _govImpl: govModuleImpl.address,
-        _token: governanceToken.address,
-        _timelockImpl: timelockImpl.address,
-        _name: "TestGov",
-        _initialVoteExtension: BigNumber.from("0"),
-        _initialVotingDelay: BigNumber.from("1"),
-        _initialVotingPeriod: BigNumber.from("5"),
-        _initialProposalThreshold: BigNumber.from("0"),
-        _initialQuorumNumeratorValue: BigNumber.from("4"),
-        _minDelay: BigNumber.from("1"),
-      };
+      const govCalldata = [
+        abiCoder.encode(["address"], [daoAddress]),
+        abiCoder.encode(["address"], [accessControlAddress]),
+        abiCoder.encode(["address"], [governanceToken.address]),
+        abiCoder.encode(["address"], [govModuleImpl.address]),
+        abiCoder.encode(["address"], [timelockImpl.address]),
+        abiCoder.encode(["string"], ["TestGov"]),
+        abiCoder.encode(["uint64"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("5")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("4")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+      ];
 
-      [timelockAddress, governorModuleAddress] =
-        await govFactory.callStatic.createGovernor(
-          daoAddress,
-          accessControlAddress,
-          govCalldata
-        );
-      createGovTx = await govFactory.createGovernor(
-        daoAddress,
-        accessControlAddress,
-        govCalldata
-      );
+      [governorModuleAddress, timelockAddress] =
+        await govFactory.callStatic.create(govCalldata);
+      createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,
@@ -186,7 +163,7 @@ describe("Gov Module Factory", function () {
     it("emits an event with the new Gov's address", async () => {
       expect(createGovTx)
         .to.emit(govFactory, "GovernorCreated")
-        .withArgs(timelockAddress, governorModuleAddress);
+        .withArgs(governorModuleAddress, timelockAddress);
     });
 
     it("Contracts are deployed", async () => {
@@ -215,11 +192,11 @@ describe("Gov Module Factory", function () {
     });
 
     it("Supports the expected ERC165 interface", async () => {
-      // Supports DAO Factory interface
+      // Supports Module Factory interface
       expect(
         await govFactory.supportsInterface(
           // eslint-disable-next-line camelcase
-          getInterfaceSelector(IGovernorFactory__factory.createInterface())
+          getInterfaceSelector(IModuleFactory__factory.createInterface())
         )
       ).to.eq(true);
       // Supports ERC-165 interface
@@ -235,30 +212,24 @@ describe("Gov Module Factory", function () {
       timelockImpl = await new TimelockUpgradeable__factory(deployer).deploy();
       govFactory = await new GovernorFactory__factory(deployer).deploy();
 
-      govCalldata = {
-        _govImpl: govModuleImpl.address,
-        _token: governanceToken.address,
-        _timelockImpl: timelockImpl.address,
-        _name: "TestGov",
-        _initialVoteExtension: BigNumber.from("0"),
-        _initialVotingDelay: BigNumber.from("1"),
-        _initialVotingPeriod: BigNumber.from("5"),
-        _initialProposalThreshold: BigNumber.from("0"),
-        _initialQuorumNumeratorValue: BigNumber.from("4"),
-        _minDelay: BigNumber.from("1"),
-      };
+      const govCalldata = [
+        abiCoder.encode(["address"], [daoAddress]),
+        abiCoder.encode(["address"], [accessControlAddress]),
+        abiCoder.encode(["address"], [governanceToken.address]),
+        abiCoder.encode(["address"], [govModuleImpl.address]),
+        abiCoder.encode(["address"], [timelockImpl.address]),
+        abiCoder.encode(["string"], ["TestGov"]),
+        abiCoder.encode(["uint64"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("5")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("0")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("4")]),
+        abiCoder.encode(["uint256"], [BigNumber.from("1")]),
+      ];
 
-      [timelockAddress, governorModuleAddress] =
-        await govFactory.callStatic.createGovernor(
-          daoAddress,
-          accessControlAddress,
-          govCalldata
-        );
-      createGovTx = await govFactory.createGovernor(
-        daoAddress,
-        accessControlAddress,
-        govCalldata
-      );
+      [governorModuleAddress, timelockAddress] =
+        await govFactory.callStatic.create(govCalldata);
+      createGovTx = await govFactory.create(govCalldata);
       // eslint-disable-next-line camelcase
       govModule = GovernorModule__factory.connect(
         governorModuleAddress,

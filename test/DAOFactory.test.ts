@@ -52,9 +52,6 @@ describe("DAOFactory", () => {
           "upgradeTo(address)",
         ],
         daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
-        moduleTargets: [],
-        moduleFunctionDescs: [],
-        moduleActionRoles: [],
       }
     );
 
@@ -70,9 +67,6 @@ describe("DAOFactory", () => {
         "upgradeTo(address)",
       ],
       daoActionRoles: [["EXECUTE_ROLE"], ["EXECUTE_ROLE", "UPGRADE_ROLE"]],
-      moduleTargets: [],
-      moduleFunctionDescs: [],
-      moduleActionRoles: [],
     });
 
     // eslint-disable-next-line camelcase
