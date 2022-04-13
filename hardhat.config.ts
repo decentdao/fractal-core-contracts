@@ -8,6 +8,8 @@ import "@typechain/hardhat";
 import "hardhat-tracer";
 import "solidity-coverage";
 import createDAO from "./scripts/createDAO";
+import addActionsRoles from "./scripts/addActionsRoles";
+import removeActionsRoles from "./scripts/removeActionsRoles";
 
 dotenv.config();
 
@@ -72,6 +74,54 @@ task("createDAO", "Creates a Fractal DAO")
       JSON.parse(taskArgs.members.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.daoFunctionDescs.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.daoActionRoles.replaceAll(`'`, `"`)),
+      JSON.parse(taskArgs.moduleTargets.replaceAll(`'`, `"`)),
+      JSON.parse(taskArgs.moduleFunctionDescs.replaceAll(`'`, `"`)),
+      JSON.parse(taskArgs.moduleActionRoles.replaceAll(`'`, `"`))
+    );
+  });
+
+task("addActionsRoles", "Adds Action Roles")
+  .addParam("accessControlAddress", "Address of the access control contract")
+  .addParam(
+    "moduleTargets",
+    "Array of addresses of modules to initialize actions on"
+  )
+  .addParam(
+    "moduleFunctionDescs",
+    "Array of strings of module function action descriptions"
+  )
+  .addParam(
+    "moduleActionRoles",
+    "Two-dimensional array of strings of roles to give permissions over DAO function description actions"
+  )
+  .setAction(async (taskArgs, hre) => {
+    await addActionsRoles(
+      hre,
+      taskArgs.accessControlAddress,
+      JSON.parse(taskArgs.moduleTargets.replaceAll(`'`, `"`)),
+      JSON.parse(taskArgs.moduleFunctionDescs.replaceAll(`'`, `"`)),
+      JSON.parse(taskArgs.moduleActionRoles.replaceAll(`'`, `"`))
+    );
+  });
+
+task("removeActionsRoles", "Removes Action Roles")
+  .addParam("accessControlAddress", "Address of the access control contract")
+  .addParam(
+    "moduleTargets",
+    "Array of addresses of modules to initialize actions on"
+  )
+  .addParam(
+    "moduleFunctionDescs",
+    "Array of strings of module function action descriptions"
+  )
+  .addParam(
+    "moduleActionRoles",
+    "Two-dimensional array of strings of roles to give permissions over DAO function description actions"
+  )
+  .setAction(async (taskArgs, hre) => {
+    await removeActionsRoles(
+      hre,
+      taskArgs.accessControlAddress,
       JSON.parse(taskArgs.moduleTargets.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.moduleFunctionDescs.replaceAll(`'`, `"`)),
       JSON.parse(taskArgs.moduleActionRoles.replaceAll(`'`, `"`))
