@@ -78,3 +78,12 @@ npx hardhat createDAO \
 ```
 
 If the transaction succeeds, the task console logs the address of the deployed DAO and Access Control contracts.
+
+## Creating a module
+
+Each module should inherit the MVD contracts in order to include moduleBase.sol and IModuleBaseFactory.sol.
+
+To do so - install the npm package via npm i fractal-contracts-package.
+
+If you would like to include un-compiled contracts in the test suite for integration testing. Follow the steps laid out in this hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
+
