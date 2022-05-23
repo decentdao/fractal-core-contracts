@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 interface IDAOFactory {
     struct CreateDAOParams {
         address daoImplementation;
+        address daoFactory;
         address accessControlImplementation;
         string daoName;
         string[] roles;

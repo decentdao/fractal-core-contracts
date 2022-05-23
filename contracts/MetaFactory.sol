@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interfaces/IMetaFactory.sol";
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IDAO.sol";
-import "./interfaces/IAccessControl.sol";
+import "./interfaces/IAccessControlDAO.sol";
 
 /// @notice A factory contract for deploying DAOs along with any desired modules within one transaction
 contract MetaFactory is IMetaFactory, ERC165 {
@@ -98,7 +98,7 @@ contract MetaFactory is IMetaFactory, ERC165 {
         );
 
         // Renounce the MetaFactory temporary role
-        IAccessControl(newContractAddresses[1]).renounceRole(
+        IAccessControlDAO(newContractAddresses[1]).renounceRole(
             createDAOParams.roles[metaFactoryTempRoleIndex],
             address(this)
         );
