@@ -6,13 +6,13 @@ import {
   DAO__factory,
   DAO,
   IDAO__factory,
-  AccessControl,
-  AccessControl__factory,
+  AccessControlDAO,
+  AccessControlDAO__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAO", () => {
-  let daoAccessControl: AccessControl;
+  let daoAccessControl: AccessControlDAO;
   let dao: DAO;
   // Wallets
   let deployer: SignerWithAddress;
@@ -24,7 +24,7 @@ describe("DAO", () => {
     [deployer, executor1, executor2, executor3] = await ethers.getSigners();
 
     // Deploy Contracts
-    daoAccessControl = await new AccessControl__factory(deployer).deploy();
+    daoAccessControl = await new AccessControlDAO__factory(deployer).deploy();
     dao = await new DAO__factory(deployer).deploy();
   });
 
@@ -32,7 +32,11 @@ describe("DAO", () => {
     beforeEach(async () => {
       // Initilizes Contracts
       await daoAccessControl.initialize(dao.address, [], [], [], [], [], []);
-      await dao.initialize(daoAccessControl.address, "TestDao");
+      await dao.initialize(
+        daoAccessControl.address,
+        deployer.address,
+        "TestDao"
+      );
     });
 
     it("Supports the expected ERC165 interface", async () => {
@@ -86,7 +90,11 @@ describe("DAO", () => {
         ["execute(address[],uint256[],bytes[])"],
         [["EXECUTE_ROLE"]]
       );
-      await dao.initialize(daoAccessControl.address, "TestDao");
+      await dao.initialize(
+        daoAccessControl.address,
+        deployer.address,
+        "TestDao"
+      );
     });
 
     it("Init Access Control", async () => {
@@ -142,7 +150,11 @@ describe("DAO", () => {
 
     it("UnAuthDAO should NOT be able to call `execute`", async () => {
       const daoUnAuth = await new DAO__factory(deployer).deploy();
-      daoUnAuth.initialize(daoAccessControl.address, "BadDao");
+      daoUnAuth.initialize(
+        daoAccessControl.address,
+        deployer.address,
+        "BadDao"
+      );
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
         "grantRole",
         ["EXECUTE_ROLE", executor3.address]
