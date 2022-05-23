@@ -14,7 +14,7 @@ contract DAO is IDAO, ModuleBase {
     /// @param _accessControl The address of the access control contract
     /// @param _name Name of the Dao
     function initialize(address _accessControl, string calldata _name) external initializer {
-        __initBase(_accessControl);
+        __initBase(_accessControl, msg.sender);
         name = _name;
     }
 
