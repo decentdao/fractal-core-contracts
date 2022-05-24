@@ -8,7 +8,8 @@ import "./interfaces/IModuleBase.sol";
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
     IAccessControlDAO public accessControl;
-    address public moduleFactoryBase;
+    address public moduleFactory;
+    string public name;
 
     /// @notice Requires that a function caller has the associated role
     modifier authorized() {
@@ -41,12 +42,15 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
 
     /// @notice Function for initializing the contract that can only be called once
     /// @param _accessControl The address of the access control contract
-    function __initBase(address _accessControl, address _moduleFactoryBase)
+    /// @param _moduleFactory The address of the factory deploying the module
+    /// @param _name Human readable string of the module name
+    function __initBase(address _accessControl, address _moduleFactory, string memory _name)
         internal
         onlyInitializing
     {
         accessControl = IAccessControlDAO(_accessControl);
-        moduleFactoryBase = _moduleFactoryBase;
+        moduleFactory = _moduleFactory;
+        name = _name;
         __UUPSUpgradeable_init();
     }
 
