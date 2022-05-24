@@ -30,13 +30,6 @@ interface IModuleFactory {
     /// @return address[] Array of the created module addresses
     function create(bytes[] calldata data) external returns (address[] memory);
 
-    /// @dev Current version of system
-    /// @return currentVersion the current VersionInfo
-    function currentVersionInfo()
-        external
-        view
-        returns (VersionInfo memory currentVersion);
-
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
     /// @return bool Indicates whether the interface is supported
