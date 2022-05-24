@@ -13,4 +13,7 @@ interface IModuleBase {
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
     /// @return bool Indicates whether the interface is supported
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
+
+    /// @return string The string "Name"
+    function name() external view returns (string memory);
 }
