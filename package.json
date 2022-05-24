@@ -56,7 +56,6 @@
     "url": "https://github.com/decent-dao/fractal-contracts/issues"
   },
   "homepage": "https://github.com/decent-dao/fractal-contracts#readme",
-
   "author": "fractal-contributors",
-  "license": "ISC"
+  "license": "MIT"
 }
