@@ -11,6 +11,7 @@ import "./interfaces/IAccessControlDAO.sol";
 /// @notice Use this contract for managing DAO role based permissions
 contract AccessControlDAO is IAccessControlDAO, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
+    string public constant OPEN_ROLE = "OPEN_ROLE";
 
     mapping(string => RoleData) private _roles;
     mapping(address => mapping(bytes4 => string[])) private _actionsToRoles;
@@ -216,7 +217,14 @@ contract AccessControlDAO is IAccessControlDAO, ERC165, UUPSUpgradeable {
         view
         returns (bool)
     {
-        return _roles[role].members[account];
+        if (
+            keccak256(bytes(role)) ==
+            keccak256(bytes(OPEN_ROLE))
+        ) {
+            return true;
+        } else {
+            return _roles[role].members[account];
+        }
     }
 
     /// @notice Returns the role that is the admin of the specified role
