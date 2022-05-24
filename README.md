@@ -2,7 +2,7 @@
 
 ## Architecture
 
-The DAO factory contract enables deploying new Fractal DAOs, which at their core consist of two contracts:
+The DAO factory contract enables deploying new Fractal MVDs, which at their core consist of two contracts: DAO.sol and AccessControl.sol
 
 
 ### DAO.sol
@@ -49,16 +49,10 @@ To deploy the base Fractal contracts open a terminal and run:
 npx hardhat node
 ```
 This will deploy the following contracts and log the addresses they were deployed to:
- - MetaFactory
  - DAOFactory
- - TreasuryModuleFactory
  - TokenFactory
- - GovernorFactory
  - DAO Implementation
  - AccessControl Implementation
- - Treasury Implementation
- - Governor Implementation
- - Timelock Implementation
 
 A hardhat task has been created for deploying a DAO which accepts all the necessary arguments.
 The DAOFactory address and DAOImplementation address deployed in the previous step should be passed as parameters when using this task. 
@@ -83,3 +77,17 @@ npx hardhat createDAO \
 ```
 
 If the transaction succeeds, the task console logs the address of the deployed DAO and Access Control contracts.
+
+## Creating a module
+
+Each module should inherit the MVD contracts to include:
+ - moduleBase.sol 
+ - IModuleBaseFactory.sol
+
+Install the npm package
+ ```shell
+npm i fractal-contracts-package
+```
+
+Including un-compiled contracts within typechain-types. Follow theses steps hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
+

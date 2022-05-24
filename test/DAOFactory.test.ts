@@ -1,8 +1,8 @@
 import { ethers, deployments } from "hardhat";
 import {
   DAO,
-  AccessControl,
-  AccessControl__factory,
+  AccessControlDAO,
+  AccessControlDAO__factory,
   DAOFactory,
   IDAOFactory__factory,
   DAO__factory,
@@ -20,12 +20,12 @@ describe("DAOFactory", () => {
   let upgrader1: SignerWithAddress;
   let daoFactory: DAOFactory;
   let daoImpl: DAO;
-  let accessControlImpl: AccessControl;
+  let accessControlImpl: AccessControlDAO;
   let daoAddress: string;
   let accessControlAddress: string;
   let createDAOTx: ContractTransaction;
   let daoCreated: DAO;
-  let accessControlCreated: AccessControl;
+  let accessControlCreated: AccessControlDAO;
 
   beforeEach(async () => {
     [deployer, executor1, executor2, executor3, upgrader1] =
@@ -36,12 +36,13 @@ describe("DAOFactory", () => {
     await deployments.fixture();
     daoFactory = await ethers.getContract("DAOFactory");
     daoImpl = await ethers.getContract("DAO");
-    accessControlImpl = await ethers.getContract("AccessControl");
+    accessControlImpl = await ethers.getContract("AccessControlDAO");
 
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
       deployer.address,
       {
         daoImplementation: daoImpl.address,
+        daoFactory: daoFactory.address,
         accessControlImplementation: accessControlImpl.address,
         daoName: "TestDao",
         roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
@@ -57,6 +58,7 @@ describe("DAOFactory", () => {
 
     createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
+      daoFactory: daoFactory.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
@@ -73,7 +75,7 @@ describe("DAOFactory", () => {
     daoCreated = DAO__factory.connect(daoAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    accessControlCreated = AccessControl__factory.connect(
+    accessControlCreated = AccessControlDAO__factory.connect(
       accessControlAddress,
       deployer
     );
@@ -88,6 +90,10 @@ describe("DAOFactory", () => {
         deployer.address,
         deployer.address
       );
+  });
+
+  it("sets up moduleBase", async () => {
+    expect(await daoCreated.moduleFactoryBase()).to.equal(daoFactory.address);
   });
 
   it("Creates a DAO and AccessControl Contract", async () => {
@@ -154,7 +160,7 @@ describe("DAOFactory", () => {
   it("Revert Initilize", async () => {
     await expect(accessControlCreated.initialize("", [], [], [], [], [], [])).to
       .reverted;
-    await expect(daoCreated.initialize("", "")).to.reverted;
+    await expect(daoCreated.initialize("", "", "")).to.reverted;
   });
 
   it("executor EOA should be able to call `execute`", async () => {

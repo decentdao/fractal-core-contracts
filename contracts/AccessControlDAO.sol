@@ -5,11 +5,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "./interfaces/IAccessControl.sol";
+import "./interfaces/IAccessControlDAO.sol";
 
 /// @title Access Control
 /// @notice Use this contract for managing DAO role based permissions
-contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
+contract AccessControlDAO is IAccessControlDAO, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
 
     mapping(string => RoleData) private _roles;
@@ -240,7 +240,7 @@ contract AccessControl is IAccessControl, ERC165, UUPSUpgradeable {
         returns (bool)
     {
         return
-            interfaceId == type(IAccessControl).interfaceId ||
+            interfaceId == type(IAccessControlDAO).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

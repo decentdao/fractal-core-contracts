@@ -1,8 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  AccessControl,
-  AccessControl__factory,
-  IAccessControl__factory,
+  AccessControlDAO,
+  AccessControlDAO__factory,
+  IAccessControlDAO__factory,
 } from "../typechain-types";
 import chai from "chai";
 import { ethers } from "hardhat";
@@ -11,7 +11,7 @@ import getInterfaceSelector from "./helpers/getInterfaceSelector";
 const expect = chai.expect;
 
 describe("DAO Access Control Contract", function () {
-  let daoAccessControl: AccessControl;
+  let daoAccessControl: AccessControlDAO;
 
   // Wallets
   let dao: SignerWithAddress;
@@ -50,7 +50,7 @@ describe("DAO Access Control Contract", function () {
     ] = await ethers.getSigners();
 
     // DAO Access Control contract deployment
-    daoAccessControl = await new AccessControl__factory(deployer).deploy();
+    daoAccessControl = await new AccessControlDAO__factory(deployer).deploy();
   });
 
   describe("Initilize Access Control", function () {
@@ -76,7 +76,7 @@ describe("DAO Access Control Contract", function () {
       expect(
         await daoAccessControl.supportsInterface(
           // eslint-disable-next-line camelcase
-          getInterfaceSelector(IAccessControl__factory.createInterface())
+          getInterfaceSelector(IAccessControlDAO__factory.createInterface())
         )
       ).to.eq(true);
 
