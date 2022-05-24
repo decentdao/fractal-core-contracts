@@ -49,7 +49,6 @@ To deploy the base Fractal contracts open a terminal and run:
 npx hardhat node
 ```
 This will deploy the following contracts and log the addresses they were deployed to:
- - MetaFactory
  - DAOFactory
  - TokenFactory
  - DAO Implementation
