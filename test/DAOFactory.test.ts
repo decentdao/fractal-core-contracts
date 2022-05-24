@@ -93,7 +93,7 @@ describe("DAOFactory", () => {
   });
 
   it("sets up moduleBase", async () => {
-    expect(await daoCreated.moduleFactoryBase()).to.equal(daoFactory.address);
+    expect(await daoCreated.moduleFactory()).to.equal(daoFactory.address);
   });
 
   it("Creates a DAO and AccessControl Contract", async () => {
