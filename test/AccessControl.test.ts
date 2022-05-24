@@ -27,6 +27,7 @@ describe("DAO Access Control Contract", function () {
 
   // Roles
   const daoRoleString = "DAO_ROLE";
+  const openRoleString = "OPEN_ROLE";
   const executorString = "EXECUTE";
   const roleAString = "roleA";
   const roleBString = "roleB";
@@ -132,6 +133,24 @@ describe("DAO Access Control Contract", function () {
       ).to.eq(true);
       expect(
         await daoAccessControl.hasRole(roleAString, roleAMember2.address)
+      ).to.eq(true);
+    });
+
+    it("Supports the Open Role", async () => {
+      expect(await daoAccessControl.hasRole(openRoleString, dao.address)).to.eq(
+        true
+      );
+      expect(
+        await daoAccessControl.hasRole(openRoleString, executor1.address)
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(openRoleString, roleAMember1.address)
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(openRoleString, user1.address)
+      ).to.eq(true);
+      expect(
+        await daoAccessControl.hasRole(openRoleString, user2.address)
       ).to.eq(true);
     });
   });
