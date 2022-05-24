@@ -1,3 +1,5 @@
+import "./IModuleBase.sol";
+
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
@@ -22,7 +24,4 @@ interface IDAO {
         uint256[] calldata values,
         bytes[] calldata calldatas
     ) external;
-
-    /// @return string The string "Name"
-    function name() external view returns (string memory);
 }
