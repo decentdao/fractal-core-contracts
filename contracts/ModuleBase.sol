@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./interfaces/IModuleBase.sol";
-import "./interfaces/IModuleFactory.sol";
-
 
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
@@ -33,21 +31,12 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         public
         view
         virtual
-        override( ERC165, IModuleBase)
+        override(ERC165, IModuleBase)
         returns (bool)
     {
         return
             interfaceId == type(IModuleBase).interfaceId ||
             super.supportsInterface(interfaceId);
-    }
-
-    function currentImpl() public view returns(address) {
-        return _getImplementation();
-    }
-
-    function isImplCurrent() public view returns(address uptodateImpl, bool isCurrent) {
-        uptodateImpl =  IModuleFactory(moduleFactoryBase).currentVersionInfo().impl;
-        uptodateImpl == currentImpl() ? isCurrent = true : isCurrent = false;
     }
 
     /// @notice Function for initializing the contract that can only be called once
@@ -67,6 +56,5 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         internal
         override
         authorized
-    {
-    }
+    {}
 }

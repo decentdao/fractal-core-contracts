@@ -40,16 +40,6 @@ abstract contract ModuleFactoryBase is
         virtual
         returns (address[] memory);
 
-    /// @dev Current version of system
-    /// @return currentVersion the current VersionInfo
-    function currentVersionInfo()
-        public
-        view
-        returns (VersionInfo memory currentVersion)
-    {
-        currentVersion = versionControl[versionControl.length - 1];
-    }
-
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
     /// @return bool Indicates whether the interface is supported
