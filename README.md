@@ -2,7 +2,7 @@
 
 ## Architecture
 
-The DAO factory contract enables deploying new Fractal DAOs, which at their core consist of two contracts:
+The DAO factory contract enables deploying new Fractal MVDs, which at their core consist of two contracts: DAO.sol and AccessControl.sol
 
 
 ### DAO.sol
@@ -80,9 +80,14 @@ If the transaction succeeds, the task console logs the address of the deployed D
 
 ## Creating a module
 
-Each module should inherit the MVD contracts in order to include moduleBase.sol and IModuleBaseFactory.sol.
+Each module should inherit the MVD contracts to include:
+ - moduleBase.sol 
+ - IModuleBaseFactory.sol
 
-To do so - install the npm package via npm i fractal-contracts-package.
+Install the npm package
+ ```shell
+npm i fractal-contracts-package
+```
 
-If you would like to include un-compiled contracts in the test suite for integration testing. Follow the steps laid out in this hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
+Including un-compiled contracts within typechain-types. Follow theses steps hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
 
