@@ -1,6 +1,6 @@
 {
   "name": "@fractal-framework/core-contracts",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "files": [
     "contracts",
     "typechain-types"
@@ -51,7 +51,7 @@
     "typechain": "^8.0.0",
     "typescript": "^4.5.4"
   },
-  "description": "##MVD The DAO factory contract enables deploying new Fractal MVDs, which at their core consist of two contracts: DAO.sol and AccessControl.sol",
+  "description": "MVD The DAO factory contract enables deploying new Fractal MVDs, which at their core consist of two contracts: DAO.sol and AccessControl.sol",
   "bugs": {
     "url": "https://github.com/decent-dao/fractal-contracts/issues"
   },
