@@ -9,7 +9,7 @@ import "./interfaces/IModuleBase.sol";
 abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
     IAccessControlDAO public accessControl;
     address public moduleFactory;
-    string private _name;
+    string internal _name;
 
     /// @notice Requires that a function caller has the associated role
     modifier authorized() {
