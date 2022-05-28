@@ -2,8 +2,8 @@
   "name": "@fractal-framework/core-contracts",
   "version": "0.0.6",
   "files": [
-    "contracts",
-    "typechain-types"
+    "dist",
+    "contracts"
   ],
   "repository": {
     "type": "git",
@@ -57,5 +57,7 @@
   },
   "homepage": "https://github.com/decent-dao/fractal-core-contracts#readme",
   "author": "fractal-contributors",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
 }
