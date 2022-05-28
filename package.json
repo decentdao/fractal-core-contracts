@@ -1,18 +1,19 @@
 {
   "name": "@fractal-framework/core-contracts",
-  "version": "0.0.6",
+  "version": "0.0.13",
   "files": [
-    "contracts",
-    "typechain-types"
+    "dist",
+    "contracts"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/decent-dao/fractal-contracts.git"
+    "url": "https://github.com/decent-dao/fractal-core-contracts"
   },
   "scripts": {
     "clean": "hardhat clean",
     "compile": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "publish:prepare": "npm run clean && npx rimraf dist && npm run compile && npx tsc"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
@@ -45,17 +46,20 @@
     "hardhat-tracer": "^1.0.0-alpha.6",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
+    "rimraf": "^3.0.2",
     "solhint": "^3.3.6",
     "solidity-coverage": "^0.7.17",
     "ts-node": "^10.4.0",
     "typechain": "^8.0.0",
     "typescript": "^4.5.4"
   },
-  "description": "MVD The DAO factory contract enables deploying new Fractal MVDs, which at their core consist of two contracts: DAO.sol and AccessControl.sol",
+  "description": "A minimal DAO framework",
   "bugs": {
-    "url": "https://github.com/decent-dao/fractal-contracts/issues"
+    "url": "https://github.com/decent-dao/fractal-core-contracts/issues"
   },
-  "homepage": "https://github.com/decent-dao/fractal-contracts#readme",
+  "homepage": "https://github.com/decent-dao/fractal-core-contracts#readme",
   "author": "fractal-contributors",
-  "license": "MIT"
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
 }
