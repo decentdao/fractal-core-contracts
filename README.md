@@ -91,3 +91,10 @@ npm i fractal-contracts-package
 
 Including un-compiled contracts within typechain-types. Follow theses steps hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
 
+## Publishing new versions of this module to NPM
+
+1. Update the version in `package.json`
+1. `npm install` to get those version updates into `package-lock.json`
+1. `npm run publish:prepare` to fully clean the project, compile contracts, create typechain directory, and compile the typechain directory
+1. `npm publish` to publish the compiled typechain files and solidity contracts to NPM
+1. git commit and push
