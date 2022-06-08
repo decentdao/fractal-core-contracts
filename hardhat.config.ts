@@ -7,6 +7,7 @@ import "hardhat-deploy";
 import "@typechain/hardhat";
 import "hardhat-tracer";
 import "solidity-coverage";
+import '@primitivefi/hardhat-dodoc';
 import createDAO from "./scripts/createDAO";
 import addActionsRoles from "./scripts/addActionsRoles";
 import removeActionsRoles from "./scripts/removeActionsRoles";
