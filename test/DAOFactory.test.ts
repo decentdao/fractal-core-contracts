@@ -1,8 +1,8 @@
 import { ethers, deployments } from "hardhat";
 import {
   DAO,
-  AccessControlDAO,
-  AccessControlDAO__factory,
+  DAOAccessControl,
+  DAOAccessControl__factory,
   DAOFactory,
   IDAOFactory__factory,
   DAO__factory,
@@ -20,12 +20,12 @@ describe("DAOFactory", () => {
   let upgrader1: SignerWithAddress;
   let daoFactory: DAOFactory;
   let daoImpl: DAO;
-  let accessControlImpl: AccessControlDAO;
+  let accessControlImpl: DAOAccessControl;
   let daoAddress: string;
   let accessControlAddress: string;
   let createDAOTx: ContractTransaction;
   let daoCreated: DAO;
-  let accessControlCreated: AccessControlDAO;
+  let accessControlCreated: DAOAccessControl;
 
   beforeEach(async () => {
     [deployer, executor1, executor2, executor3, upgrader1] =
@@ -36,7 +36,7 @@ describe("DAOFactory", () => {
     await deployments.fixture();
     daoFactory = await ethers.getContract("DAOFactory");
     daoImpl = await ethers.getContract("DAO");
-    accessControlImpl = await ethers.getContract("AccessControlDAO");
+    accessControlImpl = await ethers.getContract("DAOAccessControl");
 
     [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
       deployer.address,
@@ -75,7 +75,7 @@ describe("DAOFactory", () => {
     daoCreated = DAO__factory.connect(daoAddress, deployer);
 
     // eslint-disable-next-line camelcase
-    accessControlCreated = AccessControlDAO__factory.connect(
+    accessControlCreated = DAOAccessControl__factory.connect(
       accessControlAddress,
       deployer
     );

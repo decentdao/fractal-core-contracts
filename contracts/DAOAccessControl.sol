@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "./interfaces/IAccessControlDAO.sol";
+import "./interfaces/IDAOAccessControl.sol";
 
-/// @title Access Control
+/// @title DAO Access Control
 /// @notice Use this contract for managing DAO role based permissions
-contract AccessControlDAO is IAccessControlDAO, ERC165, UUPSUpgradeable {
+contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
     string public constant OPEN_ROLE = "OPEN_ROLE";
 
@@ -247,7 +247,7 @@ contract AccessControlDAO is IAccessControlDAO, ERC165, UUPSUpgradeable {
         returns (bool)
     {
         return
-            interfaceId == type(IAccessControlDAO).interfaceId ||
+            interfaceId == type(IDAOAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

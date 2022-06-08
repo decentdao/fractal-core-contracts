@@ -6,13 +6,13 @@ import {
   DAO__factory,
   DAO,
   IDAO__factory,
-  AccessControlDAO,
-  AccessControlDAO__factory,
+  DAOAccessControl,
+  DAOAccessControl__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
 describe("DAO", () => {
-  let daoAccessControl: AccessControlDAO;
+  let daoAccessControl: DAOAccessControl;
   let dao: DAO;
   // Wallets
   let deployer: SignerWithAddress;
@@ -24,7 +24,7 @@ describe("DAO", () => {
     [deployer, executor1, executor2, executor3] = await ethers.getSigners();
 
     // Deploy Contracts
-    daoAccessControl = await new AccessControlDAO__factory(deployer).deploy();
+    daoAccessControl = await new DAOAccessControl__factory(deployer).deploy();
     dao = await new DAO__factory(deployer).deploy();
   });
 

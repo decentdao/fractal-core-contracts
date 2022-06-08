@@ -1,13 +1,13 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "./IAccessControlDAO.sol";
+import "./IDAOAccessControl.sol";
 
 interface IModuleBase {
     error NotAuthorized();
 
-    /// @return IAccessControlDAO The Access control interface
-    function accessControl() external view returns (IAccessControlDAO);
+    /// @return IDAOAccessControl The Access control interface
+    function accessControl() external view returns (IDAOAccessControl);
 
     /// @notice Returns whether a given interface ID is supported
     /// @param interfaceId An interface ID bytes4 as defined by ERC-165
