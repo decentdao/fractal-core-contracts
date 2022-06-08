@@ -50,7 +50,6 @@ npx hardhat node
 ```
 This will deploy the following contracts and log the addresses they were deployed to:
  - DAOFactory
- - TokenFactory
  - DAO Implementation
  - AccessControl Implementation
 
@@ -80,19 +79,27 @@ If the transaction succeeds, the task console logs the address of the deployed D
 
 ## Creating a module
 
-Each module should inherit the MVD contracts to include:
- - moduleBase.sol 
- - IModuleBaseFactory.sol
+Each module implementation contract should inherit from the abstract contract ModuleBase.sol. This gives modules functionality for:
+ - Access control for function calls
+ - Upgradeability using the UUPS proxy standard
+ - ERC165 support
 
-Install the npm package
+Modules should be deployed on chain from a module factory contract which should inherit from the abstract contract ModuleFactoryBase.sol. This gives module factories funcionality for:
+ - A standardized create function for deploying a new module instance, that can be utilized by a higher level factory contract
+ - Module implementations version control and tracking
+ - ERC165 support
+
+## NPM Package
+The core contracts in this repository are published in an NPM package for easy use within other repositories. 
+
+To install the npm package, run:
  ```shell
 npm i fractal-contracts-package
 ```
 
 Including un-compiled contracts within typechain-types. Follow theses steps hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
 
-## Publishing new versions of this module to NPM
-
+## Publishing new versions of these core contracts to NPM
 1. Update the version in `package.json`
 1. `npm install` to get those version updates into `package-lock.json`
 1. `npm run publish:prepare` to fully clean the project, compile contracts, create typechain directory, and compile the typechain directory
