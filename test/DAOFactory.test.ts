@@ -42,7 +42,6 @@ describe("DAOFactory", () => {
       deployer.address,
       {
         daoImplementation: daoImpl.address,
-        daoFactory: daoFactory.address,
         accessControlImplementation: accessControlImpl.address,
         daoName: "TestDao",
         roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
@@ -58,7 +57,6 @@ describe("DAOFactory", () => {
 
     createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
-      daoFactory: daoFactory.address,
       accessControlImplementation: accessControlImpl.address,
       daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
