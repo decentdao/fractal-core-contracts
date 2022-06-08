@@ -61,5 +61,8 @@
   "author": "fractal-contributors",
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@primitivefi/hardhat-dodoc": "^0.2.3"
+  }
 }
