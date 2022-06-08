@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 import "./interfaces/IDAOFactory.sol";
-import "./interfaces/IAccessControlDAO.sol";
+import "./interfaces/IDAOAccessControl.sol";
 import "./interfaces/IDAO.sol";
 
 /// @notice A factory contract for deploying DAOs with an access control contract
@@ -48,7 +48,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
             new ERC1967Proxy(
                 createDAOParams.accessControlImplementation,
                 abi.encodeWithSelector(
-                    IAccessControlDAO(payable(address(0))).initialize.selector,
+                    IDAOAccessControl(payable(address(0))).initialize.selector,
                     dao,
                     createDAOParams.roles,
                     createDAOParams.rolesAdmins,

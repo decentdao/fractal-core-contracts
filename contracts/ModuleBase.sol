@@ -7,7 +7,7 @@ import "./interfaces/IModuleBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
-    IAccessControlDAO public accessControl;
+    IDAOAccessControl public accessControl;
     address public moduleFactory;
     string internal _name;
 
@@ -33,7 +33,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         internal
         onlyInitializing
     {
-        accessControl = IAccessControlDAO(_accessControl);
+        accessControl = IDAOAccessControl(_accessControl);
         moduleFactory = _moduleFactory;
         _name = __name;
         __UUPSUpgradeable_init();
