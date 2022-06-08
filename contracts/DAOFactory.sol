@@ -22,7 +22,7 @@ contract DAOFactory is IDAOFactory, ERC165 {
         dao = address(new ERC1967Proxy(createDAOParams.daoImplementation, ""));
         accessControl = createAccessControl(dao, createDAOParams);
 
-        IDAO(dao).initialize(accessControl, createDAOParams.daoFactory, createDAOParams.daoName);
+        IDAO(dao).initialize(accessControl, address(this), createDAOParams.daoName);
 
         emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
