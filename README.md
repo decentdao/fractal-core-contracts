@@ -54,8 +54,7 @@ This will deploy the following contracts and log the addresses they were deploye
  - AccessControl Implementation
 
 A hardhat task has been created for deploying a DAO which accepts all the necessary arguments.
-The DAOFactory address and DAOImplementation address deployed in the previous step should be passed as parameters when using this task. 
-It is important to note that only single quotes should be used when using this task, as double quotes are removed by the Hardhat argument parser. An example DAO deployment using this task is shown below.
+The DAOFactory address and DAOImplementation address deployed in the previous step should be passed as parameters when using this task. An example DAO deployment using this task is shown below.
 
 ```shell
 npx hardhat createDAO \
@@ -94,7 +93,7 @@ The core contracts in this repository are published in an NPM package for easy u
 
 To install the npm package, run:
  ```shell
-npm i fractal-contracts-package
+npm i @fractal-framework/core-contracts
 ```
 
 Including un-compiled contracts within typechain-types. Follow theses steps hardhat plug-in https://www.npmjs.com/package/hardhat-dependency-compiler
