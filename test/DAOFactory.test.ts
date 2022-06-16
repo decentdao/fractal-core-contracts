@@ -12,7 +12,7 @@ import { ContractTransaction } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
-describe("DAOFactory", () => {
+describe.only("DAOFactory", () => {
   let deployer: SignerWithAddress;
   let executor1: SignerWithAddress;
   let executor2: SignerWithAddress;
@@ -43,6 +43,7 @@ describe("DAOFactory", () => {
       {
         daoImplementation: daoImpl.address,
         accessControlImplementation: accessControlImpl.address,
+        salt: ethers.utils.formatBytes32String("hi"),
         daoName: "TestDao",
         roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
         rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
@@ -58,6 +59,7 @@ describe("DAOFactory", () => {
     createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
+      salt: ethers.utils.formatBytes32String("hi"),
       daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
       rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
