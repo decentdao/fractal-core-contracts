@@ -39,7 +39,7 @@ describe("DAOFactory", () => {
     daoImpl = await ethers.getContract("DAO");
     accessControlImpl = await ethers.getContract("DAOAccessControl");
 
-    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createMVD(
+    [daoAddress, accessControlAddress] = await daoFactory.callStatic.createDAO(
       deployer.address,
       {
         daoImplementation: daoImpl.address,
@@ -57,7 +57,7 @@ describe("DAOFactory", () => {
       }
     );
 
-    createDAOTx = await daoFactory.createMVD(deployer.address, {
+    createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
       salt: ethers.utils.formatBytes32String("hi"),

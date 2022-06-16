@@ -21,7 +21,7 @@ interface IDAOFactory {
     /// @param createDAOParams Struct of all the parameters required to create a DAO
     /// @return dao The address of the deployed DAO proxy contract
     /// @return accessControl The address of the deployed access control proxy contract
-    function createMVD(address creator, CreateDAOParams calldata createDAOParams)
+    function createDAO(address creator, CreateDAOParams calldata createDAOParams)
         external
         returns (address, address);
 }
