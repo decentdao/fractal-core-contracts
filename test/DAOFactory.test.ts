@@ -6,6 +6,7 @@ import {
   DAOFactory,
   IDAOFactory__factory,
   DAO__factory,
+  ERC1967Proxy__factory,
 } from "../typechain-types";
 import { expect } from "chai";
 import { ContractTransaction } from "ethers";
@@ -43,6 +44,7 @@ describe("DAOFactory", () => {
       {
         daoImplementation: daoImpl.address,
         accessControlImplementation: accessControlImpl.address,
+        salt: ethers.utils.formatBytes32String("hi"),
         daoName: "TestDao",
         roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
         rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
@@ -58,6 +60,7 @@ describe("DAOFactory", () => {
     createDAOTx = await daoFactory.createDAO(deployer.address, {
       daoImplementation: daoImpl.address,
       accessControlImplementation: accessControlImpl.address,
+      salt: ethers.utils.formatBytes32String("hi"),
       daoName: "TestDao",
       roles: ["EXECUTE_ROLE", "UPGRADE_ROLE"],
       rolesAdmins: ["DAO_ROLE", "DAO_ROLE"],
@@ -94,11 +97,47 @@ describe("DAOFactory", () => {
     expect(await daoCreated.moduleFactory()).to.equal(daoFactory.address);
   });
 
-  it("Creates a DAO and AccessControl Contract", async () => {
+  it("Can predict DAO and Access Control", async () => {
+    const { chainId } = await ethers.provider.getNetwork();
+    const abiCoder = new ethers.utils.AbiCoder();
+    const predictedDAO = ethers.utils.getCreate2Address(
+      daoFactory.address,
+      ethers.utils.solidityKeccak256(
+        ["address", "uint256", "bytes32"],
+        [deployer.address, chainId, ethers.utils.formatBytes32String("hi")]
+      ),
+      ethers.utils.solidityKeccak256(
+        ["bytes", "bytes"],
+        // eslint-disable-next-line camelcase
+        [
+          ERC1967Proxy__factory.bytecode,
+          abiCoder.encode(["address", "bytes"], [daoImpl.address, []]),
+        ]
+      )
+    );
+    const predictedAccess = ethers.utils.getCreate2Address(
+      daoFactory.address,
+      ethers.utils.solidityKeccak256(
+        ["address", "uint256", "bytes32"],
+        [deployer.address, chainId, ethers.utils.formatBytes32String("hi")]
+      ),
+      ethers.utils.solidityKeccak256(
+        ["bytes", "bytes"],
+        // eslint-disable-next-line camelcase
+        [
+          ERC1967Proxy__factory.bytecode,
+          abiCoder.encode(
+            ["address", "bytes"],
+            [accessControlImpl.address, []]
+          ),
+        ]
+      )
+    );
+
     // eslint-disable-next-line no-unused-expressions
-    expect(daoAddress).to.be.properAddress;
+    expect(daoAddress).to.eq(predictedDAO);
     // eslint-disable-next-line no-unused-expressions
-    expect(accessControlAddress).to.be.properAddress;
+    expect(accessControlAddress).to.eq(predictedAccess);
   });
 
   it("Base Init for DAO", async () => {

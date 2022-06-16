@@ -5,6 +5,7 @@ interface IDAOFactory {
     struct CreateDAOParams {
         address daoImplementation;
         address accessControlImplementation;
+        bytes32 salt;
         string daoName;
         string[] roles;
         string[] rolesAdmins;
