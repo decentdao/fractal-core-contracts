@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/utils/Create2.sol";
 
 import "./interfaces/IDAOFactory.sol";
 import "./interfaces/IDAOAccessControl.sol";
@@ -19,44 +20,62 @@ contract DAOFactory is IDAOFactory, ERC165 {
         address creator,
         CreateDAOParams calldata createDAOParams
     ) external returns (address dao, address accessControl) {
-        dao = address(new ERC1967Proxy(createDAOParams.daoImplementation, ""));
-        accessControl = createAccessControl(dao, createDAOParams);
+        dao = _createDAO(createDAOParams);
+        accessControl = _createAccessControl(createDAOParams);
 
-        IDAO(dao).initialize(accessControl, address(this), createDAOParams.daoName);
+        address[] memory targets = new address[](
+            createDAOParams.daoFunctionDescs.length
+        );
 
-        emit DAOCreated(dao, accessControl, msg.sender, creator);
-    }
-
-    function createAccessControl(address dao, CreateDAOParams memory createDAOParams)
-        private
-        returns (address accessControl)
-    {
-        uint256 daoFunctionDescsLength = createDAOParams
-            .daoFunctionDescs
-            .length;
-
-        address[] memory targets = new address[](daoFunctionDescsLength);
-
-        for (uint256 i; i < daoFunctionDescsLength; ) {
+        for (uint256 i; i < createDAOParams.daoFunctionDescs.length; ) {
             targets[i] = dao;
             unchecked {
                 i++;
             }
         }
 
-        accessControl = address(
-            new ERC1967Proxy(
-                createDAOParams.accessControlImplementation,
-                abi.encodeWithSelector(
-                    IDAOAccessControl(payable(address(0))).initialize.selector,
-                    dao,
-                    createDAOParams.roles,
-                    createDAOParams.rolesAdmins,
-                    createDAOParams.members,
-                    targets,
-                    createDAOParams.daoFunctionDescs,
-                    createDAOParams.daoActionRoles
-                )
+        IDAO(dao).initialize(
+            accessControl,
+            address(this),
+            createDAOParams.daoName
+        );
+        IDAOAccessControl(accessControl).initialize(
+            dao,
+            createDAOParams.roles,
+            createDAOParams.rolesAdmins,
+            createDAOParams.members,
+            targets,
+            createDAOParams.daoFunctionDescs,
+            createDAOParams.daoActionRoles
+        );
+
+        emit DAOCreated(dao, accessControl, msg.sender, creator);
+    }
+
+    function _createDAO(CreateDAOParams calldata createDAOParams)
+        internal
+        returns (address _dao)
+    {
+        _dao = Create2.deploy(
+            0,
+            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            abi.encodePacked(
+                type(ERC1967Proxy).creationCode,
+                abi.encode(createDAOParams.daoImplementation, "")
+            )
+        );
+    }
+
+    function _createAccessControl(CreateDAOParams memory createDAOParams)
+        private
+        returns (address _accessControl)
+    {
+        _accessControl = Create2.deploy(
+            0,
+            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            abi.encodePacked(
+                type(ERC1967Proxy).creationCode,
+                abi.encode(createDAOParams.accessControlImplementation, "")
             )
         );
     }
