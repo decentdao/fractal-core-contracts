@@ -202,7 +202,7 @@ describe("DAOFactory", () => {
 
   it("executor EOA should be able to call `execute`", async () => {
     const transferCallData = accessControlCreated.interface.encodeFunctionData(
-      "grantRole",
+      "adminGrantRole",
       ["EXECUTE_ROLE", executor3.address]
     );
 
@@ -229,7 +229,7 @@ describe("DAOFactory", () => {
 
   it("Non executor EOA should revert w/ Execute", async () => {
     const transferCallData = accessControlCreated.interface.encodeFunctionData(
-      "grantRole",
+      "adminGrantRole",
       ["EXECUTE_ROLE", executor3.address]
     );
 
