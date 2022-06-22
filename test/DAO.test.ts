@@ -63,13 +63,13 @@ describe("DAO", () => {
 
     it("doesn't allow anyone to grant the EXECUTE role", async () => {
       await expect(
-        daoAccessControl.grantRole("EXECUTE_ROLE", deployer.address)
+        daoAccessControl.adminGrantRole("EXECUTE_ROLE", deployer.address)
       ).to.be.revertedWith(`MissingRole("${deployer.address}", "")`);
     });
 
     it("doesn't allow anyone to revoke existing roles", async () => {
       await expect(
-        daoAccessControl.revokeRole("EXECUTE_ROLE", executor1.address)
+        daoAccessControl.adminRevokeRole("EXECUTE_ROLE", executor1.address)
       ).to.be.revertedWith(`MissingRole("${deployer.address}", "")`);
     });
 
@@ -110,7 +110,7 @@ describe("DAO", () => {
 
     it("executor EOA should be able to call `execute`", async () => {
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
-        "grantRole",
+        "adminGrantRole",
         ["EXECUTE_ROLE", executor3.address]
       );
 
@@ -137,7 +137,7 @@ describe("DAO", () => {
 
     it("UnAuthUser should NOT be able to call `execute`", async () => {
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
-        "grantRole",
+        "adminGrantRole",
         ["EXECUTE_ROLE", executor3.address]
       );
 
@@ -156,7 +156,7 @@ describe("DAO", () => {
         "BadDao"
       );
       const transferCallData = daoAccessControl.interface.encodeFunctionData(
-        "grantRole",
+        "adminGrantRole",
         ["EXECUTE_ROLE", executor3.address]
       );
 
