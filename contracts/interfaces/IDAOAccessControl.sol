@@ -50,6 +50,7 @@ interface IDAOAccessControl {
     ) external;
 
     /// @notice Grants roles to the specified addresses and defines admin roles
+    /// @notice This function can only be called by the DAO
     /// @param roles The roles being granted
     /// @param roleAdmins The roles being granted as admins of the specified of roles
     /// @param members Addresses being granted each specified role
@@ -60,12 +61,14 @@ interface IDAOAccessControl {
     ) external;
 
     /// @notice Grants roles to the specified addresses
+    /// @notice This function can only be called by the DAO
     /// @param roles The roles being granted
     /// @param members Addresses being granted each specified role
     function daoGrantRoles(string[] memory roles, address[][] memory members)
         external;
 
     /// @notice Authorizes roles to execute the specified actions
+    /// @notice This function can only be called by the DAO
     /// @param targets The contract addresses that the action functions are implemented on
     /// @param functionDescs The function descriptions used to define the actions
     /// @param roles Roles being granted permission for an action
@@ -76,6 +79,7 @@ interface IDAOAccessControl {
     ) external;
 
     /// @notice Removes autorization for roles to execute the specified actions
+    /// @notice This function can only be called by the DAO
     /// @param targets The contract addresses that the action functions are implemented on
     /// @param functionDescs The function description used to define the actions
     /// @param roles Roles that action permissions are being removed on
@@ -86,18 +90,21 @@ interface IDAOAccessControl {
     ) external;
 
     /// @notice Grants a role to the specified address
+    /// @notice This function can only be called by an admin of the specified role
     /// @param role The role being granted
     /// @param account The address being granted the specified role
     function adminGrantRole(string memory role, address account)
         external;
 
     /// @notice Revokes a role from the specified address
+    /// @notice This function can only be called by an admin of the specified role
     /// @param role The role being revoked
     /// @param account The address the role is being revoked from
     function adminRevokeRole(string memory role, address account)
         external;
 
     /// @notice Enables an address to remove one of its own roles
+    /// @notice This function can only be called by the account specified
     /// @param role The role being renounced
     /// @param account The address renouncing the role
     function userRenounceRole(string memory role, address account) external;
