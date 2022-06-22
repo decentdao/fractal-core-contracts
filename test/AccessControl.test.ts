@@ -162,7 +162,7 @@ describe("DAO Access Control Contract", function () {
     });
 
     it("Admin of a role can grant new members", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -181,11 +181,11 @@ describe("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(roleAMember1)
-        .grantRole(roleBString, user1.address);
+        .adminGrantRole(roleBString, user1.address);
 
       await daoAccessControl
         .connect(roleAMember1)
-        .grantRole(roleBString, user2.address);
+        .adminGrantRole(roleBString, user2.address);
 
       expect(await daoAccessControl.hasRole(roleBString, user1.address)).to.eq(
         true
@@ -197,7 +197,7 @@ describe("DAO Access Control Contract", function () {
     });
 
     it("Non-Admin of a role can not grant new members", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -215,20 +215,20 @@ describe("DAO Access Control Contract", function () {
       );
 
       await expect(
-        daoAccessControl.connect(user1).grantRole(roleBString, user1.address)
+        daoAccessControl.connect(user1).adminGrantRole(roleBString, user1.address)
       ).to.be.revertedWith(`MissingRole("${user1.address}", "${roleAString}")`);
 
       await expect(
         daoAccessControl
           .connect(roleBMember1)
-          .grantRole(roleBString, user1.address)
+          .adminGrantRole(roleBString, user1.address)
       ).to.be.revertedWith(
         `MissingRole("${roleBMember1.address}", "${roleAString}")`
       );
     });
 
     it("Admin of a role can revoke members", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -247,11 +247,11 @@ describe("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(roleAMember1)
-        .revokeRole(roleBString, roleBMember1.address);
+        .adminRevokeRole(roleBString, roleBMember1.address);
 
       await daoAccessControl
         .connect(roleAMember1)
-        .revokeRole(roleBString, roleBMember2.address);
+        .adminRevokeRole(roleBString, roleBMember2.address);
 
       expect(
         await daoAccessControl.hasRole(roleBString, roleBMember1.address)
@@ -263,7 +263,7 @@ describe("DAO Access Control Contract", function () {
     });
 
     it("Non-Admin of a role can not revoke members", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -275,7 +275,7 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(roleBMember1)
-          .revokeRole(roleBString, roleBMember2.address)
+          .adminRevokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(
         `MissingRole("${roleBMember1.address}", "${roleAString}")`
       );
@@ -283,12 +283,12 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(user1)
-          .revokeRole(roleBString, roleBMember2.address)
+          .adminRevokeRole(roleBString, roleBMember2.address)
       ).to.be.revertedWith(`MissingRole("${user1.address}", "${roleAString}")`);
     });
 
     it("A role member can renounce their role", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -307,11 +307,11 @@ describe("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(roleBMember1)
-        .renounceRole(roleBString, roleBMember1.address);
+        .userRenounceRole(roleBString, roleBMember1.address);
 
       await daoAccessControl
         .connect(roleBMember2)
-        .renounceRole(roleBString, roleBMember2.address);
+        .userRenounceRole(roleBString, roleBMember2.address);
 
       expect(
         await daoAccessControl.hasRole(roleBString, roleBMember1.address)
@@ -323,7 +323,7 @@ describe("DAO Access Control Contract", function () {
     });
 
     it("A role member cannot renounce another user's role", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -335,18 +335,18 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(roleAMember1)
-          .renounceRole(roleBString, roleBMember1.address)
+          .userRenounceRole(roleBString, roleBMember1.address)
       ).to.be.revertedWith("OnlySelfRenounce()");
 
       await expect(
         daoAccessControl
           .connect(roleBMember2)
-          .renounceRole(roleBString, roleBMember1.address)
+          .userRenounceRole(roleBString, roleBMember1.address)
       ).to.be.revertedWith("OnlySelfRenounce()");
     });
 
     it("Should batch create Roles", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -377,7 +377,7 @@ describe("DAO Access Control Contract", function () {
     });
 
     it("Should override/update Role Admins", async () => {
-      await daoAccessControl.connect(dao).grantRolesAndAdmins(
+      await daoAccessControl.connect(dao).daoGrantRolesAndAdmins(
         [roleBString, roleAString],
         [roleAString, daoRoleString],
         [
@@ -388,7 +388,7 @@ describe("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(dao)
-        .grantRolesAndAdmins(
+        .daoGrantRolesAndAdmins(
           [roleAString, roleBString],
           [roleBString, daoRoleString],
           [[], []]
@@ -416,7 +416,7 @@ describe("DAO Access Control Contract", function () {
 
     it("Should revert UnAuthorized (batch create)", async () => {
       await expect(
-        daoAccessControl.connect(executor1).grantRolesAndAdmins(
+        daoAccessControl.connect(executor1).daoGrantRolesAndAdmins(
           [roleBString, roleAString],
           [roleAString, daoRoleString],
           [
@@ -449,7 +449,7 @@ describe("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles(
+        .daoAddActionsRoles(
           [deployer.address, deployer.address],
           [function1, function2],
           [[roleAString, roleBString], [roleAString]]
@@ -469,7 +469,7 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(executor1)
-          .addActionsRoles(
+          .daoAddActionsRoles(
             [deployer.address, deployer.address],
             [function1, function2],
             [[roleAString, roleBString], [roleAString]]
@@ -482,7 +482,7 @@ describe("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles(
+        .daoAddActionsRoles(
           [deployer.address, deployer.address],
           [function1, function2],
           [[roleAString, roleBString], [roleAString]]
@@ -505,7 +505,7 @@ describe("DAO Access Control Contract", function () {
 
       await daoAccessControl
         .connect(dao)
-        .removeActionsRoles(
+        .daoRemoveActionsRoles(
           [deployer.address, deployer.address],
           [function1, function2],
           [[roleAString], [roleAString]]
@@ -536,7 +536,7 @@ describe("DAO Access Control Contract", function () {
       // Give roleA authorization over action2
       await daoAccessControl
         .connect(dao)
-        .addActionsRoles(
+        .daoAddActionsRoles(
           [deployer.address, deployer.address],
           [function1, function2],
           [[roleAString, roleBString], [roleAString]]
@@ -546,7 +546,7 @@ describe("DAO Access Control Contract", function () {
       await expect(
         daoAccessControl
           .connect(executor1)
-          .removeActionsRoles(
+          .daoRemoveActionsRoles(
             [deployer.address, deployer.address],
             [function1, function2],
             [[roleAString, roleBString], [roleAString]]
