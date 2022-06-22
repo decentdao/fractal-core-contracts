@@ -56,7 +56,7 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
     /// @param roles The roles being granted
     /// @param roleAdmins The roles being granted as admins of the specified of roles
     /// @param members Addresses being granted each specified role
-    function grantRolesAndAdmins(
+    function daoGrantRolesAndAdmins(
         string[] memory roles,
         string[] memory roleAdmins,
         address[][] memory members
@@ -67,49 +67,18 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
     /// @notice Grants roles to the specified addresses
     /// @param roles The roles being granted
     /// @param members Addresses being granted each specified role
-    function grantRoles(string[] memory roles, address[][] memory members)
+    function daoGrantRoles(string[] memory roles, address[][] memory members)
         external
         onlyRole(DAO_ROLE)
     {
         _grantRoles(roles, members);
     }
 
-    /// @notice Grants a role to the specified address
-    /// @param role The role being granted
-    /// @param account The address being granted the specified role
-    function grantRole(string memory role, address account)
-        external
-        onlyRole(getRoleAdmin(role))
-    {
-        _grantRole(role, account);
-    }
-
-    /// @notice Revokes a role from the specified address
-    /// @param role The role being revoked
-    /// @param account The address the role is being revoked from
-    function revokeRole(string memory role, address account)
-        external
-        onlyRole(getRoleAdmin(role))
-    {
-        _revokeRole(role, account);
-    }
-
-    /// @notice Enables an address to remove one of its own roles
-    /// @param role The role being renounced
-    /// @param account The address renouncing the role
-    function renounceRole(string memory role, address account) external {
-        if (account != msg.sender) {
-            revert OnlySelfRenounce();
-        }
-
-        _revokeRole(role, account);
-    }
-
     /// @notice Authorizes roles to execute the specified actions
     /// @param targets The contract addresses that the action functions are implemented on
     /// @param functionDescs The function descriptions used to define the actions
     /// @param roles Roles being granted permission for an action
-    function addActionsRoles(
+    function daoAddActionsRoles(
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
@@ -121,7 +90,7 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
     /// @param targets The contract addresses that the action functions are implemented on
     /// @param functionDescs The function description used to define the actions
     /// @param roles Roles that action permissions are being removed on
-    function removeActionsRoles(
+    function daoRemoveActionsRoles(
         address[] memory targets,
         string[] memory functionDescs,
         string[][] memory roles
@@ -143,6 +112,37 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
             }
         }
     }
+
+    /// @notice Grants a role to the specified address
+    /// @param role The role being granted
+    /// @param account The address being granted the specified role
+    function adminGrantRole(string memory role, address account)
+        external
+        onlyRole(getRoleAdmin(role))
+    {
+        _grantRole(role, account);
+    }
+
+    /// @notice Revokes a role from the specified address
+    /// @param role The role being revoked
+    /// @param account The address the role is being revoked from
+    function adminRevokeRole(string memory role, address account)
+        external
+        onlyRole(getRoleAdmin(role))
+    {
+        _revokeRole(role, account);
+    }
+
+    /// @notice Enables an address to remove one of its own roles
+    /// @param role The role being renounced
+    /// @param account The address renouncing the role
+    function userRenounceRole(string memory role, address account) external {
+        if (account != msg.sender) {
+            revert OnlySelfRenounce();
+        }
+
+        _revokeRole(role, account);
+    }  
 
     /// @notice Checks if a caller has the permissions to execute the specific action
     /// @param caller Address attempting to execute the action
