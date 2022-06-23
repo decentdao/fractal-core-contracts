@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 /// @dev The interface to be inherited by Fractal module factories
 interface IModuleFactoryBase {
-    error NotAuthorized();
     event VersionCreated(
         string semanticVersion,
         string frontendURI,
