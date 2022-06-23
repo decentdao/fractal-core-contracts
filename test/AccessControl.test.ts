@@ -215,7 +215,9 @@ describe("DAO Access Control Contract", function () {
       );
 
       await expect(
-        daoAccessControl.connect(user1).adminGrantRole(roleBString, user1.address)
+        daoAccessControl
+          .connect(user1)
+          .adminGrantRole(roleBString, user1.address)
       ).to.be.revertedWith(`MissingRole("${user1.address}", "${roleAString}")`);
 
       await expect(
