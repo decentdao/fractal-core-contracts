@@ -1,17 +1,17 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./interfaces/IModuleFactory.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
+import "./interfaces/IModuleFactoryBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleFactoryBase is
-    IModuleFactory,
-    ERC165,
-    AccessControl,
-    Initializable
+    IModuleFactoryBase,
+    Ownable,
+    Initializable,
+    ERC165Storage
 {
     bytes32 public constant VERSION_ROLE = keccak256("VERSION_ROLE");
     VersionInfo[] public versionControl;
@@ -24,10 +24,7 @@ abstract contract ModuleFactoryBase is
         string calldata _semanticVersion,
         string calldata _frontendURI,
         address _impl
-    ) external {
-        if (!hasRole(VERSION_ROLE, msg.sender)) {
-            revert NotAuthorized();
-        }
+    ) external onlyOwner {
         versionControl.push(VersionInfo(_semanticVersion, _frontendURI, _impl));
         emit VersionCreated(_semanticVersion, _frontendURI, _impl);
     }
@@ -40,24 +37,8 @@ abstract contract ModuleFactoryBase is
         virtual
         returns (address[] memory);
 
-    /// @notice Returns whether a given interface ID is supported
-    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
-    /// @return bool Indicates whether the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IModuleFactory, AccessControl)
-        returns (bool)
-    {
-        return
-            interfaceId == type(IModuleFactory).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
-
     /// @notice Function for initializing the contract that can only be called once
     function __initFactoryBase() internal onlyInitializing {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(VERSION_ROLE, msg.sender);
+        _registerInterface(type(IModuleFactoryBase).interfaceId);
     }
 }

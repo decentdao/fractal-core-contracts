@@ -7,6 +7,8 @@ import {
   IDAOFactory__factory,
   DAO__factory,
   ERC1967Proxy__factory,
+  IModuleFactoryBase__factory,
+  IERC165__factory,
 } from "../typechain-types";
 import { expect } from "chai";
 import { ContractTransaction } from "ethers";
@@ -266,6 +268,11 @@ describe("DAOFactory", () => {
     ).to.eq(true);
 
     // Supports ERC-165 interface
-    expect(await daoFactory.supportsInterface("0x01ffc9a7")).to.eq(true);
+    expect(
+      await daoFactory.supportsInterface(
+        // eslint-disable-next-line camelcase
+        getInterfaceSelector(IERC165__factory.createInterface())
+      )
+    ).to.eq(true);
   });
 });

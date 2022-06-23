@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/utils/Create2.sol";
 
@@ -10,7 +10,11 @@ import "./interfaces/IDAOAccessControl.sol";
 import "./interfaces/IDAO.sol";
 
 /// @notice A factory contract for deploying DAOs with an access control contract
-contract DAOFactory is IDAOFactory, ERC165 {
+contract DAOFactory is IDAOFactory, ERC165Storage {
+    constructor() {
+        _registerInterface(type(IDAOFactory).interfaceId);
+    }
+
     /// @notice Creates a DAO with an access control contract
     /// @param creator Address of the Dao Creator
     /// @param createDAOParams Struct of all the parameters required to create a DAO

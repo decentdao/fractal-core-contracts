@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
 import "./interfaces/IModuleBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
-abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
+abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165Storage {
     IDAOAccessControl public accessControl;
     address public moduleFactory;
     string internal _name;
@@ -37,6 +37,7 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
         moduleFactory = _moduleFactory;
         _name = __name;
         __UUPSUpgradeable_init();
+        _registerInterface(type(IModuleBase).interfaceId);
     }
 
     /// @dev Applies authorized modifier so that an upgrade require the caller to have the correct role
@@ -51,20 +52,5 @@ abstract contract ModuleBase is IModuleBase, UUPSUpgradeable, ERC165 {
     /// @return The module name
     function name() public view virtual returns (string memory) {
       return _name;
-    }
-
-    /// @notice Returns whether a given interface ID is supported
-    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
-    /// @return bool Indicates whether the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC165, IModuleBase)
-        returns (bool)
-    {
-        return
-            interfaceId == type(IModuleBase).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 }
