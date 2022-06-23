@@ -8,6 +8,8 @@ import {
   IDAO__factory,
   DAOAccessControl,
   DAOAccessControl__factory,
+  IModuleBase__factory,
+  IERC165__factory,
 } from "../typechain-types";
 import getInterfaceSelector from "./helpers/getInterfaceSelector";
 
@@ -48,8 +50,21 @@ describe("DAO", () => {
         )
       ).to.eq(true);
 
+      // Supports ModuleBase interface
+      expect(
+        await dao.supportsInterface(
+          // eslint-disable-next-line camelcase
+          getInterfaceSelector(IModuleBase__factory.createInterface())
+        )
+      ).to.eq(true);
+
       // Supports ERC-165 interface
-      expect(await dao.supportsInterface("0x01ffc9a7")).to.eq(true);
+      expect(
+        await dao.supportsInterface(
+          // eslint-disable-next-line camelcase
+          getInterfaceSelector(IERC165__factory.createInterface())
+        )
+      ).to.eq(true);
     });
 
     it("has the DAO_ROLE", async () => {
