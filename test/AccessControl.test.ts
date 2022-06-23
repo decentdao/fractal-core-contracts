@@ -3,6 +3,7 @@ import {
   DAOAccessControl,
   DAOAccessControl__factory,
   IDAOAccessControl__factory,
+  IERC165__factory,
 } from "../typechain-types";
 import chai from "chai";
 import { ethers } from "hardhat";
@@ -82,9 +83,12 @@ describe("DAO Access Control Contract", function () {
       ).to.eq(true);
 
       // Supports ERC-165 interface
-      expect(await daoAccessControl.supportsInterface("0x01ffc9a7")).to.eq(
-        true
-      );
+      expect(
+        await daoAccessControl.supportsInterface(
+          // eslint-disable-next-line camelcase
+          getInterfaceSelector(IERC165__factory.createInterface())
+        )
+      ).to.eq(true);
     });
 
     it("Should setup Executor Role", async () => {
