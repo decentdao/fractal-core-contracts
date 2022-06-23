@@ -1,15 +1,15 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "./interfaces/IModuleFactory.sol";
+import "./interfaces/IModuleFactoryBase.sol";
 
 /// @notice An abstract contract to be inherited by module contracts
 abstract contract ModuleFactoryBase is
-    IModuleFactory,
-    ERC165,
+    IModuleFactoryBase,
+    ERC165Storage,
     AccessControl,
     Initializable
 {
@@ -47,11 +47,11 @@ abstract contract ModuleFactoryBase is
         public
         view
         virtual
-        override(ERC165, IModuleFactory, AccessControl)
+        override(AccessControl, ERC165Storage)
         returns (bool)
     {
         return
-            interfaceId == type(IModuleFactory).interfaceId ||
+            interfaceId == type(IModuleFactoryBase).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -59,5 +59,6 @@ abstract contract ModuleFactoryBase is
     function __initFactoryBase() internal onlyInitializing {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(VERSION_ROLE, msg.sender);
+        _registerInterface(type(IModuleFactoryBase).interfaceId);
     }
 }

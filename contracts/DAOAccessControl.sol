@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
 
 import "./interfaces/IDAOAccessControl.sol";
 
 /// @title DAO Access Control
 /// @notice Use this contract for managing DAO role based permissions
-contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
+contract DAOAccessControl is IDAOAccessControl, ERC165Storage, UUPSUpgradeable {
     string public constant DAO_ROLE = "DAO_ROLE";
     string public constant OPEN_ROLE = "OPEN_ROLE";
 
@@ -50,6 +50,7 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
         _grantRolesAndAdmins(roles, roleAdmins, members);
         _addActionsRoles(targets, functionDescs, actionRoles);
         __UUPSUpgradeable_init();
+        _registerInterface(type(IDAOAccessControl).interfaceId);
     }
 
     /// @notice Grants roles to the specified addresses and defines admin roles
@@ -242,20 +243,6 @@ contract DAOAccessControl is IDAOAccessControl, ERC165, UUPSUpgradeable {
         returns (string memory)
     {
         return _roles[role].adminRole;
-    }
-
-    /// @notice Returns whether a given interface ID is supported
-    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
-    /// @return bool Indicates whether the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override
-        returns (bool)
-    {
-        return
-            interfaceId == type(IDAOAccessControl).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 
     /// @notice Sets a role as the admin of another role
