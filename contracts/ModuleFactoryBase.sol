@@ -13,7 +13,6 @@ abstract contract ModuleFactoryBase is
     Initializable,
     ERC165Storage
 {
-    bytes32 public constant VERSION_ROLE = keccak256("VERSION_ROLE");
     VersionInfo[] public versionControl;
 
     /// @dev add a new version to update module users
