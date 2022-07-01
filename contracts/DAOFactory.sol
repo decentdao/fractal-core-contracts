@@ -24,7 +24,7 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         address creator,
         CreateDAOParams calldata createDAOParams
     ) external returns (address dao, address accessControl) {
-        dao = _createDAO(createDAOParams);
+        dao = _createDAO(creator, createDAOParams);
         accessControl = _createAccessControl(createDAOParams);
 
         address[] memory targets = new address[](
@@ -56,13 +56,13 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
 
-    function _createDAO(CreateDAOParams calldata createDAOParams)
+    function _createDAO(address creator, CreateDAOParams calldata createDAOParams)
         internal
         returns (address _dao)
     {
         _dao = Create2.deploy(
             0,
-            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            keccak256(abi.encodePacked(creator, msg.sender, block.chainid, createDAOParams.salt)),
             abi.encodePacked(
                 type(ERC1967Proxy).creationCode,
                 abi.encode(createDAOParams.daoImplementation, "")
