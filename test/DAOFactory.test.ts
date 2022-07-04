@@ -7,7 +7,6 @@ import {
   IDAOFactory__factory,
   DAO__factory,
   ERC1967Proxy__factory,
-  IModuleFactoryBase__factory,
   IERC165__factory,
 } from "../typechain-types";
 import { expect } from "chai";
