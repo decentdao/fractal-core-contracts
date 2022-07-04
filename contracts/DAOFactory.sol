@@ -71,7 +71,7 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
     }
 
     function _createAccessControl(CreateDAOParams memory createDAOParams)
-        private
+        internal
         returns (address _accessControl)
     {
         _accessControl = Create2.deploy(
