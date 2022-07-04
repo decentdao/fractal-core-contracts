@@ -125,13 +125,18 @@ describe("DAOFactory", () => {
     const predictedAccess = ethers.utils.getCreate2Address(
       daoFactory.address,
       ethers.utils.solidityKeccak256(
-        ["address", "uint256", "bytes32"],
-        [deployer.address, chainId, ethers.utils.formatBytes32String("hi")]
+        ["address", "address", "uint256", "bytes32"],
+        [
+          deployer.address,
+          deployer.address,
+          chainId,
+          ethers.utils.formatBytes32String("hi"),
+        ]
       ),
       ethers.utils.solidityKeccak256(
         ["bytes", "bytes"],
-        // eslint-disable-next-line camelcase
         [
+          // eslint-disable-next-line camelcase
           ERC1967Proxy__factory.bytecode,
           abiCoder.encode(
             ["address", "bytes"],
