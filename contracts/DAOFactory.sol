@@ -56,6 +56,10 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
 
+    /// @notice Creates a DAO contract
+    /// @param creator Address of the Dao Creator
+    /// @param createDAOParams Struct of all the parameters required to create a DAO
+    /// @return _dao The address of the deployed DAO proxy contract
     function _createDAO(address creator, CreateDAOParams calldata createDAOParams)
         internal
         returns (address _dao)
@@ -70,13 +74,17 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         );
     }
 
-    function _createAccessControl(CreateDAOParams memory createDAOParams)
+    /// @notice Creates a an access control contract
+    /// @param creator Address of the Dao Creator
+    /// @param createDAOParams Struct of all the parameters required to create a DAO
+    /// @return _accessControl The address of the deployed access control proxy contract
+    function _createAccessControl(address creator, CreateDAOParams memory createDAOParams)
         internal
         returns (address _accessControl)
     {
         _accessControl = Create2.deploy(
             0,
-            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            keccak256(abi.encodePacked(creator, msg.sender, block.chainid, createDAOParams.salt)),
             abi.encodePacked(
                 type(ERC1967Proxy).creationCode,
                 abi.encode(createDAOParams.accessControlImplementation, "")
