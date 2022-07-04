@@ -25,7 +25,7 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         CreateDAOParams calldata createDAOParams
     ) external returns (address dao, address accessControl) {
         dao = _createDAO(creator, createDAOParams);
-        accessControl = _createAccessControl(createDAOParams);
+        accessControl = _createAccessControl(creator, createDAOParams);
 
         address[] memory targets = new address[](
             createDAOParams.daoFunctionDescs.length
