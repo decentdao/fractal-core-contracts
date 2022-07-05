@@ -43,18 +43,4 @@ contract DAO is IDAO, ModuleBase {
         }
         emit Executed(targets, values, calldatas);
     }
-
-    /// @notice Returns whether a given interface ID is supported
-    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
-    /// @return bool Indicates whether the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override
-        returns (bool)
-    {
-        return
-            interfaceId == type(IDAO).interfaceId ||
-            super.supportsInterface(interfaceId);
-    }
 }
