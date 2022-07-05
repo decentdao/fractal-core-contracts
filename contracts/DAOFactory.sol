@@ -24,8 +24,8 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         address creator,
         CreateDAOParams calldata createDAOParams
     ) external returns (address dao, address accessControl) {
-        dao = _createDAO(createDAOParams);
-        accessControl = _createAccessControl(createDAOParams);
+        dao = _createDAO(creator, createDAOParams);
+        accessControl = _createAccessControl(creator, createDAOParams);
 
         address[] memory targets = new address[](
             createDAOParams.daoFunctionDescs.length
@@ -56,13 +56,17 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         emit DAOCreated(dao, accessControl, msg.sender, creator);
     }
 
-    function _createDAO(CreateDAOParams calldata createDAOParams)
+    /// @notice Creates a DAO contract
+    /// @param creator Address of the Dao Creator
+    /// @param createDAOParams Struct of all the parameters required to create a DAO
+    /// @return _dao The address of the deployed DAO proxy contract
+    function _createDAO(address creator, CreateDAOParams calldata createDAOParams)
         internal
         returns (address _dao)
     {
         _dao = Create2.deploy(
             0,
-            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            keccak256(abi.encodePacked(creator, msg.sender, block.chainid, createDAOParams.salt)),
             abi.encodePacked(
                 type(ERC1967Proxy).creationCode,
                 abi.encode(createDAOParams.daoImplementation, "")
@@ -70,32 +74,21 @@ contract DAOFactory is IDAOFactory, ERC165Storage {
         );
     }
 
-    function _createAccessControl(CreateDAOParams memory createDAOParams)
-        private
+    /// @notice Creates a an access control contract
+    /// @param creator Address of the Dao Creator
+    /// @param createDAOParams Struct of all the parameters required to create a DAO
+    /// @return _accessControl The address of the deployed access control proxy contract
+    function _createAccessControl(address creator, CreateDAOParams memory createDAOParams)
+        internal
         returns (address _accessControl)
     {
         _accessControl = Create2.deploy(
             0,
-            keccak256(abi.encodePacked(tx.origin, block.chainid, createDAOParams.salt)),
+            keccak256(abi.encodePacked(creator, msg.sender, block.chainid, createDAOParams.salt)),
             abi.encodePacked(
                 type(ERC1967Proxy).creationCode,
                 abi.encode(createDAOParams.accessControlImplementation, "")
             )
         );
-    }
-
-    /// @notice Returns whether a given interface ID is supported
-    /// @param interfaceId An interface ID bytes4 as defined by ERC-165
-    /// @return bool Indicates whether the interface is supported
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        return
-            interfaceId == type(IDAOFactory).interfaceId ||
-            super.supportsInterface(interfaceId);
     }
 }
