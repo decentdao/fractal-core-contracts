@@ -14,7 +14,7 @@ interface IDAOFactory {
         string[][] daoActionRoles;
     }
 
-    event DAOCreated(address indexed daoAddress, address indexed accessControl, address indexed sender, address creator);
+    event DAOCreated(address indexed daoAddress, address accessControl, address indexed sender, address indexed creator);
 
     /// @notice Creates a DAO with an access control contract
     /// @param creator Address of the Dao Creator
