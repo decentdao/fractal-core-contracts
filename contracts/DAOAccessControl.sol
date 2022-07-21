@@ -43,7 +43,7 @@ contract DAOAccessControl is IDAOAccessControl, ERC165Storage, UUPSUpgradeable {
             roles.length != roleAdmins.length ||
             roles.length != members.length ||
             targets.length != functionDescs.length ||
-            targets.length != functionDescs.length
+            targets.length != actionRoles.length
         ) revert UnequalArrayLengths();
 
         _grantRole(DAO_ROLE, dao);
