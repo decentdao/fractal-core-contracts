@@ -32,6 +32,12 @@ Install necessary dependencies:
 npm install
 ```
 
+Add `.env` values replacing the private key and provider values for desired networks
+```shell
+cp .env.example .env
+```
+
+
 Compile contracts to create typechain files:
 ```shell
 npm run compile
@@ -41,6 +47,12 @@ Run the tests
 ```shell
 npm run test
 ```
+
+## Deploy Contract to <network>
+```shell
+npx hardhat deploy --network <network>
+```
+
 
 ## Local Hardhat deployment
 
