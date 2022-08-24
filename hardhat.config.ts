@@ -146,6 +146,7 @@ const config: HardhatUserConfig = {
       default: 0,
       mainnet: `privatekey://${process.env.MAINNET_DEPLOYER_PRIVATE_KEY}`,
       goerli: `privatekey://${process.env.GOERLI_DEPLOYER_PRIVATE_KEY}`,
+      rinkeby: `privatekey://${process.env.RINKEBY_DEPLOYER_PRIVATE_KEY}`,
       sepolia: `privatekey://${process.env.SEPOLIA_DEPLOYER_PRIVATE_KEY}`,
     },
   },
@@ -159,6 +160,11 @@ const config: HardhatUserConfig = {
       chainId: 5,
       url: process.env.GOERLI_PROVIDER,
       accounts: [process.env.GOERLI_DEPLOYER_PRIVATE_KEY || ""],
+    },
+    rinkeby: {
+      chainId: 4,
+      url: process.env.RINKEBY_PROVIDER,
+      accounts: [process.env.RINKEBY_DEPLOYER_PRIVATE_KEY || ""],
     },
     sepolia: {
       chainId: 11155111,
