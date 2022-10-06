@@ -1,3 +1,11 @@
+## DEPRECATED
+
+This repository has been deprecated.
+
+Please use this repository for the currently supported Fractal smart contracts:
+
+https://github.com/decent-dao/fractal-contracts
+
 # Fractal
 
 ## Architecture
